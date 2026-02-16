@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global custom styles */
+:root {
+  --primary-blue: #3498db;
+  --secondary-cyan: #33e6ff;
+  --accent-yellow: #ffde00;
+  --action-pink: #ff69b4;
+  --battle-green: #4cd964;
+  --text-dark-blue: #0a3d62;
+  --live-red: #ff3b30;
+  --wallet-purple: #6c5ce7;
+  --pixel-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8);
+  --pixel-border: 2px solid #000;
+}
+
+html, body, #root { height: 100%; }
+body { overflow-x: hidden; position: relative; background-color: #ffffff; }
+
+.font-pixel { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; text-transform: uppercase; letter-spacing: 1px; }
+.font-button { font-family: 'VT323', monospace; }
+.font-body { font-family: 'Courier New', monospace; }
+.pixel-text { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; text-transform: uppercase; letter-spacing: 1px; line-height: 1.4; }
+button { image-rendering: pixelated; transition: all 0.1s; }
+
+.scanlines {
+  background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.1) 50%);
+  background-size: 100% 4px;
+  pointer-events: none;
+}

@@ -3009,7 +3009,7 @@ Current app data:
                   </span>
                 </div>
               </div>
-            </SpotlightCard>}
+            </SpotlightCard>
             { }
             {claimableWinnings.length > 0 && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-green-700/30" glowColor="yellow" size="sm" intensity={1.0}>
               <div className="flex items-center space-x-3 mb-4">

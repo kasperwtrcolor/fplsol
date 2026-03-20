@@ -4,6 +4,10 @@ import { PrivyProvider } from '@privy-io/react-auth'
 import App from './App.jsx'
 import './index.css'
 
+import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
+
+const solanaConnectors = toSolanaWalletConnectors();
+
 // Replace with your actual Privy App ID
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID
 
@@ -20,6 +24,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         loginMethods: ['email', 'wallet', 'google', 'twitter'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
+        },
+        externalWallets: {
+          solana: {
+            connectors: solanaConnectors,
+          },
         },
       }}
     >

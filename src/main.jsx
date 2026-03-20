@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           accentColor: '#d4af37',
           logo: undefined,
         },
-        loginMethods: ['email', 'wallet', 'google', 'twitter'],
+        loginMethods: ['wallet'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
         },

@@ -1196,6 +1196,19 @@ function App() {
       setIsAdmin(false);
     }
   }, [userWallet]);
+
+  const fetchFplJson = async (url) => {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error(`Proxy error: ${res.status}`);
+    const data = await res.json();
+    if (!data.contents) throw new Error("No contents in proxy response");
+    try {
+      return JSON.parse(data.contents);
+    } catch (e) {
+      throw new Error("Invalid JSON from FPL API: " + data.contents.slice(0, 100));
+    }
+  };
   const loadPlayers = async () => {
     try {
       const cachedPlayers = localStorage.getItem('fpl_players');
@@ -1203,7 +1216,10 @@ function App() {
       const cachedPositions = localStorage.getItem('fpl_positions');
       const cacheTime = localStorage.getItem('fpl_players_timestamp');
       const now = Date.now();
-      if (cachedPlayers && cachedTeams && cachedPositions && cacheTime && now - parseInt(cacheTime) < 3600000) {
+      if (cachedPlayers && cachedPlayers !== 'undefined' && 
+          cachedTeams && cachedTeams !== 'undefined' && 
+          cachedPositions && cachedPositions !== 'undefined' && 
+          cacheTime && now - parseInt(cacheTime) < 3600000) {
         setPlayers(JSON.parse(cachedPlayers));
         setTeams(JSON.parse(cachedTeams));
         setPositions(JSON.parse(cachedPositions));
@@ -1212,6 +1228,11 @@ function App() {
       }
     } catch (error) {
       console.error('Error loading players:', error);
+      // Fallback: clear bad cache if parsing fails
+      localStorage.removeItem('fpl_players');
+      localStorage.removeItem('fpl_teams');
+      localStorage.removeItem('fpl_positions');
+      localStorage.removeItem('fpl_players_timestamp');
     }
   };
   const loadFixtures = async () => {
@@ -1247,23 +1268,29 @@ function App() {
   };
   const fetchAndCachePlayers = async () => {
     try {
-      const response = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/bootstrap-static/');
-      const data = await response.json();
-      localStorage.setItem('fpl_players', JSON.stringify(data.elements));
-      localStorage.setItem('fpl_teams', JSON.stringify(data.teams));
-      localStorage.setItem('fpl_positions', JSON.stringify(data.element_types));
-      localStorage.setItem('fpl_players_timestamp', Date.now().toString());
-      setPlayers(data.elements);
-      setTeams(data.teams);
-      setPositions(data.element_types);
+      const data = await fetchFplJson('https://fantasy.premierleague.com/api/bootstrap-static/');
+      
+      if (data && data.elements) {
+        localStorage.setItem('fpl_players', JSON.stringify(data.elements));
+        localStorage.setItem('fpl_teams', JSON.stringify(data.teams));
+        localStorage.setItem('fpl_positions', JSON.stringify(data.element_types));
+        localStorage.setItem('fpl_players_timestamp', Date.now().toString());
+        setPlayers(data.elements);
+        setTeams(data.teams);
+        setPositions(data.element_types);
+      }
     } catch (error) {
       console.error('Error fetching players:', error);
     }
   };
   const fetchAndCacheFixtures = async () => {
     try {
-      const response = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/fixtures/');
-      const data = await response.json();
+      const data = await fetchFplJson('https://fantasy.premierleague.com/api/fixtures/');
+      
+      if (!Array.isArray(data)) {
+        throw new Error("Expected array of fixtures, got: " + typeof data);
+      }
+      
       const existingFixtures = await firebaseService.listEntities('fixtures');
       const existingFixtureIds = existingFixtures.map(f => f.fixtureId);
       for (const fixture of data) {
@@ -1298,8 +1325,7 @@ function App() {
   const fetchFinalScores = async () => {
     if (!activeGameweek?.gameweek) return;
     try {
-      const response = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/fixtures/');
-      const data = await response.json();
+      const data = await fetchFplJson('https://fantasy.premierleague.com/api/fixtures/');
       const gameweekFixtures = data.filter(fixture => fixture.event === activeGameweek.gameweek && fixture.finished && fixture.team_h_score !== null && fixture.team_a_score !== null);
       const existingFixtures = await firebaseService.listEntities('fixtures');
       let hasUpdates = false;
@@ -1325,8 +1351,7 @@ function App() {
   const fetchLivePoints = async gameweek => {
     if (!gameweek) return;
     try {
-      const response = await fetch(`https://corsproxy.io/?https://fantasy.premierleague.com/api/event/${gameweek}/live/`);
-      const data = await response.json();
+      const data = await fetchFplJson(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`);
       const livePlayerPoints = data.elements;
       setPlayers(prevPlayers => {
         if (prevPlayers.length === 0) return [];
@@ -1371,8 +1396,7 @@ function App() {
     setIsLoading(true);
     setLoadingMessage('Checking for new gameweek to create...');
     try {
-      const response = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/bootstrap-static/');
-      const data = await response.json();
+      const data = await fetchFplJson('https://fantasy.premierleague.com/api/bootstrap-static/');
       const currentFplEvent = data.events.find(event => event.is_current === true);
       if (!currentFplEvent) {
         alert('FPL API does not indicate a current gameweek. The season may be over or between gameweeks.');
@@ -1410,16 +1434,14 @@ function App() {
     setIsLoading(true);
     setLoadingMessage('Syncing gameweek with FPL...');
     try {
-      const fplResponse = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/bootstrap-static/');
-      const fplData = await fplResponse.json();
+      const fplData = await fetchFplJson('https://fantasy.premierleague.com/api/bootstrap-static/');
       const currentFplEvent = fplData.events.find(event => event.is_current === true);
       if (!currentFplEvent) {
         alert('Could not determine current FPL gameweek. FPL API might be down or season ended.');
         return;
       }
       setLoadingMessage('Fetching fixture data...');
-      const fixturesResponse = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/fixtures/');
-      const fixturesData = await fixturesResponse.json();
+      const fixturesData = await fetchFplJson('https://fantasy.premierleague.com/api/fixtures/');
       let actualCurrentGameweek = currentFplEvent.id;
       const maxGameweeks = Math.max(...fplData.events.map(e => e.id));
       setLoadingMessage('Checking fixture completion status...');

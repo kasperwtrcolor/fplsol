@@ -1198,16 +1198,12 @@ function App() {
   }, [userWallet]);
 
   const fetchFplJson = async (url) => {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    // Redirects 'https://fantasy.premierleague.com/api/...' to '/api/fpl/...'
+    const proxyUrl = url.replace('https://fantasy.premierleague.com/api', '/api/fpl');
     const res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error(`Proxy error: ${res.status}`);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
     const data = await res.json();
-    if (!data.contents) throw new Error("No contents in proxy response");
-    try {
-      return JSON.parse(data.contents);
-    } catch (e) {
-      throw new Error("Invalid JSON from FPL API: " + data.contents.slice(0, 100));
-    }
+    return data;
   };
   const loadPlayers = async () => {
     try {

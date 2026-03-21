@@ -1198,12 +1198,17 @@ function App() {
   }, [userWallet]);
 
   const fetchFplJson = async (url) => {
-    // Redirects 'https://fantasy.premierleague.com/api/...' to '/api/fpl/...'
-    const proxyUrl = url.replace('https://fantasy.premierleague.com/api', '/api/fpl');
+    // FPL blocks Vercel IPs directly, so we must use an external CORS proxy.
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
     const res = await fetch(proxyUrl);
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     const data = await res.json();
-    return data;
+    if (!data.contents) throw new Error("No contents in proxy response");
+    try {
+      return JSON.parse(data.contents);
+    } catch (e) {
+      throw new Error("Invalid parsing FPL API data: " + String(data.contents).slice(0, 100));
+    }
   };
   const loadPlayers = async () => {
     try {
@@ -1393,9 +1398,12 @@ function App() {
     setLoadingMessage('Checking for new gameweek to create...');
     try {
       const data = await fetchFplJson('https://fantasy.premierleague.com/api/bootstrap-static/');
-      const currentFplEvent = data.events.find(event => event.is_current === true);
+      let currentFplEvent = data.events.find(event => event.is_current === true);
       if (!currentFplEvent) {
-        alert('FPL API does not indicate a current gameweek. The season may be over or between gameweeks.');
+        currentFplEvent = data.events.find(event => event.is_next === true);
+      }
+      if (!currentFplEvent) {
+        alert('FPL API does not indicate a current or next gameweek. The season may be over.');
         setIsLoading(false);
         return;
       }
@@ -1431,9 +1439,12 @@ function App() {
     setLoadingMessage('Syncing gameweek with FPL...');
     try {
       const fplData = await fetchFplJson('https://fantasy.premierleague.com/api/bootstrap-static/');
-      const currentFplEvent = fplData.events.find(event => event.is_current === true);
+      let currentFplEvent = fplData.events.find(event => event.is_current === true);
       if (!currentFplEvent) {
-        alert('Could not determine current FPL gameweek. FPL API might be down or season ended.');
+        currentFplEvent = fplData.events.find(event => event.is_next === true);
+      }
+      if (!currentFplEvent) {
+        alert('Could not determine current or next FPL gameweek. FPL API might be down or season ended.');
         return;
       }
       setLoadingMessage('Fetching fixture data...');

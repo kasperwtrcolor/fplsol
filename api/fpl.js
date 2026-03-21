@@ -1,16 +1,29 @@
 export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET");
+
   const { path } = req.query;
-  const fplUrl = 'https://fantasy.premierleague.com/api/' + (path || 'bootstrap-static/');
+  if (!path) {
+    return res.status(400).json({ error: "Missing path parameter" });
+  }
+
+  // Ensure trailing slash is present if needed (FPL API requires trailing slashes on many endpoints)
+  const safePath = path.endsWith('/') ? path : path + '/';
+  const targetUrl = 'https://fantasy.premierleague.com/api/' + safePath;
+
   try {
-    const fplRes = await fetch(fplUrl, {
+    const fplResponse = await fetch(targetUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json"
       }
     });
-    if (!fplRes.ok) {
-      return res.status(fplRes.status).json({ error: 'FPL API error: ' + fplRes.statusText });
+
+    if (!fplResponse.ok) {
+      return res.status(fplResponse.status).json({ error: `FPL Proxy error: ${fplResponse.status}` });
     }
-    const data = await fplRes.json();
+
+    const data = await fplResponse.json();
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: error.message });

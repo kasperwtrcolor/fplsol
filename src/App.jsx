@@ -1198,17 +1198,13 @@ function App() {
   }, [userWallet]);
 
   const fetchFplJson = async (url) => {
-    // FPL blocks Vercel IPs directly, so we must use an external CORS proxy.
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    // Vercel Serverless Function proxy
+    const path = url.split('https://fantasy.premierleague.com/api/')[1];
+    const proxyUrl = `/api/fpl?path=${encodeURIComponent(path)}`;
     const res = await fetch(proxyUrl);
     if (!res.ok) throw new Error(`API error: ${res.status}`);
     const data = await res.json();
-    if (!data.contents) throw new Error("No contents in proxy response");
-    try {
-      return JSON.parse(data.contents);
-    } catch (e) {
-      throw new Error("Invalid parsing FPL API data: " + String(data.contents).slice(0, 100));
-    }
+    return data;
   };
   const loadPlayers = async () => {
     try {

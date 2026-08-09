@@ -4,9 +4,23 @@ import { PrivyProvider } from '@privy-io/react-auth'
 import App from './App.jsx'
 import './index.css'
 
-import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
-
-const solanaConnectors = toSolanaWalletConnectors();
+const robinhoodChain = {
+  id: 4663,
+  name: 'Robinhood Chain',
+  network: 'robinhood',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Ether',
+    symbol: 'ETH',
+  },
+  rpcUrls: {
+    default: { http: ['https://rpc.mainnet.chain.robinhood.com'] },
+    public: { http: ['https://rpc.mainnet.chain.robinhood.com'] },
+  },
+  blockExplorers: {
+    default: { name: 'Blockscout', url: 'https://robinhoodchain.blockscout.com' },
+  },
+}
 
 // Replace with your actual Privy App ID
 const PRIVY_APP_ID = import.meta.env.VITE_PRIVY_APP_ID
@@ -16,6 +30,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <PrivyProvider
       appId={PRIVY_APP_ID}
       config={{
+        defaultChain: robinhoodChain,
+        supportedChains: [robinhoodChain],
         appearance: {
           theme: 'dark',
           accentColor: '#d4af37',
@@ -24,11 +40,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         loginMethods: ['wallet'],
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
-        },
-        externalWallets: {
-          solana: {
-            connectors: solanaConnectors,
-          },
         },
       }}
     >

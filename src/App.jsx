@@ -42,7 +42,7 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 const AnimatedTitle = ({
-  title = "FPL.SOL",
+  title = "FPL.STOCKS",
   subtitle = ""
 }) => {
   return <div className="relative">
@@ -810,7 +810,7 @@ function App() {
     try {
       console.log('Checking admin status for wallet:', userWallet);
       const walletString = typeof userWallet === 'string' ? userWallet : userWallet?.toBase58?.() || String(userWallet);
-      const adminStatus = walletString === '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
+      const adminStatus = import.meta.env.VITE_ADMIN_WALLET && walletString.toLowerCase() === import.meta.env.VITE_ADMIN_WALLET.toLowerCase();
       console.log('Admin status result:', adminStatus);
       setIsAdmin(adminStatus);
       if (adminStatus) {
@@ -1185,7 +1185,7 @@ function App() {
   useEffect(() => {
     if (userWallet) {
       console.log('Admin useEffect triggered for wallet:', userWallet);
-      const adminStatus = userWallet === '6SxLVfFovSjR2LAFcJ5wfT6RFjc8GxsscRekGnLq8BMe';
+      const adminStatus = import.meta.env.VITE_ADMIN_WALLET && userWallet.toLowerCase() === import.meta.env.VITE_ADMIN_WALLET.toLowerCase();
       console.log('Setting admin status to:', adminStatus);
       setIsAdmin(adminStatus);
       if (adminStatus) {
@@ -2006,7 +2006,7 @@ Be creative and generate different strategies each time. Consider fixture diffic
       if (captain) {
         teamText += `👑 Captain: ${captain.first_name} ${captain.second_name}\n`;
       }
-      const shareText = `⚽ My fpl.sol Gameweek ${activeGameweek?.gameweek} team is locked in! 🚀\n\n${teamText}\n💎 ${currentUserEntry.points || 0} points so far\n💰 ${formatPrice(currentUserEntry.teamValue)} team value\n\nJoin the crypto fantasy revolution: https://dev.fun/p/543405b7d79724fbb83d\n\n@fpl_sol #FPL #Solana #Fantasy`;
+      const shareText = `⚽ My fpl.sol Gameweek ${activeGameweek?.gameweek} team is locked in! 🚀\n\n${teamText}\n💎 ${currentUserEntry.points || 0} points so far\n💰 ${formatPrice(currentUserEntry.teamValue)} team value\n\nJoin the crypto fantasy revolution: https://dev.fun/p/543405b7d79724fbb83d\n\n@fpl_sol #FPL #Robinhood Chain #Fantasy`;
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
       window.open(twitterUrl, '_blank');
     } catch (error) {
@@ -2031,12 +2031,12 @@ Be creative and generate different strategies each time. Consider fixture diffic
         upcomingFixtures: selectedGameweekFixtures.length,
         totalUsers: new Set(leaderboard.map(entry => entry.userId)).size
       };
-      let systemPrompt = `You are a social media manager for fpl.sol, a crypto fantasy football app on Solana. Create engaging, hype-building posts for X.com (Twitter).
+      let systemPrompt = `You are a social media manager for fpl.sol, a crypto fantasy football app on Robinhood Chain. Create engaging, hype-building posts for X.com (Twitter).
 
 Key guidelines:
 - Keep posts under 280 characters
 - Use relevant emojis 
-- Include hashtags: #FPL #Solana #Fantasy #Crypto
+- Include hashtags: #FPL #Robinhood Chain #Fantasy #Crypto
 - Mention @fpl_sol
 - Create FOMO and excitement
 - Include the app link: https://dev.fun/p/543405b7d79724fbb83d
@@ -2047,7 +2047,7 @@ Current app data:
 - Gameweek: ${appContext.currentGameweek}
 - Status: ${appContext.gameweekStatus}
 - Entries: ${appContext.totalEntries}
-- Prize Pool: ${appContext.prizePool} SOL
+- Prize Pool: ${appContext.prizePool} Stocks
 - Online Users: ${appContext.onlineUsers}
 - Top Player: ${appContext.topPlayerName} (${appContext.topPlayerPoints} pts)
 - Deadline: ${appContext.deadline}
@@ -2073,7 +2073,7 @@ Current app data:
           userPrompt = `Create a post about Gameweek ${appContext.currentGameweek}. Status: ${appContext.gameweekStatus}`;
           break;
         case 'prize pool':
-          userPrompt = `Create a post highlighting the current prize pool of ${appContext.prizePool} SOL and potential winnings`;
+          userPrompt = `Create a post highlighting the current prize pool of ${appContext.prizePool} Stocks and potential winnings`;
           break;
         case 'entries':
           userPrompt = `Create a post about the ${appContext.totalEntries} managers who have entered and the growing competition`;
@@ -2100,7 +2100,7 @@ Current app data:
       setGeneratedShareMessage(data.text);
     } catch (error) {
       console.error('Error generating share message:', error);
-      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win SOL rewards on @fpl_sol ⚽💰 #FPL #Solana #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
+      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win Stocks rewards on @fpl_sol ⚽💰 #FPL #Robinhood Chain #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
     } finally {
       setIsGeneratingMessage(false);
     }
@@ -2497,14 +2497,14 @@ Current app data:
           textShadow: '4px 4px 0px rgba(255,215,0,0.4)',
           border: '4px solid #000',
           boxShadow: '8px 8px 0px rgba(0,0,0,0.8)'
-        }}>FPL.SOL</h1>
+        }}>FPL.STOCKS</h1>
         <p className="text-lg text-black bg-yellow-400 px-6 py-3 rounded-2xl max-w-md pixel-text" style={{
           fontSize: '12px',
           border: '3px solid #000',
           boxShadow: '5px 5px 0px rgba(0,0,0,0.8)',
           lineHeight: '1.6'
         }}>
-          FANTASY PREMIER LEAGUE MEETS CRYPTO REWARDS! BUILD YOUR DREAM TEAM AND COMPETE FOR SOL PRIZES!
+          FANTASY PREMIER LEAGUE MEETS CRYPTO REWARDS! BUILD YOUR DREAM TEAM AND COMPETE FOR Stocks PRIZES!
         </p>
         <div className="bg-gray-800/20 border border-gray-600/50 rounded-lg p-4 max-w-md">
           <p className="text-gray-300 text-sm mb-3 body-text">
@@ -2529,7 +2529,7 @@ Current app data:
             boxShadow: '4px 4px 0px rgba(0,0,0,0.8)',
             textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
           }}>
-            PLAY FPL.SOL
+            PLAY FPL.STOCKS
           </AnimatedButton>
           {authenticated ? (
             <button onClick={logout} className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg cinematic-text flex items-center justify-center space-x-2" style={{
@@ -2561,7 +2561,7 @@ Current app data:
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <AnimatedTitle title="FPL.SOL" />
+            <AnimatedTitle title="FPL.STOCKS" />
             <div className="flex items-center space-x-2">
               {isConnected && <div className="w-2 h-2 bg-yellow-600 rounded-full animate-pulse" style={{
                 boxShadow: '0 0 10px rgba(212, 175, 55, 0.8)'
@@ -2643,7 +2643,7 @@ Current app data:
             textShadow: '3px 3px 0px rgba(255,215,0,0.4)',
             border: '4px solid #000',
             boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
-          }}>HOW FPL.SOL WORKS</h2>
+          }}>HOW FPL.STOCKS WORKS</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
             <div className="text-center">
               <div className="bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center font-bold text-black text-xl mx-auto mb-3 cinematic-text" style={{
@@ -2670,7 +2670,7 @@ Current app data:
                 boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
               }}>STAKE & ENTER</h3>
               <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
-                PAY 0.05 SOL TO JOIN GAMEWEEK
+                PAY 0.05 Stocks TO JOIN GAMEWEEK
               </p>
             </div>
             <div className="text-center">
@@ -2696,7 +2696,7 @@ Current app data:
                 fontSize: '10px',
                 border: '2px solid #000',
                 boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
-              }}>WIN SOL</h3>
+              }}>WIN Stocks</h3>
               <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
                 TOP PERFORMERS GET 95% OF PRIZE POOL
               </p>
@@ -2718,7 +2718,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entry Fee</p>
-              <p className={`text-xl font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 SOL</p>
+              <p className={`text-xl font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 Stocks</p>
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entries</p>
@@ -2726,7 +2726,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Prize Pool</p>
-              <p className={`text-xl font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} SOL</p>
+              <p className={`text-xl font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} Stocks</p>
             </div>
           </div>
           { }
@@ -2776,7 +2776,7 @@ Current app data:
             <p className="text-gray-300 body-text">
               Winner: {activeGameweek.winnerId.slice(0, 8)}...{activeGameweek.winnerId.slice(-4)}
             </p>
-            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} SOL</p>
+            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} Stocks</p>
             {activeGameweek.winnerId === userWallet && <AnimatedButton onClick={claimPrize} className="mt-4" color="yellow" hoverText="Claim Now!">
               🎉 CLAIM YOUR PRIZE! 🎉
             </AnimatedButton>}
@@ -3059,7 +3059,7 @@ Current app data:
                       <p className="text-green-100 text-sm" style={{
                         fontFamily: 'Courier Prime, Monaco, monospace'
                       }}>
-                        Prize: {(game.prizePool * 0.95).toFixed(3)} SOL
+                        Prize: {(game.prizePool * 0.95).toFixed(3)} Stocks
                       </p>
                     </div>
                     <AnimatedButton onClick={() => claimSpecificPrize(game.id)} color="yellow" hoverText="Claim Now!" className="py-2 px-4">
@@ -3069,7 +3069,7 @@ Current app data:
                   <p className="text-yellow-200 text-xs" style={{
                     fontFamily: 'Courier Prime, Monaco, monospace'
                   }}>
-                    Total Prize Pool: {game.prizePool} SOL • You get 95%
+                    Total Prize Pool: {game.prizePool} Stocks • You get 95%
                   </p>
                 </div>)}
               </div>
@@ -3296,7 +3296,7 @@ Current app data:
             <div className="flex flex-col gap-3 mb-6">
               <div className="flex flex-col sm:flex-row gap-3">
                 {isFormationValid() && captain && activeGameweek && !isAfterDeadline && <AnimatedButton onClick={submitTeam} className="flex-1 py-3" color="yellow" hoverText="Enter Now!">
-                  Submit Team & Pay 0.05 SOL
+                  Submit Team & Pay 0.05 Stocks
                 </AnimatedButton>}
                 {isFormationValid() && captain && activeGameweek && isAfterDeadline && !isAdmin && <div className="flex-1 py-3 px-6 bg-red-600 text-white rounded-lg text-center border-2 border-black opacity-75" style={{
                   fontFamily: 'VT323, monospace',
@@ -3845,7 +3845,7 @@ Current app data:
                     <p className="text-green-100 text-sm" style={{
                       fontFamily: 'Courier Prime, Monaco, monospace'
                     }}>
-                      Prize Pool: {game.prizePool.toFixed(3)} SOL
+                      Prize Pool: {game.prizePool.toFixed(3)} Stocks
                     </p>
                   </div>
                   <div className="text-right">
@@ -3876,7 +3876,7 @@ Current app data:
                       <p className="text-yellow-400 text-sm" style={{
                         fontFamily: 'Courier Prime, Monaco, monospace'
                       }}>
-                        Won: {(game.prizePool * 0.95).toFixed(3)} SOL
+                        Won: {(game.prizePool * 0.95).toFixed(3)} Stocks
                       </p>
                     </div>
                   </div>
@@ -3884,7 +3884,7 @@ Current app data:
                     <p className="text-green-300 text-xs" style={{
                       fontFamily: 'Courier Prime, Monaco, monospace'
                     }}>
-                      Claimed: {(game.payout.amount || 0).toFixed(3)} SOL
+                      Claimed: {(game.payout.amount || 0).toFixed(3)} Stocks
                     </p>
                   </div>}
                 </div>}
@@ -3980,7 +3980,7 @@ Current app data:
               <p className="text-green-100" style={{
                 fontFamily: 'Courier Prime, Monaco, monospace'
               }}>
-                The future of fantasy football where your tactical genius meets crypto rewards! Build your dream Premier League squad and compete for SOL prizes.
+                The future of fantasy football where your tactical genius meets crypto rewards! Build your dream Premier League squad and compete for Stocks prizes.
               </p>
             </div>
             <div className="space-y-4">
@@ -4016,7 +4016,7 @@ Current app data:
                   <p className="text-green-100 text-sm" style={{
                     fontFamily: 'Courier Prime, Monaco, monospace'
                   }}>
-                    Pay 0.05 SOL entry fee to join the gameweek. Your payment goes into the prize pool for winners to claim.
+                    Pay 0.05 Stocks entry fee to join the gameweek. Your payment goes into the prize pool for winners to claim.
                   </p>
                 </div>
               </div>
@@ -4048,7 +4048,7 @@ Current app data:
                   <h4 className="text-lg font-bold text-yellow-400" style={{
                     fontFamily: 'VT323, monospace',
                     textShadow: '2px 2px 0px #000'
-                  }}>Win SOL Rewards</h4>
+                  }}>Win Stocks Rewards</h4>
                   <p className="text-green-100 text-sm" style={{
                     fontFamily: 'Courier Prime, Monaco, monospace'
                   }}>

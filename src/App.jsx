@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as firebaseService from './firebaseService';
@@ -490,37 +492,18 @@ const FormationDock = ({
   </motion.div>;
 };
 function App() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [userWallet, setUserWallet] = useState(null);
+  const { address: userWallet, isConnected: authenticated } = useAccount();
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
+  
   const [trendingTokens, setTrendingTokens] = useState([]);
   
-  const login = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        if (accounts.length > 0) {
-          setUserWallet(accounts[0]);
-          setAuthenticated(true);
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x1237' }], // 4663 in hex
-            });
-          } catch (e) {
-            console.log("Switch chain error", e);
-          }
-        }
-      } catch (err) {
-        console.error("Connection failed", err);
-      }
-    } else {
-      alert("Please install an EVM wallet like MetaMask or Robinhood Wallet.");
-    }
+  const login = () => {
+    connect({ connector: injected() });
   };
   
   const logout = () => {
-    setAuthenticated(false);
-    setUserWallet(null);
+    disconnect();
   };
   
   // Mock trending tokens for Robinhood Chain

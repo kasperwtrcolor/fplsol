@@ -9,7 +9,6 @@
     "preview": "vite preview --port 4173"
   },
   "dependencies": {
-    "@privy-io/react-auth": "^3.18.0",
     "firebase": "^11.4.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.469.0",

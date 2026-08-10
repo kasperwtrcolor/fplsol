@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
 import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as firebaseService from './firebaseService';
@@ -528,8 +527,48 @@ const FormationDock = ({
   </motion.div>;
 };
 function App() {
-  const { ready, authenticated, user, login, logout } = usePrivy();
-  const userWallet = user?.wallet?.address || user?.id || null;
+  const [authenticated, setAuthenticated] = useState(false);
+  const [userWallet, setUserWallet] = useState(null);
+  const [trendingTokens, setTrendingTokens] = useState([]);
+  
+  const login = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts.length > 0) {
+          setUserWallet(accounts[0]);
+          setAuthenticated(true);
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x1237' }], // 4663 in hex
+            });
+          } catch (e) {
+            console.log("Switch chain error", e);
+          }
+        }
+      } catch (err) {
+        console.error("Connection failed", err);
+      }
+    } else {
+      alert("Please install an EVM wallet like MetaMask or Robinhood Wallet.");
+    }
+  };
+  
+  const logout = () => {
+    setAuthenticated(false);
+    setUserWallet(null);
+  };
+  
+  // Mock trending tokens for Robinhood Chain
+  useEffect(() => {
+    setTrendingTokens([
+      { symbol: 'AAPL', name: 'Apple Inc.', price: '$189.20', change: '+1.2%' },
+      { symbol: 'TSLA', name: 'Tesla Inc.', price: '$210.45', change: '-0.5%' },
+      { symbol: 'NVDA', name: 'NVIDIA Corp', price: '$850.10', change: '+3.4%' },
+      { symbol: 'RH', name: 'Robinhood', price: '$22.50', change: '+5.1%' }
+    ]);
+  }, []);
   const [currentView, setCurrentView] = useState('home');
   const [activeGameweek, setActiveGameweek] = useState(null);
   const [userStats, setUserStats] = useState(null);
@@ -810,7 +849,7 @@ function App() {
     try {
       console.log('Checking admin status for wallet:', userWallet);
       const walletString = typeof userWallet === 'string' ? userWallet : userWallet?.toBase58?.() || String(userWallet);
-      const adminStatus = import.meta.env.VITE_ADMIN_WALLET && walletString.toLowerCase() === import.meta.env.VITE_ADMIN_WALLET.toLowerCase();
+      const adminStatus = userWallet && userWallet.toLowerCase() === '0xf57a9b1f574b1f80c8cebe252706bb8b4d783d21'.toLowerCase();
       console.log('Admin status result:', adminStatus);
       setIsAdmin(adminStatus);
       if (adminStatus) {
@@ -1185,7 +1224,7 @@ function App() {
   useEffect(() => {
     if (userWallet) {
       console.log('Admin useEffect triggered for wallet:', userWallet);
-      const adminStatus = import.meta.env.VITE_ADMIN_WALLET && userWallet.toLowerCase() === import.meta.env.VITE_ADMIN_WALLET.toLowerCase();
+      const adminStatus = userWallet && userWallet.toLowerCase() === '0xf57a9b1f574b1f80c8cebe252706bb8b4d783d21'.toLowerCase();
       console.log('Setting admin status to:', adminStatus);
       setIsAdmin(adminStatus);
       if (adminStatus) {
@@ -2412,15 +2451,12 @@ Current app data:
             boxShadow: '2px 2px 0px rgba(0,0,0,0.8)'
           }}>C</div>}
           <div className="mb-2 md:mb-3">
-            <img src={`https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.png`} alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 md:w-20 md:h-20 mx-auto object-contain" style={{
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
-            }} onError={e => {
-              e.target.src = getTeamLogo(player.team);
-              e.target.className = 'w-12 h-12 md:w-16 md:h-16 mx-auto object-contain';
+            <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 md:w-20 md:h-20 mx-auto object-cover border-2 border-black" style={{
+              boxShadow: '4px 4px 0px rgba(0,0,0,1)'
             }} />
           </div>
-          <div className="text-xs font-bold truncate text-white/90">{player.first_name}</div>
-          <div className="text-xs font-bold truncate text-white/90">{player.second_name}</div>
+          <div className="text-xs font-bold truncate text-white/90" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px' }}>{player.first_name}</div>
+          <div className="text-xs font-bold truncate text-white/90" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px' }}>{player.second_name}</div>
           <div className="flex justify-between items-center text-xs mt-2 px-1">
             <span className="text-green-200/80">{formatPrice(player.now_cost)}</span>
             {isTeamSubmitted && <span className="text-yellow-300 font-bold">
@@ -2484,76 +2520,60 @@ Current app data:
     </div>;
   };
   if (!hasEnteredApp) {
-    return <div className={`min-h-screen flex items-center justify-center relative ${theme === 'dark' ? 'bg-gradient-to-br from-black via-gray-900 to-black film-grain' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100'}`}>
-      <div className="absolute top-4 right-4">
-        <ThemeToggle theme={theme} setTheme={setTheme} />
-      </div>
-      <SpotlightCard className="text-center space-y-6 p-8" glowColor="yellow" size="lg" intensity={1.2}>
-        <Trophy className="w-20 h-20 text-black bg-yellow-400 p-4 rounded-full" style={{
-          border: '4px solid #000',
-          boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
-        }} />
-        <h1 className="text-6xl md:text-7xl font-black text-black bg-white px-8 py-6 rounded-3xl cinematic-text" style={{
-          textShadow: '4px 4px 0px rgba(255,215,0,0.4)',
-          border: '4px solid #000',
-          boxShadow: '8px 8px 0px rgba(0,0,0,0.8)'
-        }}>FPL.STOCKS</h1>
-        <p className="text-lg text-black bg-yellow-400 px-6 py-3 rounded-2xl max-w-md pixel-text" style={{
-          fontSize: '12px',
-          border: '3px solid #000',
-          boxShadow: '5px 5px 0px rgba(0,0,0,0.8)',
-          lineHeight: '1.6'
-        }}>
-          FANTASY PREMIER LEAGUE MEETS CRYPTO REWARDS! BUILD YOUR DREAM TEAM AND COMPETE FOR Stocks PRIZES!
-        </p>
-        <div className="bg-gray-800/20 border border-gray-600/50 rounded-lg p-4 max-w-md">
-          <p className="text-gray-300 text-sm mb-3 body-text">
-            Need an invite code? Follow us on X for codes and updates:
-          </p>
-          <a href="https://x.com/fpl_sol" target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-2 bg-yellow-600 hover:bg-yellow-700 text-black px-4 py-2 rounded-lg transition-all duration-200 group" style={{
-            border: '2px solid #000',
-            boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
-          }}>
-            <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor" style={{
-              filter: 'drop-shadow(1px 1px 0px #000)'
-            }}>
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-            <span>Follow @fpl_sol</span>
-          </a>
-        </div>
-        <div className="space-y-3">
-          <AnimatedButton onClick={() => setHasEnteredApp(true)} className="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-4 px-8 rounded-lg cinematic-text" color="yellow" hoverText="Let's Play!" style={{
-            fontSize: '20px',
-            border: '2px solid #000',
-            boxShadow: '4px 4px 0px rgba(0,0,0,0.8)',
-            textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-          }}>
-            PLAY FPL.STOCKS
-          </AnimatedButton>
+    return <div className="min-h-screen bg-[var(--bank-bg)] flex flex-col font-sans" style={{ backgroundImage: 'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05)), linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05))', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}>
+      <header className="p-6 border-b-4 border-black bg-[var(--bank-green)] flex justify-between items-center shadow-[4px_4px_0px_rgba(0,0,0,1)] z-10">
+        <h1 className="text-[var(--bank-gold)] text-3xl font-bold tracking-tight" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '4px 4px 0px black' }}>STONK BANKERS</h1>
+        <div className="flex space-x-4">
           {authenticated ? (
-            <button onClick={logout} className="w-full bg-gray-700 hover:bg-gray-600 text-gray-100 font-bold py-3 px-6 rounded-lg cinematic-text flex items-center justify-center space-x-2" style={{
-              fontSize: '18px',
-              border: '2px solid #000',
-              boxShadow: '4px 4px 0px rgba(0,0,0,0.8)',
-              textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-            }}>
-              <LogOut className="w-5 h-5" />
-              <span>{userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Logout'}</span>
+            <button onClick={logout} className="rh-button bg-red-500 text-white border-black">
+              {userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Disconnect'}
             </button>
           ) : (
-            <button onClick={login} className="w-full bg-yellow-600 hover:bg-yellow-700 text-black font-bold py-3 px-6 rounded-lg cinematic-text flex items-center justify-center space-x-2" style={{
-              fontSize: '18px',
-              border: '2px solid #000',
-              boxShadow: '4px 4px 0px rgba(0,0,0,0.8)',
-              textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-            }}>
-              <LogIn className="w-5 h-5" />
-              <span>Connect Wallet</span>
+            <button onClick={login} className="rh-button">
+              Connect Wallet
             </button>
           )}
         </div>
-      </SpotlightCard>
+      </header>
+      
+      <main className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full p-6 gap-12 items-center relative">
+        <div className="flex-1 flex flex-col justify-center">
+          <h2 className="text-5xl md:text-6xl font-bold text-black mb-6 leading-tight" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '4px 4px 0px white', lineHeight: '1.2' }}>
+            BECOME THE <br/> <span className="text-[var(--bank-green)]">ULTIMATE</span> <br/> STONK BANKER
+          </h2>
+          <p className="text-black text-2xl mb-8 max-w-xl font-bold bg-white p-4 border-4 border-black shadow-[6px_6px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "'VT323', monospace" }}>
+            Build your Premier League dream team, stake your Stock Tokens, and compete against other bankers to win the entire prize pool. Fully decentralized.
+          </p>
+          
+          <button onClick={() => setHasEnteredApp(true)} className="rh-button w-full md:w-auto text-xl py-6 px-12 inline-block shadow-[8px_8px_0px_rgba(0,0,0,1)] text-center">
+            ENTER THE BANK
+          </button>
+        </div>
+        
+        <div className="w-full lg:w-[450px] flex flex-col justify-center">
+          <div className="rh-card shadow-[12px_12px_0px_rgba(0,0,0,1)] border-black border-4">
+            <h3 className="text-[var(--bank-gold)] font-bold mb-6 flex items-center text-xl" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '2px 2px 0px black' }}>
+              <TrendingUp className="w-8 h-8 mr-3 text-[var(--bank-gold)]" /> 
+              MARKET TRENDS
+            </h3>
+            <div className="space-y-4">
+              {trendingTokens.map((token, i) => (
+                <div key={i} className="flex justify-between items-center py-4 px-4 bg-white border-4 border-black text-black">
+                  <div>
+                    <p className="font-bold text-xl" style={{ fontFamily: "'Press Start 2P', monospace" }}>{token.symbol}</p>
+                  </div>
+                  <div className="text-right flex flex-col">
+                    <p className="font-bold text-2xl" style={{ fontFamily: "'VT323', monospace" }}>{token.price}</p>
+                    <p className={token.change.startsWith('+') ? 'text-green-600 font-bold text-xl' : 'text-red-600 font-bold text-xl'} style={{ fontFamily: "'VT323', monospace" }}>
+                      {token.change}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
     </div>;
   }
   return <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-black via-gray-900 to-black film-grain' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100'}`}>
@@ -2581,24 +2601,14 @@ Current app data:
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle theme={theme} setTheme={setTheme} />
             {authenticated ? (
-              <button onClick={logout} className="bg-yellow-600 hover:bg-yellow-700 text-black font-semibold cinematic-text px-4 py-2 rounded-lg flex items-center space-x-2" style={{
-                fontSize: '16px',
-                border: '2px solid #000',
-                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)',
-                textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-              }}>
-                <LogOut className="w-4 h-4" />
+              <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2">
+                <LogOut className="w-4 h-4 mr-2" />
                 <span>{userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Logout'}</span>
               </button>
             ) : (
-              <button onClick={login} className="bg-yellow-600 hover:bg-yellow-700 text-black font-semibold cinematic-text px-4 py-2 rounded-lg flex items-center space-x-2" style={{
-                fontSize: '16px',
-                border: '2px solid #000',
-                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)',
-                textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-              }}>
-                <LogIn className="w-4 h-4" />
-                <span>Connect</span>
+              <button onClick={login} className="rh-button py-2">
+                <LogIn className="w-4 h-4 mr-2" />
+                <span>Connect Wallet</span>
               </button>
             )}
           </div>
@@ -2612,23 +2622,13 @@ Current app data:
         <div className="md:hidden flex justify-center items-center mt-4 space-x-4">
           <ThemeToggle theme={theme} setTheme={setTheme} />
           {authenticated ? (
-            <button onClick={logout} className="bg-yellow-600 hover:bg-yellow-700 text-black font-semibold text-sm px-4 py-2 cinematic-text rounded-lg flex items-center space-x-2" style={{
-              fontSize: '14px',
-              border: '2px solid #000',
-              boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
-              textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-            }}>
-              <LogOut className="w-4 h-4" />
+            <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 text-sm px-3">
+              <LogOut className="w-4 h-4 mr-1" />
               <span>{userWallet ? `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}` : 'Out'}</span>
             </button>
           ) : (
-            <button onClick={login} className="bg-yellow-600 hover:bg-yellow-700 text-black font-semibold text-sm px-4 py-2 cinematic-text rounded-lg flex items-center space-x-2" style={{
-              fontSize: '14px',
-              border: '2px solid #000',
-              boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
-              textShadow: '1px 1px 0px rgba(0,0,0,0.5)'
-            }}>
-              <LogIn className="w-4 h-4" />
+            <button onClick={login} className="rh-button py-2 text-sm px-3">
+              <LogIn className="w-4 h-4 mr-1" />
               <span>Login</span>
             </button>
           )}
@@ -2836,10 +2836,10 @@ Current app data:
                   boxShadow: theme === 'dark' ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.1)'
                 }}>
                   <div className="text-center">
-                    <img src={`https://resources.premierleague.com/premierleague/photos/players/250x250/p${player.code}.png`} alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 rounded-full mx-auto mb-2 object-cover border-2 border-green-400/50" onError={e => {
+                    <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 rounded-none mx-auto mb-2 object-cover border-4 border-black" style={{ boxShadow: '4px 4px 0px black' }} onError={e => {
                       e.target.style.display = 'none';
                     }} />
-                    <h3 className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} truncate cinematic-text`}>
+                    <h3 className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} truncate pixel-text`}>
                       {player.first_name}
                     </h3>
                     <h4 className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} truncate cinematic-text`}>

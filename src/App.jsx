@@ -1,47 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS } from './config/contracts';
 import { injected } from 'wagmi/connectors';
 import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as firebaseService from './firebaseService';
-const fontLink = document.createElement('link');
-fontLink.href = 'https://fonts.googleapis.com/css2?family=Fredoka+One&family=Press+Start+2P&family=Bungee&family=Rubik+Mono+One&family=Luckiest+Guy&family=Inter:wght@400;500;600;700&display=swap';
-fontLink.rel = 'stylesheet';
-document.head.appendChild(fontLink);
-const styleElement = document.createElement('style');
-styleElement.textContent = `
-  .film-grain::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.3) 100%),
-      url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 1;
-    mix-blend-mode: overlay;
-  }
-  .cinematic-text {
-    font-family: 'Fredoka One', 'Luckiest Guy', cursive;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-  .pixel-text {
-    font-family: 'Press Start 2P', 'Bungee', 'Rubik Mono One', monospace;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .body-text {
-    font-family: 'Inter', sans-serif;
-  }
-  .gold-glow {
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5), 0 0 20px rgba(212, 175, 55, 0.3);
-  }
-`;
-document.head.appendChild(styleElement);
+// Removed old injected font and style elements
 const AnimatedTitle = ({
   title = "FPL.STOCKS",
   subtitle = ""
@@ -57,14 +21,23 @@ const AnimatedTitle = ({
       delay: 1.2,
       duration: 0.8,
       ease: "easeOut"
-    }} className="text-5xl md:text-9xl font-black text-black bg-white px-6 py-4 rounded-3xl relative z-10 cinematic-text text-center" style={{
-      textShadow: '4px 4px 0px rgba(255,215,0,0.4), 8px 8px 0px rgba(0,0,0,0.2)',
-      border: '4px solid #000',
-      boxShadow: '8px 8px 0px rgba(0,0,0,0.8), 0 0 40px rgba(255,215,0,0.3)'
+    }} className="text-5xl md:text-8xl font-black text-transparent bg-clip-text relative z-10 text-center uppercase" style={{
+      backgroundImage: 'linear-gradient(180deg, #e0e0e0 0%, #a0a0a0 100%)',
+      letterSpacing: '-2px'
     }}>
       {title}
+      <motion.div initial={{
+        opacity: 0
+      }} animate={{
+        opacity: 1
+      }} transition={{
+        delay: 1.8,
+        duration: 0.5
+      }} className="absolute -right-4 md:-right-8 top-0 md:top-4 text-emerald-glow">
+        <div className="brand-dot mt-2 md:mt-4"></div>
+      </motion.div>
     </motion.h1>
-    {subtitle && <motion.p initial={{
+    {subtitle && <motion.div initial={{
       opacity: 0,
       y: 10
     }} animate={{
@@ -74,13 +47,9 @@ const AnimatedTitle = ({
       delay: 1.5,
       duration: 0.6,
       ease: "easeOut"
-    }} className="text-sm text-white bg-black px-3 py-1 rounded-full mt-3 pixel-text inline-block" style={{
-      fontSize: '10px',
-      border: '2px solid #fff',
-      boxShadow: '3px 3px 0px rgba(255,255,255,0.5)'
-    }}>
+    }} className="text-center mt-4 text-emerald-glow tracking-widest font-mono text-sm">
       {subtitle}
-    </motion.p>}
+    </motion.div>}
   </div>;
 };
 
@@ -105,29 +74,29 @@ const CountdownTimer = ({ deadlineTime }) => {
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
   return (
-    <div className="rh-card inline-flex flex-col items-center bg-black border-4 border-black p-4 mb-6 shadow-[6px_6px_0px_rgba(0,0,0,1)]">
-      <div className="text-[var(--bank-gold)] text-xs mb-2 uppercase" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+    <div className="rh-card inline-flex flex-col items-center p-4 mb-6 relative overflow-hidden" style={{ borderColor: 'var(--emerald-muted)' }}>
+      <div className="text-emerald-glow text-xs mb-2 uppercase font-bold tracking-widest relative z-10">
         {timeLeft > 0 ? 'GAMEWEEK DEADLINE' : 'GAMEWEEK LIVE'}
       </div>
-      <div className="flex space-x-2 text-white" style={{ fontFamily: "'VT323', monospace", fontSize: '2rem', lineHeight: '1' }}>
+      <div className="flex space-x-2 text-white font-mono text-3xl leading-none relative z-10">
         <div className="flex flex-col items-center">
-          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{days.toString().padStart(2, '0')}</span>
-          <span className="text-xs text-gray-400 mt-1">D</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{days.toString().padStart(2, '0')}</span>
+          <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Days</span>
         </div>
-        <span className="py-1">:</span>
+        <span className="py-2 text-gray-600">:</span>
         <div className="flex flex-col items-center">
-          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{hours.toString().padStart(2, '0')}</span>
-          <span className="text-xs text-gray-400 mt-1">H</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{hours.toString().padStart(2, '0')}</span>
+          <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Hrs</span>
         </div>
-        <span className="py-1">:</span>
+        <span className="py-2 text-gray-600">:</span>
         <div className="flex flex-col items-center">
-          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{minutes.toString().padStart(2, '0')}</span>
-          <span className="text-xs text-gray-400 mt-1">M</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{minutes.toString().padStart(2, '0')}</span>
+          <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Min</span>
         </div>
-        <span className="py-1">:</span>
+        <span className="py-2 text-gray-600">:</span>
         <div className="flex flex-col items-center">
-          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{seconds.toString().padStart(2, '0')}</span>
-          <span className="text-xs text-gray-400 mt-1">S</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{seconds.toString().padStart(2, '0')}</span>
+          <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Sec</span>
         </div>
       </div>
     </div>
@@ -138,19 +107,10 @@ const SpotlightCard = ({
   className = "",
   ...props
 }) => {
-  // Strip out any bg-black/30 or border-gray-700/30 generic tailwind classes passed from before
-  // and force the rh-card class which implements our retro Stonk Bankers look.
-  const cleanClassName = className
-    .replace(/bg-[a-z]+-\d+\/\d+/g, '') // remove background opacities like bg-black/30
-    .replace(/border-[a-z]+-\d+\/\d+/g, '') // remove border opacities like border-gray-700/30
-    .replace(/backdrop-blur-sm/g, '') // remove blur
-    .replace(/rounded-xl/g, '') // remove rounded corners
-    .replace(/rounded-lg/g, '')
-    .trim();
 
   return (
-    <div className={`rh-card ${cleanClassName}`} {...props}>
-      {children}
+    <div className={`rh-card ${className}`} {...props}>
+      <div className="relative z-10 h-full">{children}</div>
     </div>
   );
 };
@@ -495,6 +455,18 @@ function App() {
   const { address: userWallet, isConnected: authenticated } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
+
+  const { data: fplsBalanceRaw, refetch: refetchBalance } = useReadContract({
+    address: FPLS_ADDRESS,
+    abi: FPLS_ABI,
+    functionName: 'balanceOf',
+    args: [userWallet],
+    query: { enabled: !!userWallet }
+  });
+
+  const fplsBalance = fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toFixed(0) : '0';
+
+  const { writeContractAsync } = useWriteContract();
   
   const [trendingTokens, setTrendingTokens] = useState([]);
   
@@ -2108,12 +2080,35 @@ Current app data:
       console.log('--- submitTeam START ---');
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
+      
+      setLoadingMessage('Approving $FPLS token transfer (1000 FPLS)...');
+      const approveTx = await writeContractAsync({
+        address: FPLS_ADDRESS,
+        abi: FPLS_ABI,
+        functionName: 'approve',
+        args: [FPLGAME_ADDRESS, BigInt('1000000000000000000000')], // 1000 FPLS with 18 decimals
+      });
+      console.log('Approve Tx Hash:', approveTx);
+      
+      setLoadingMessage('Burning $FPLS and entering Gameweek...');
+      const playerIds = selectedTeam.map(p => p.id);
+      const enterTx = await writeContractAsync({
+        address: FPLGAME_ADDRESS,
+        abi: FPLGAME_ABI,
+        functionName: 'enterGameweek',
+        args: [playerIds],
+      });
+      console.log('Enter Gameweek Tx Hash:', enterTx);
+      refetchBalance(); // Update user's balance after burn
+      
+      setLoadingMessage('Recording entry to database...');
       await firebaseService.createEntity('entries', {
         gameId: activeGameweek.id,
-        team: JSON.stringify(selectedTeam.map(p => p.id)),
+        team: JSON.stringify(playerIds),
         captain: captain.id.toString(),
         teamValue: 800 - teamBudget,
-        points: 0
+        points: 0,
+        txHash: enterTx
       });
       console.log('Entry created successfully.');
       teamSubmissionSuccess = true;
@@ -2386,36 +2381,30 @@ Current app data:
       position
     }) => {
       const isCaptain = captain && captain.id === player.id;
-      return <SpotlightCard className="relative group" glowColor={isCaptain ? "yellow" : "green"} size="sm" intensity={isCaptain ? 1.2 : 0.6}>
-        <div className="bg-black/40 backdrop-blur-md text-white rounded-lg p-3 text-center min-w-[100px] md:min-w-[120px] border border-white/30 shadow-2xl" style={{
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3))',
-          backdropFilter: 'blur(10px)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
+      return <SpotlightCard className="relative group p-[1px] rounded-xl" glowColor={isCaptain ? "yellow" : "green"} size="sm" intensity={isCaptain ? 1.2 : 0.6}>
+        <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-3 text-center min-w-[100px] md:min-w-[120px] h-full" style={{
+          background: 'linear-gradient(145deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
+          border: '1px solid var(--border-light)'
         }}>
-          {isCaptain && <div className="absolute -top-2 -left-2 bg-yellow-400 text-black text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center border-2 border-black" style={{
-            fontFamily: 'VT323, monospace',
-            boxShadow: '2px 2px 0px rgba(0,0,0,0.8)'
-          }}>C</div>}
-          <div className="mb-2 md:mb-3">
-            <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 md:w-20 md:h-20 mx-auto object-cover border-2 border-black" style={{
-              boxShadow: '4px 4px 0px rgba(0,0,0,1)'
-            }} />
+          {isCaptain && <div className="absolute -top-2 -left-2 bg-[var(--emerald-glow)] text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center font-mono shadow-[0_0_10px_var(--emerald-glow)]">C</div>}
+          <div className="mb-2 md:mb-3 rounded-lg overflow-hidden border border-[var(--border-light)]">
+            <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 md:w-20 md:h-20 mx-auto object-cover opacity-80 mix-blend-screen grayscale contrast-125" />
           </div>
-          <div className="text-xs font-bold truncate text-white/90" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px' }}>{player.first_name}</div>
-          <div className="text-xs font-bold truncate text-white/90" style={{ fontFamily: "'Press Start 2P', monospace", fontSize: '8px' }}>{player.second_name}</div>
-          <div className="flex justify-between items-center text-xs mt-2 px-1">
-            <span className="text-green-200/80">{formatPrice(player.now_cost)}</span>
-            {isTeamSubmitted && <span className="text-yellow-300 font-bold">
+          <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.first_name}</div>
+          <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.second_name}</div>
+          <div className="flex justify-between items-center text-[10px] mt-2 px-1 font-mono">
+            <span className="text-[var(--emerald-glow)]">{formatPrice(player.now_cost)}</span>
+            {isTeamSubmitted && <span className="text-white font-bold opacity-70">
               {isGameweekStarted ? player.event_points || 0 : 0} pts
             </span>}
           </div>
-          {isCaptain && <div className="text-xs text-yellow-200 font-bold mt-1">Captain (2x pts)</div>}
+          {isCaptain && <div className="text-[9px] text-[var(--emerald-glow)] font-bold mt-1 uppercase tracking-widest">Captain (2x pts)</div>}
         </div>
         {!isTeamSubmitted && <>
-          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 md:w-5 md:h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-[var(--carbon-surface)] border border-[var(--emerald-muted)] text-[var(--emerald-glow)] rounded-full w-6 h-6 md:w-5 md:h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-[var(--emerald-muted)] hover:text-white">
             ×
           </button>
-          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-yellow-500' : 'bg-blue-500'} text-white rounded-full w-6 h-6 text-xs md:opacity-0 md:group-hover:opacity-100 transition-opacity font-bold`}>
+          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-[var(--emerald-glow)] text-black' : 'bg-[var(--carbon-surface)] border border-[var(--emerald-muted)] text-[var(--emerald-glow)]'} rounded-full w-6 h-6 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all font-mono font-bold hover:shadow-[0_0_10px_var(--emerald-glow)]`}>
             {isCaptain ? '✓' : 'C'}
           </button>
         </>}
@@ -2424,26 +2413,22 @@ Current app data:
     const EmptySlot = ({
       position,
       count
-    }) => <div className="bg-gray-600 text-gray-300 rounded-lg p-2 text-center min-w-[80px] md:min-w-[100px] border-2 border-gray-400 border-dashed">
-        <div className="text-xs">Empty</div>
-        <div className="text-xs">{position}</div>
+    }) => <div className="bg-[var(--carbon-surface)] text-[var(--text-secondary)] rounded-xl p-2 text-center min-w-[80px] md:min-w-[100px] border border-[var(--emerald-muted)] border-dashed opacity-50 flex flex-col items-center justify-center h-32 md:h-36">
+        <div className="text-xs uppercase tracking-widest font-mono">Empty</div>
+        <div className="text-[10px] text-[var(--emerald-muted)] uppercase tracking-widest mt-1">{position}</div>
       </div>;
-    return <div className="rounded-none p-6 relative border-4 border-black" style={{
-      backgroundColor: '#2b6e36',
-      backgroundImage: `repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 40px,
-        rgba(0,0,0,0.1) 40px,
-        rgba(0,0,0,0.1) 80px
-      )`,
-      boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5), 8px 8px 0px rgba(0,0,0,1)'
+    return <div className="rounded-3xl p-6 relative overflow-hidden rh-card" style={{
+      background: 'linear-gradient(180deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
     }}>
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: `radial-gradient(var(--emerald-glow) 1px, transparent 1px)`,
+        backgroundSize: '20px 20px'
+      }}></div>
       { }
-      <div className="absolute inset-4 border-2 border-white rounded-lg opacity-60">
-        <div className="absolute inset-x-0 top-1/2 h-0 border-t-2 border-white"></div>
-        <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l-2 border-white"></div>
-        <div className="absolute left-1/2 top-1/2 w-16 h-16 border-2 border-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute inset-4 border border-[var(--emerald-glow)] rounded-2xl opacity-20">
+        <div className="absolute inset-x-0 top-1/2 h-0 border-t border-[var(--emerald-glow)] border-dashed"></div>
+        <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l border-[var(--emerald-glow)] border-dashed"></div>
+        <div className="absolute left-1/2 top-1/2 w-32 h-32 border border-[var(--emerald-glow)] rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-[0_0_20px_rgba(0,255,106,0.2)]"></div>
       </div>
       <div className="relative z-10 space-y-4 md:space-y-8">
         { }
@@ -2558,9 +2543,15 @@ Current app data:
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle theme={theme} setTheme={setTheme} />
             {authenticated ? (
-              <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2">
-                <LogOut className="w-4 h-4 mr-2" />
-                <span>{userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Logout'}</span>
+              <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 flex items-center space-x-3">
+                <div className="flex items-center space-x-2 border-r border-[#2C2C2E] pr-3">
+                  <span className="w-2 h-2 rounded-full bg-[var(--emerald-glow)] animate-pulse shadow-[0_0_8px_var(--emerald-glow)]"></span>
+                  <span className="font-mono text-[var(--emerald-glow)] font-bold">{fplsBalance} FPLS</span>
+                </div>
+                <div className="flex items-center">
+                  <LogOut className="w-4 h-4 mr-2 text-[var(--text-secondary)]" />
+                  <span className="font-mono text-sm">{userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Logout'}</span>
+                </div>
               </button>
             ) : (
               <button onClick={login} className="rh-button py-2">
@@ -2579,9 +2570,12 @@ Current app data:
         <div className="md:hidden flex justify-center items-center mt-4 space-x-4">
           <ThemeToggle theme={theme} setTheme={setTheme} />
           {authenticated ? (
-            <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 text-sm px-3">
-              <LogOut className="w-4 h-4 mr-1" />
-              <span>{userWallet ? `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}` : 'Out'}</span>
+            <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 text-sm px-3 flex flex-col items-center justify-center">
+              <span className="font-mono text-[var(--emerald-glow)] text-[10px] font-bold mb-1">{fplsBalance} FPLS</span>
+              <div className="flex items-center">
+                <LogOut className="w-3 h-3 mr-1 text-[var(--text-secondary)]" />
+                <span className="font-mono text-[10px]">{userWallet ? `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}` : 'Out'}</span>
+              </div>
             </button>
           ) : (
             <button onClick={login} className="rh-button py-2 text-sm px-3">
@@ -3827,9 +3821,13 @@ Current app data:
           </SpotlightCard>
 
           {/* TOKENOMICS ENGINE */}
-          <div className="rh-card bg-black border-4 border-red-600 p-6 mt-6 shadow-[8px_8px_0px_rgba(255,0,0,0.5)]">
-            <h3 className="text-red-500 font-bold mb-4 text-2xl" style={{ fontFamily: "'Press Start 2P', monospace" }}>TOKENOMICS ENGINE</h3>
-            <p className="text-white mb-6" style={{ fontFamily: "'VT323', monospace", fontSize: '1.2rem' }}>
+          <div className="rh-card p-6 mt-6 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-red-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+            <h3 className="text-red-400 font-bold mb-2 text-xl font-mono uppercase tracking-widest relative z-10 flex items-center space-x-2">
+              <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]"></span>
+              <span>Tokenomics Engine</span>
+            </h3>
+            <p className="text-[var(--text-secondary)] mb-6 text-sm font-mono relative z-10">
               Simulate the DeFi loop: Burn all FPLS entry fees, swap tax revenue for real-world stocks, and airdrop prizes.
             </p>
             
@@ -3837,9 +3835,9 @@ Current app data:
               onClick={() => {
                 alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 45,000 $FPLS... (SUCCESS)\n> Swapping Tax Revenue for AAPL Stocks... (SUCCESS)\n> Distributing Prizes to Top 10 Managers...\n> Airdropping Participation Stocks...\n\nSimulation Complete!");
               }} 
-              className="rh-button bg-red-600 hover:bg-red-500 text-white border-white w-full py-4 text-xl"
+              className="w-full bg-[var(--carbon-surface)] border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 py-4 font-mono font-bold uppercase tracking-[0.2em] transition-all hover:bg-red-900/20 relative z-10 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] rounded-lg overflow-hidden"
             >
-              EXECUTE GAMEWEEK TOKENOMICS
+              <span className="relative z-10">Execute Gameweek Tokenomics</span>
             </button>
           </div>
         </SpotlightCard>

@@ -81,113 +81,76 @@ const AnimatedTitle = ({
     </motion.p>}
   </div>;
 };
+
+const CountdownTimer = ({ deadlineTime }) => {
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    if (!deadlineTime) return;
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = new Date(deadlineTime).getTime() - now;
+      setTimeLeft(distance > 0 ? distance : 0);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [deadlineTime]);
+
+  if (!deadlineTime) return null;
+
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  return (
+    <div className="rh-card inline-flex flex-col items-center bg-black border-4 border-black p-4 mb-6 shadow-[6px_6px_0px_rgba(0,0,0,1)]">
+      <div className="text-[var(--bank-gold)] text-xs mb-2 uppercase" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+        {timeLeft > 0 ? 'GAMEWEEK DEADLINE' : 'GAMEWEEK LIVE'}
+      </div>
+      <div className="flex space-x-2 text-white" style={{ fontFamily: "'VT323', monospace", fontSize: '2rem', lineHeight: '1' }}>
+        <div className="flex flex-col items-center">
+          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{days.toString().padStart(2, '0')}</span>
+          <span className="text-xs text-gray-400 mt-1">D</span>
+        </div>
+        <span className="py-1">:</span>
+        <div className="flex flex-col items-center">
+          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{hours.toString().padStart(2, '0')}</span>
+          <span className="text-xs text-gray-400 mt-1">H</span>
+        </div>
+        <span className="py-1">:</span>
+        <div className="flex flex-col items-center">
+          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{minutes.toString().padStart(2, '0')}</span>
+          <span className="text-xs text-gray-400 mt-1">M</span>
+        </div>
+        <span className="py-1">:</span>
+        <div className="flex flex-col items-center">
+          <span className="bg-gray-900 px-2 py-1 border-2 border-gray-700">{seconds.toString().padStart(2, '0')}</span>
+          <span className="text-xs text-gray-400 mt-1">S</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 const SpotlightCard = ({
   children,
   className = "",
-  glowColor = "blue",
-  size = "md",
-  intensity = 1,
-  retro = true,
   ...props
 }) => {
-  const cardRef = useRef(null);
-  const [mousePosition, setMousePosition] = useState({
-    x: 0,
-    y: 0
-  });
-  const [isHovered, setIsHovered] = useState(false);
-  const colors = {
-    blue: "59, 130, 246",
-    purple: "168, 85, 247",
-    green: "34, 197, 94",
-    red: "239, 68, 68",
-    orange: "249, 115, 22",
-    yellow: "234, 179, 8"
-  };
-  const sizes = {
-    sm: {
-      width: 200,
-      height: 200
-    },
-    md: {
-      width: 300,
-      height: 300
-    },
-    lg: {
-      width: 400,
-      height: 400
-    }
-  };
-  const handleMouseMove = e => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
-    });
-  };
-  const glowSize = sizes[size];
-  const colorRgb = colors[glowColor] || colors.blue;
-  const cardStyle = {
-    '--spotlight-x': `${mousePosition.x}px`,
-    '--spotlight-y': `${mousePosition.y}px`,
-    '--glow-color': colorRgb,
-    '--glow-size': `${glowSize.width}px`,
-    '--intensity': intensity,
-    position: 'relative',
-    overflow: 'hidden'
-  };
-  const beforeStyle = isHovered ? {
-    content: '""',
-    position: 'absolute',
-    inset: 0,
-    background: `radial-gradient(${glowSize.width}px circle at var(--spotlight-x) var(--spotlight-y), 
-      hsla(${getHue(glowColor)}, 70%, 60%, ${0.15 * intensity}), 
-      hsla(${getHue(glowColor)}, 50%, 40%, ${0.05 * intensity}) 50%, 
-      transparent 100%)`,
-    borderRadius: 'inherit',
-    opacity: isHovered ? 1 : 0,
-    transition: 'opacity 0.3s ease',
-    pointerEvents: 'none',
-    zIndex: 1
-  } : {};
-  const afterStyle = isHovered ? {
-    content: '""',
-    position: 'absolute',
-    inset: '-2px',
-    background: `conic-gradient(from 0deg at var(--spotlight-x) var(--spotlight-y), 
-      hsla(${getHue(glowColor)}, 100%, 70%, ${0.8 * intensity}), 
-      hsla(${getHue(glowColor) + 60}, 100%, 70%, ${0.4 * intensity}), 
-      hsla(${getHue(glowColor)}, 100%, 70%, ${0.8 * intensity}))`,
-    borderRadius: 'inherit',
-    opacity: isHovered ? 1 : 0,
-    transition: 'opacity 0.3s ease',
-    pointerEvents: 'none',
-    zIndex: -1,
-    filter: 'blur(4px)'
-  } : {};
-  const pixelBorderStyle = retro ? {
-    border: '2px solid #000',
-    boxShadow: '4px 4px 0px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,0,0.2)',
-    transition: 'all 0.2s ease'
-  } : {};
-  const hoverPixelStyle = retro && isHovered ? {
-    boxShadow: '4px 4px 0px rgba(0,0,0,0.8), 0 0 30px rgba(255,255,0,0.6)',
-    transform: 'scale(1.02)'
-  } : {};
-  return <div ref={cardRef} className={`spotlight-card ${className}`} style={{
-    ...cardStyle,
-    ...pixelBorderStyle,
-    ...hoverPixelStyle
-  }} onMouseMove={handleMouseMove} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} {...props}>
-    {isHovered && <>
-      <div className="absolute inset-0 pointer-events-none z-[1]" style={beforeStyle} />
-      <div className="absolute inset-[-2px] pointer-events-none z-[-1]" style={afterStyle} />
-    </>}
-    <div className="relative z-[2] h-full">
+  // Strip out any bg-black/30 or border-gray-700/30 generic tailwind classes passed from before
+  // and force the rh-card class which implements our retro Stonk Bankers look.
+  const cleanClassName = className
+    .replace(/bg-[a-z]+-\d+\/\d+/g, '') // remove background opacities like bg-black/30
+    .replace(/border-[a-z]+-\d+\/\d+/g, '') // remove border opacities like border-gray-700/30
+    .replace(/backdrop-blur-sm/g, '') // remove blur
+    .replace(/rounded-xl/g, '') // remove rounded corners
+    .replace(/rounded-lg/g, '')
+    .trim();
+
+  return (
+    <div className={`rh-card ${cleanClassName}`} {...props}>
       {children}
     </div>
-  </div>;
+  );
 };
 const getHue = color => {
   const hues = {
@@ -2482,12 +2445,16 @@ Current app data:
         <div className="text-xs">Empty</div>
         <div className="text-xs">{position}</div>
       </div>;
-    return <div className="bg-gradient-to-b from-green-400 to-green-600 rounded-xl p-6 relative" style={{
-      backgroundImage: `
-          linear-gradient(90deg, rgba(255,255,255,0.2) 1px, transparent 1px),
-          linear-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)
-        `,
-      backgroundSize: '20px 20px'
+    return <div className="rounded-none p-6 relative border-4 border-black" style={{
+      backgroundColor: '#2b6e36',
+      backgroundImage: `repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 40px,
+        rgba(0,0,0,0.1) 40px,
+        rgba(0,0,0,0.1) 80px
+      )`,
+      boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5), 8px 8px 0px rgba(0,0,0,1)'
     }}>
       { }
       <div className="absolute inset-4 border-2 border-white rounded-lg opacity-60">
@@ -2737,45 +2704,9 @@ Current app data:
             </div>
           </div>
           { }
-          {gameweekDeadline && activeGameweek.status === 'active' && <div className="mt-6 p-4 bg-yellow-600/20 rounded-lg border border-yellow-600/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-yellow-600 font-bold mb-1 cinematic-text gold-glow" style={{
-                  textShadow: '2px 2px 0px #000'
-                }}>
-                  ⏰ TEAM SUBMISSION DEADLINE
-                </h4>
-                <p className="text-gray-300 text-sm body-text">
-                  Teams must be submitted 1 hour before first fixture
-                </p>
-              </div>
-              <div className="text-right">
-                {isAfterDeadline ? <div className="text-red-400 font-bold text-lg cinematic-text" style={{
-                  textShadow: '2px 2px 0px #000'
-                }}>
-                  DEADLINE PASSED
-                </div> : <div>
-                  <div className="text-yellow-600 font-bold text-lg cinematic-text gold-glow" style={{
-                    textShadow: '2px 2px 0px #000'
-                  }}>
-                    {formatDeadline(gameweekDeadline)}
-                  </div>
-                  <div className="text-gray-300 text-xs body-text">
-                    remaining
-                  </div>
-                </div>}
-              </div>
-            </div>
-            <div className="mt-2 text-xs text-gray-400 body-text">
-              Deadline: {gameweekDeadline.toLocaleDateString('en-GB', {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </div>
-          </div>}
+          {gameweekDeadline && activeGameweek.status === 'active' && (
+            <CountdownTimer deadlineTime={gameweekDeadline} />
+          )}
           {activeGameweek.status === 'finished' && activeGameweek.winnerId && <div className="mt-6 p-4 bg-yellow-600/20 rounded-lg border border-yellow-600/50">
             <h3 className="text-yellow-600 font-bold mb-2 cinematic-text gold-glow" style={{
               textShadow: '2px 2px 0px #000'
@@ -3911,6 +3842,23 @@ Current app data:
               </div>}
             </div>
           </SpotlightCard>
+
+          {/* TOKENOMICS ENGINE */}
+          <div className="rh-card bg-black border-4 border-red-600 p-6 mt-6 shadow-[8px_8px_0px_rgba(255,0,0,0.5)]">
+            <h3 className="text-red-500 font-bold mb-4 text-2xl" style={{ fontFamily: "'Press Start 2P', monospace" }}>TOKENOMICS ENGINE</h3>
+            <p className="text-white mb-6" style={{ fontFamily: "'VT323', monospace", fontSize: '1.2rem' }}>
+              Simulate the DeFi loop: Burn all FPLS entry fees, swap tax revenue for real-world stocks, and airdrop prizes.
+            </p>
+            
+            <button 
+              onClick={() => {
+                alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 45,000 $FPLS... (SUCCESS)\n> Swapping Tax Revenue for AAPL Stocks... (SUCCESS)\n> Distributing Prizes to Top 10 Managers...\n> Airdropping Participation Stocks...\n\nSimulation Complete!");
+              }} 
+              className="rh-button bg-red-600 hover:bg-red-500 text-white border-white w-full py-4 text-xl"
+            >
+              EXECUTE GAMEWEEK TOKENOMICS
+            </button>
+          </div>
         </SpotlightCard>
       </div>}
     </main>

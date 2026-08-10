@@ -13,9 +13,16 @@ async function main() {
   const fplsAddress = await fpls.getAddress();
   console.log("FPLS Token deployed to:", fplsAddress);
 
+  // Deploy Mock Functions Router
+  const MockRouter = await ethers.getContractFactory("MockFunctionsRouter");
+  const mockRouter = await MockRouter.deploy();
+  await mockRouter.waitForDeployment();
+  const mockRouterAddress = await mockRouter.getAddress();
+  console.log("MockFunctionsRouter deployed to:", mockRouterAddress);
+
   // Deploy FPLGame
   const FPLGame = await ethers.getContractFactory("FPLGame");
-  const game = await FPLGame.deploy(fplsAddress);
+  const game = await FPLGame.deploy(fplsAddress, mockRouterAddress);
   await game.waitForDeployment();
   const gameAddress = await game.getAddress();
   console.log("FPLGame deployed to:", gameAddress);
@@ -28,6 +35,7 @@ async function main() {
   const config = {
     fplsAddress,
     gameAddress,
+    mockRouterAddress,
     treasuryAddress: deployer.address
   };
 

@@ -2031,6 +2031,28 @@ Current app data:
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(generatedShareMessage)}`;
     window.open(twitterUrl, '_blank');
   };
+
+  const handleRequestScore = async () => {
+    if (!userWallet || !activeGameweek) return;
+    setIsLoading(true);
+    setLoadingMessage('Requesting score from Chainlink Oracle...');
+    try {
+      const tx = await writeContractAsync({
+        address: FPLGAME_ADDRESS,
+        abi: FPLGAME_ABI,
+        functionName: 'requestTeamScore',
+        args: [["123456", activeGameweek.gameweek.toString()]] // Using mock managerId "123456" for demo
+      });
+      console.log('Score request sent:', tx);
+      alert('Score request sent to Chainlink Oracle! TX: ' + tx);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to request score. ' + (error.message || ''));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const submitTeam = async () => {
     if (!activeGameweek || !isFormationValid() || !userWallet || !captain) return;
     if (isAfterDeadline && !isAdmin) {
@@ -3009,9 +3031,12 @@ Current app data:
                 {isGameweekStarted ? currentUserEntry.points || 0 : 0}
               </span>
             </p>
-            <div className="mt-4">
+            <div className="mt-4 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <AnimatedButton onClick={shareTeamOnX} className="bg-blue-600 hover:bg-blue-700" color="blue" hoverText="Share on X!">
                 🐦 Share Team on X
+              </AnimatedButton>
+              <AnimatedButton onClick={handleRequestScore} className="bg-purple-600 hover:bg-purple-700" color="purple" hoverText="Fetch Real Score!">
+                🔄 Fetch Score (Oracle)
               </AnimatedButton>
             </div>
           </div>}

@@ -2356,7 +2356,6 @@ Current app data:
           </button>
         </>}
       </SpotlightCard>;
-      </SpotlightCard>;
     };
     const EmptySlot = ({
       position,

@@ -74,28 +74,28 @@ const CountdownTimer = ({ deadlineTime }) => {
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
   return (
-    <div className="glass-card inline-flex flex-col items-center p-4 mb-6 relative overflow-hidden" style={{ borderColor: '#3b82f6' }}>
+    <div className="rh-card inline-flex flex-col items-center p-4 mb-6 relative overflow-hidden" style={{ borderColor: 'var(--emerald-muted)' }}>
       <div className="text-emerald-glow text-xs mb-2 uppercase font-bold tracking-widest relative z-10">
         {timeLeft > 0 ? 'GAMEWEEK DEADLINE' : 'GAMEWEEK LIVE'}
       </div>
       <div className="flex space-x-2 text-white font-mono text-3xl leading-none relative z-10">
         <div className="flex flex-col items-center">
-          <span className="bg-black/50 px-3 py-2 rounded-md border border-[rgba(255,255,255,0.1)]">{days.toString().padStart(2, '0')}</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{days.toString().padStart(2, '0')}</span>
           <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Days</span>
         </div>
         <span className="py-2 text-gray-600">:</span>
         <div className="flex flex-col items-center">
-          <span className="bg-black/50 px-3 py-2 rounded-md border border-[rgba(255,255,255,0.1)]">{hours.toString().padStart(2, '0')}</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{hours.toString().padStart(2, '0')}</span>
           <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Hrs</span>
         </div>
         <span className="py-2 text-gray-600">:</span>
         <div className="flex flex-col items-center">
-          <span className="bg-black/50 px-3 py-2 rounded-md border border-[rgba(255,255,255,0.1)]">{minutes.toString().padStart(2, '0')}</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{minutes.toString().padStart(2, '0')}</span>
           <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Min</span>
         </div>
         <span className="py-2 text-gray-600">:</span>
         <div className="flex flex-col items-center">
-          <span className="bg-black/50 px-3 py-2 rounded-md border border-[rgba(255,255,255,0.1)]">{seconds.toString().padStart(2, '0')}</span>
+          <span className="bg-black/50 px-3 py-2 rounded-md border border-[var(--border-light)]">{seconds.toString().padStart(2, '0')}</span>
           <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">Sec</span>
         </div>
       </div>
@@ -109,7 +109,7 @@ const SpotlightCard = ({
 }) => {
 
   return (
-    <div className={`glass-card ${className}`} {...props}>
+    <div className={`rh-card ${className}`} {...props}>
       <div className="relative z-10 h-full">{children}</div>
     </div>
   );
@@ -162,8 +162,9 @@ const LoadingWave = ({
     }} animate={{
       opacity: 1
     }} className="text-white font-semibold" style={{
-      
-      }}>
+      fontFamily: 'JetBrains Mono, monospace',
+      textShadow: '2px 2px 0px #000'
+    }}>
       {message}
     </motion.p>;
   };
@@ -171,7 +172,7 @@ const LoadingWave = ({
     {Array.from({
       length: bars
     }).map((_, index) => <motion.div key={index} className={`${currentSize.width} ${currentSize.height} ${currentColor} rounded-sm`} style={{
-      
+      boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
       border: '1px solid #000'
     }} animate={{
       scaleY: [1, 1.5, 1]
@@ -199,58 +200,98 @@ const LoadingWave = ({
     <MessageComponent />
   </div>;
 };
-const Navigation = ({
+const LimelightNav = ({
   currentView,
   setCurrentView,
+  onInfoClick,
   isAdmin
 }) => {
-  const navItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'team', label: 'Squad', icon: TeamIcon },
-    { id: 'leaderboard', label: 'Rankings', icon: TrendingUp },
-    { id: 'profile', label: 'Profile', icon: User },
-    ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Users }] : [])
-  ];
-
-  return (
-    <>
-      {/* Desktop Navigation */}
-      <nav className="desktop-nav">
-        {navItems.map(item => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id)}
-              className={`desktop-nav-item ${isActive ? 'active' : ''}`}
-            >
-              <Icon className="w-4 h-4 mr-2" />
-              {item.label}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="bottom-nav">
-        {navItems.map(item => {
-          const Icon = item.icon;
-          const isActive = currentView === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setCurrentView(item.id)}
-              className={`nav-item ${isActive ? 'active' : ''}`}
-            >
-              <Icon className="nav-icon" />
-              <span className="nav-label">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-    </>
-  );
+  const navItems = [{
+    id: 'home',
+    label: 'Home',
+    icon: Home
+  }, {
+    id: 'team',
+    label: 'Build Team',
+    icon: TeamIcon
+  }, {
+    id: 'leaderboard',
+    label: 'Leaderboard',
+    icon: TrendingUp
+  }, {
+    id: 'profile',
+    label: 'Profile',
+    icon: User
+  }, ...(isAdmin ? [{
+    id: 'admin',
+    label: 'Admin',
+    icon: Users
+  }] : []), {
+    id: 'info',
+    label: 'How it Works',
+    icon: Info
+  }];
+  const handleItemClick = item => {
+    if (item.id === 'info') {
+      onInfoClick();
+    } else {
+      setCurrentView(item.id);
+    }
+  };
+  return <motion.nav className="relative bg-black/40 backdrop-blur-md rounded-2xl p-2 border border-green-700/30" style={{
+    boxShadow: '0 0 30px rgba(0,0,0,0.8), 0 0 60px rgba(34, 197, 94, 0.2)'
+  }}>
+    <div className="flex items-center space-x-2">
+      {navItems.map(item => {
+        const IconComponent = item.icon;
+        const isActive = currentView === item.id && item.id !== 'info';
+        return <motion.button key={item.id} onClick={() => handleItemClick(item)} className={`
+              relative h-12 w-16 rounded-xl flex items-center justify-center 
+              transition-all duration-200 group
+              ${isActive ? 'text-white bg-green-600/50' : 'text-white hover:text-green-300'}
+            `} style={{
+            border: '2px solid #000',
+            boxShadow: isActive ? '3px 3px 0px rgba(0,0,0,0.8), 0 0 20px rgba(34, 197, 94, 0.6)' : '2px 2px 0px rgba(0,0,0,0.6)'
+          }} whileHover={{
+            y: -4,
+            scale: 1.05
+          }} whileTap={{
+            scale: 0.95,
+            y: -2
+          }}>
+          <motion.div className="flex items-center justify-center" animate={{
+            scale: isActive ? 1.2 : 1
+          }} transition={{
+            scale: {
+              type: "spring",
+              stiffness: 400,
+              damping: 17
+            }
+          }}>
+            <IconComponent className="w-5 h-5" style={{
+              filter: 'drop-shadow(1px 1px 0px #000)'
+            }} />
+          </motion.div>
+          <motion.div initial={{
+            opacity: 0,
+            y: 10,
+            scale: 0.8
+          }} whileHover={{
+            opacity: 1,
+            y: -40,
+            scale: 1
+          }} className="absolute pointer-events-none bg-black/90 text-white text-xs px-2 py-1 rounded border border-green-700/50" style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            textShadow: '1px 1px 0px #000',
+            boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+            zIndex: 50
+          }}>
+            {item.label}
+          </motion.div>
+        </motion.button>;
+      })}
+    </div>
+  </motion.nav>;
 };
 const AnimatedButton = ({
   children,
@@ -283,12 +324,13 @@ const AnimatedButton = ({
   const handleMouseUp = () => setIsPressed(false);
   const handleMouseLeave = () => setIsPressed(false);
   return <button onClick={onClick} disabled={disabled} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseLeave={handleMouseLeave} className={`relative overflow-hidden font-bold py-3 px-6 rounded-lg transition-all duration-300 group ${disabled ? 'bg-gray-600 cursor-not-allowed text-gray-300' : colorClasses[color]} ${className}`} style={{
-    
+    fontFamily: 'JetBrains Mono, monospace',
     fontSize: '18px',
     border: '2px solid #000',
     boxShadow: isPressed ? '2px 2px 0px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,0,0.4)' : '4px 4px 0px rgba(0,0,0,0.8), 0 0 15px rgba(255,255,0,0.2)',
     transform: `scale(${isPressed ? '0.98' : '1'}) translateY(${isPressed ? '2px' : '0px'})`,
-    }} {...props}>
+    textShadow: '1px 1px 0px #000'
+  }} {...props}>
     { }
     {!disabled && <div className={`absolute top-1/2 left-1/2 w-2 h-2 ${dotColors[color]} rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 group-hover:scale-[30] opacity-20 group-hover:opacity-30`} />}
     { }
@@ -315,14 +357,16 @@ const ThemeToggle = ({
         ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-blue-300/50'}
       `} style={{
       border: '2px solid #000',
-      }}>
+      boxShadow: 'inset 2px 2px 0px rgba(0,0,0,0.4)'
+    }}>
     <motion.div className="absolute top-1 left-1 w-8 h-8 bg-white rounded-full flex items-center justify-center" layout transition={{
       type: 'spring',
       stiffness: 500,
       damping: 40
     }} style={{
       transform: theme === 'dark' ? 'translateX(0px)' : 'translateX(40px)',
-      }}>
+      boxShadow: '2px 2px 0px rgba(0,0,0,0.8)'
+    }}>
       {theme === 'dark' ? <Moon className="w-5 h-5 text-purple-500" /> : <Sun className="w-5 h-5 text-yellow-500" />}
     </motion.div>
     <div className="w-full flex justify-between px-2">
@@ -355,7 +399,8 @@ const FormationDock = ({
     label: 'Ultra Defensive'
   }];
   return <motion.div className="flex justify-center items-center gap-2 md:gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-green-700/30" style={{
-    }} initial={{
+    boxShadow: '0 0 20px rgba(0,0,0,0.6)'
+  }} initial={{
     y: 50,
     opacity: 0
   }} animate={{
@@ -381,14 +426,15 @@ const FormationDock = ({
         color: isActive ? '#FFFFFF' : '#A3E635'
       }}>
         <span className="font-bold text-sm md:text-base" style={{
-          
-          }}>
+          fontFamily: 'JetBrains Mono, monospace',
+          textShadow: '1px 1px 0px #000'
+        }}>
           {formation.value}
         </span>
         <motion.div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-xs px-2 py-1 rounded border border-green-700/50 pointer-events-none" style={{
-          
-          
-          
+          fontFamily: 'JetBrains Mono, monospace',
+          textShadow: '1px 1px 0px #000',
+          boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
           zIndex: 50
         }} initial={{
           opacity: 0,
@@ -475,7 +521,7 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [selectedFormation, setSelectedFormation] = useState('4-3-3');
   const [, setHasAccess] = useState(false);
@@ -2265,8 +2311,9 @@ Current app data:
         const fixtures = fixturesByDate[dateKey];
         return <div key={dateKey} className="space-y-4">
           <h3 className="text-xl font-bold text-white border-b border-green-700/30 pb-2" style={{
-            
-            }}>
+            fontFamily: 'JetBrains Mono, monospace',
+            textShadow: '2px 2px 0px #000'
+          }}>
             {date.toLocaleDateString('en-GB', {
               weekday: 'long',
               day: 'numeric',
@@ -2288,9 +2335,10 @@ Current app data:
                   <div className="flex items-center space-x-2">
                     {fixture.finished && fixture.homeScore !== null && fixture.awayScore !== null ? <div className="text-center">
                       <div className="text-white font-bold text-lg bg-green-600 px-3 py-1 rounded border border-black shadow-lg" style={{
-                        
-                        
-                        }}>
+                        fontFamily: 'JetBrains Mono, monospace',
+                        textShadow: '1px 1px 0px #000',
+                        boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+                      }}>
                         {fixture.homeScore} - {fixture.awayScore}
                       </div>
                       <div className="text-green-300 text-xs mt-1 font-bold">
@@ -2333,25 +2381,30 @@ Current app data:
       position
     }) => {
       const isCaptain = captain && captain.id === player.id;
-      return <SpotlightCard className="relative group p-1 rounded-2xl">
-        <div className="glass-card text-white rounded-xl p-3 text-center min-w-[100px] md:min-w-[120px] h-full flex flex-col items-center">
-          {isCaptain && <div className="absolute -top-2 -left-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-[10px] font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg">C</div>}
-          <div className="mb-2 md:mb-3 rounded-full overflow-hidden border-2 border-white/10 w-14 h-14 md:w-16 md:h-16 shadow-inner flex-shrink-0">
-            <img src="/glass_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-full h-full object-cover" />
+      return <SpotlightCard className="relative group p-[1px] rounded-xl" glowColor={isCaptain ? "yellow" : "green"} size="sm" intensity={isCaptain ? 1.2 : 0.6}>
+        <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-3 text-center min-w-[100px] md:min-w-[120px] h-full" style={{
+          background: 'linear-gradient(145deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
+          border: '1px solid var(--border-light)'
+        }}>
+          {isCaptain && <div className="absolute -top-2 -left-2 bg-[var(--emerald-glow)] text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center font-mono shadow-[0_0_10px_var(--emerald-glow)]">C</div>}
+          <div className="mb-2 md:mb-3 rounded-lg overflow-hidden border border-[var(--border-light)]">
+            <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 md:w-20 md:h-20 mx-auto object-cover opacity-80 mix-blend-screen grayscale contrast-125" />
           </div>
-          <div className="text-xs font-semibold truncate text-slate-100 max-w-[90px]">{player.first_name} {player.second_name}</div>
-          <div className="flex justify-between items-center w-full mt-2 px-1 text-xs">
-            <span className="text-blue-400 font-medium">{formatPrice(player.now_cost)}</span>
-            {isTeamSubmitted && <span className="text-purple-400 font-bold">
+          <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.first_name}</div>
+          <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.second_name}</div>
+          <div className="flex justify-between items-center text-[10px] mt-2 px-1 font-mono">
+            <span className="text-[var(--emerald-glow)]">{formatPrice(player.now_cost)}</span>
+            {isTeamSubmitted && <span className="text-white font-bold opacity-70">
               {isGameweekStarted ? player.event_points || 0 : 0} pts
             </span>}
           </div>
+          {isCaptain && <div className="text-[9px] text-[var(--emerald-glow)] font-bold mt-1 uppercase tracking-widest">Captain (2x pts)</div>}
         </div>
         {!isTeamSubmitted && <>
-          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-slate-800 border border-slate-600 text-slate-300 rounded-full w-6 h-6 md:w-5 md:h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white shadow-md">
+          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-[var(--carbon-surface)] border border-[var(--emerald-muted)] text-[var(--emerald-glow)] rounded-full w-6 h-6 md:w-5 md:h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-[var(--emerald-muted)] hover:text-white">
             ×
           </button>
-          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-none' : 'bg-slate-800 border border-slate-600 text-slate-300'} rounded-full w-6 h-6 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all font-bold hover:shadow-lg shadow-md`}>
+          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-[var(--emerald-glow)] text-black' : 'bg-[var(--carbon-surface)] border border-[var(--emerald-muted)] text-[var(--emerald-glow)]'} rounded-full w-6 h-6 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all font-mono font-bold hover:shadow-[0_0_10px_var(--emerald-glow)]`}>
             {isCaptain ? '✓' : 'C'}
           </button>
         </>}
@@ -2360,21 +2413,22 @@ Current app data:
     const EmptySlot = ({
       position,
       count
-    }) => <div className="bg-white/5 text-slate-400 rounded-2xl p-2 text-center min-w-[80px] md:min-w-[100px] border border-white/10 border-dashed flex flex-col items-center justify-center h-28 md:h-32 shadow-inner">
-        <div className="w-10 h-10 rounded-full bg-white/10 mb-2 flex items-center justify-center">
-           <span className="text-lg">+</span>
-        </div>
-        <div className="text-[10px] font-medium tracking-wider">{position}</div>
+    }) => <div className="bg-[var(--carbon-surface)] text-[var(--text-secondary)] rounded-xl p-2 text-center min-w-[80px] md:min-w-[100px] border border-[var(--emerald-muted)] border-dashed opacity-50 flex flex-col items-center justify-center h-32 md:h-36">
+        <div className="text-xs uppercase tracking-widest font-mono">Empty</div>
+        <div className="text-[10px] text-[var(--emerald-muted)] uppercase tracking-widest mt-1">{position}</div>
       </div>;
-    return <div className="rounded-3xl p-6 relative overflow-hidden glass-card">
-      <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)',
-        backgroundSize: '40px 40px'
+    return <div className="rounded-3xl p-6 relative overflow-hidden rh-card" style={{
+      background: 'linear-gradient(180deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
+    }}>
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: `radial-gradient(var(--emerald-glow) 1px, transparent 1px)`,
+        backgroundSize: '20px 20px'
       }}></div>
-      
-      <div className="absolute inset-4 border-2 border-white/10 rounded-3xl opacity-30 pointer-events-none">
-        <div className="absolute inset-x-0 top-1/2 h-0 border-t-2 border-white/10"></div>
-        <div className="absolute left-1/2 top-1/2 w-24 h-24 border-2 border-white/10 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+      { }
+      <div className="absolute inset-4 border border-[var(--emerald-glow)] rounded-2xl opacity-20">
+        <div className="absolute inset-x-0 top-1/2 h-0 border-t border-[var(--emerald-glow)] border-dashed"></div>
+        <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l border-[var(--emerald-glow)] border-dashed"></div>
+        <div className="absolute left-1/2 top-1/2 w-32 h-32 border border-[var(--emerald-glow)] rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-[0_0_20px_rgba(0,255,106,0.2)]"></div>
       </div>
       <div className="relative z-10 space-y-4 md:space-y-8">
         { }
@@ -2401,69 +2455,120 @@ Current app data:
     </div>;
   };
   if (!hasEnteredApp) {
-    return <div className="min-h-screen bg-[#ffffff] flex flex-col font-sans" style={{ backgroundImage: 'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05)), linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05))', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}>
-      <header className="p-6 border-b-4 border-black bg-[#ffffff] flex justify-between items-center shadow-[4px_4px_0px_rgba(0,0,0,1)] z-10">
-        <h1 className="text-[#ffffff] text-3xl font-bold tracking-tight" style={{ fontFamily: "'Press Start 2P', monospace", }}>FPL.STOCKS</h1>
+    return <div className="min-h-screen flex flex-col font-sans text-white relative">
+      <header className="px-12 py-8 flex justify-between items-center z-10 w-full max-w-[1400px] mx-auto">
+        <div className="flex items-center space-x-3">
+          <span className="brand-dot"></span>
+          <h1 className="text-xl font-bold tracking-tight text-white uppercase">FPL.STOCKS</h1>
+        </div>
         <div className="flex space-x-4">
           {authenticated ? (
-            <button onClick={logout} className="glass-button primary bg-red-500 text-white border-black">
+            <button onClick={logout} className="rh-outline-button">
               {userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Disconnect'}
             </button>
           ) : (
-            <button onClick={login} className="glass-button primary">
+            <button onClick={login} className="rh-outline-button">
               Connect Wallet
             </button>
           )}
         </div>
       </header>
       
-      <main className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full p-6 gap-12 items-center relative min-h-[80vh]">
-        <div className="flex-1 flex flex-col justify-center">
-          <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
-            Play FPL. <br/> <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Earn Stocks.</span>
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[1200px] mx-auto px-6 relative z-10 pt-10 pb-32">
+        <div className="text-center mb-16">
+          <p className="text-[#8b9a90] uppercase tracking-[0.3em] text-sm mb-6 font-bold">The Robinhood Chain Protocol</p>
+          <h2 className="text-[6vw] leading-[0.9] font-black text-white uppercase tracking-tighter mx-auto max-w-4xl" style={{ textShadow: '0 0 40px rgba(0,255,106,0.1)' }}>
+            BURN $FPLS.<br/>
+            <span className="text-[var(--emerald-glow)]">EARN STOCKS.</span>
           </h2>
-          
-          <div className="glass-card p-8 mb-8">
-            <p className="font-semibold mb-6 text-xl border-b border-white/10 pb-4 text-slate-200">How It Works</p>
-            <ul className="space-y-4 text-slate-400">
-              <li className="flex items-start"><span className="text-blue-400 font-bold mr-3">1.</span> <span>Connect your wallet to enter the gameweek.</span></li>
-              <li className="flex items-start"><span className="text-blue-400 font-bold mr-3">2.</span> <span>Build your 11-man dream team using the $80M budget.</span></li>
-              <li className="flex items-start"><span className="text-blue-400 font-bold mr-3">3.</span> <span>Score points based on real Premier League results.</span></li>
-              <li className="flex items-start"><span className="text-blue-400 font-bold mr-3">4.</span> <span>Win crypto prizes and earn Stocks!</span></li>
-            </ul>
-          </div>
-          
-          <button onClick={() => setHasEnteredApp(true)} className="glass-button primary w-full md:w-auto text-lg font-semibold py-4 px-12 rounded-full text-center">
-            Enter App
-          </button>
         </div>
         
-        <div className="w-full lg:w-[450px] flex flex-col justify-center relative">
-          <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 blur-2xl rounded-[3rem] -z-10"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full mb-20">
+          <div className="rh-card flex flex-col text-left py-8">
+            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-6">01 / LIQUIDITY</p>
+            <h3 className="text-white text-xl font-bold uppercase mb-4 tracking-tight">GET $FPLS</h3>
+            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+              Acquire $FPLS native tokens directly on the Robinhood Chain to begin your management career.
+            </p>
+          </div>
           
-          <div className="glass-card p-6">
-            <h3 className="text-white font-bold mb-6 flex items-center text-lg tracking-wide">
-              <TrendingUp className="w-6 h-6 mr-3 text-blue-400" /> 
-              MARKET TRENDS
-            </h3>
-            <div className="space-y-3">
-              {trendingTokens.map((token, i) => (
-                <div key={i} className="flex justify-between items-center py-3 px-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
-                  <div>
-                    <p className="font-semibold text-slate-200">{token.symbol}</p>
-                  </div>
-                  <div className="text-right flex flex-col items-end">
-                    <p className="font-medium text-slate-300">{token.price}</p>
-                    <p className={`text-sm ${token.change.startsWith('+') ? 'text-blue-400' : 'text-purple-400'}`}>
-                      {token.change}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="rh-card flex flex-col text-left py-8">
+            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-6">02 / DEFLATION</p>
+            <h3 className="text-white text-xl font-bold uppercase mb-4 tracking-tight">BURN TO ENTER</h3>
+            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+              Burn 1000 $FPLS to submit your 11-man team. 100% of fees are destroyed forever to reward holders.
+            </p>
+          </div>
+          
+          <div className="rh-card flex flex-col text-left py-8">
+            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-6">03 / ASCENSION</p>
+            <h3 className="text-white text-xl font-bold uppercase mb-4 tracking-tight">WIN STOCKS</h3>
+            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+              Tax revenue buys real-world equity. The Top 10 managers seize the primary prize pool.
+            </p>
+          </div>
+          
+          <div className="rh-card flex flex-col text-left py-8">
+            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-6">04 / EQUALITY</p>
+            <h3 className="text-white text-xl font-bold uppercase mb-4 tracking-tight">EVERYONE EARNS</h3>
+            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+              No one leaves empty-handed. All valid participants receive a guaranteed airdrop of fractionals.
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <button onClick={() => setHasEnteredApp(true)} className="rh-button text-lg px-16 py-5 mb-6">
+            ENTER THE BANK
+          </button>
+          <p className="text-[#8b9a90] text-xs font-serif uppercase tracking-widest opacity-60">
+            Real-world assets secured by on-chain burning
+          </p>
+        </div>
+        
+        {/* Detail Section Below Fold */}
+        <div className="mt-40 max-w-3xl mx-auto text-center border-t border-[var(--border-light)] pt-20">
+          <h3 className="text-3xl font-bold text-white mb-8 tracking-tight">PROTOCOL MECHANICS</h3>
+          <p className="text-[var(--text-secondary)] text-lg mb-10 leading-relaxed">
+            FPL.Stocks bridges Fantasy Premier League data with DeFi tokenomics. 
+            The protocol operates on a deflationary cycle synced with the official English Premier League schedule. 
+            Before every real-world kickoff, the protocol deadline locks all submissions. 
+            Scores are resolved using Chainlink Oracles that pull official FPL points.
+          </p>
+          <div className="rh-card">
+            <h4 className="text-[var(--emerald-glow)] font-mono text-sm mb-4">THE DEFI LOOP</h4>
+            <p className="text-[var(--text-secondary)] text-sm text-left">
+              1. A 3% tax is applied to all $FPLS transfers, automatically swapped for real-world Robinhood Stocks (e.g. AAPL, TSLA).<br/><br/>
+              2. 1000 $FPLS is burned per gameweek entry, reducing the total supply forever.<br/><br/>
+              3. At gameweek resolution, the accumulated Stocks are distributed entirely to players based on their rank.
+            </p>
           </div>
         </div>
       </main>
+
+      {/* Footer Ticker */}
+      <footer className="w-full border-t border-[var(--border-light)] bg-[var(--carbon-surface)] py-4 overflow-hidden relative mt-auto">
+        <div className="flex space-x-16 items-center px-8 w-max">
+          {trendingTokens.map((token, i) => (
+            <div key={i} className="flex items-center space-x-3 whitespace-nowrap">
+              <span className="font-bold text-white tracking-wider">{token.symbol}</span>
+              <span className="font-mono text-[#8b9a90] text-sm">{token.price}</span>
+              <span className={`font-mono text-sm ${token.change.startsWith('+') ? 'text-[var(--emerald-glow)]' : 'text-red-500'}`}>
+                {token.change}
+              </span>
+            </div>
+          ))}
+          {trendingTokens.map((token, i) => (
+            <div key={i + 100} className="flex items-center space-x-3 whitespace-nowrap">
+              <span className="font-bold text-white tracking-wider">{token.symbol}</span>
+              <span className="font-mono text-[#8b9a90] text-sm">{token.price}</span>
+              <span className={`font-mono text-sm ${token.change.startsWith('+') ? 'text-[var(--emerald-glow)]' : 'text-red-500'}`}>
+                {token.change}
+              </span>
+            </div>
+          ))}
+        </div>
+      </footer>
     </div>;
   }
   return <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-black via-gray-900 to-black film-grain' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100'}`}>
@@ -2474,11 +2579,13 @@ Current app data:
             <AnimatedTitle title="FPL.STOCKS" />
             <div className="flex items-center space-x-2">
               {isConnected && <div className="w-2 h-2 bg-yellow-600 rounded-full animate-pulse" style={{
-                }} />}
+                boxShadow: '0 0 10px rgba(212, 175, 55, 0.8)'
+              }} />}
               <div className="flex items-center space-x-1 text-gray-300 px-2 py-1 rounded body-text" style={{
                 backgroundColor: 'rgba(0,0,0,0.7)',
                 border: '1px solid #000',
-                }}>
+                boxShadow: '2px 2px 0px rgba(0,0,0,0.6)'
+              }}>
                 <Users className="w-4 h-4" style={{
                   filter: 'drop-shadow(1px 1px 0px #000)'
                 }} />
@@ -2489,18 +2596,18 @@ Current app data:
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle theme={theme} setTheme={setTheme} />
             {authenticated ? (
-              <button onClick={logout} className="glass-button primary bg-transparent border border-[#2C2C2E] text-white py-2 flex items-center space-x-3">
+              <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 flex items-center space-x-3">
                 <div className="flex items-center space-x-2 border-r border-[#2C2C2E] pr-3">
-                  <span className="w-2 h-2 rounded-full bg-[#3b82f6] animate-pulse shadow-[0_0_8px_#3b82f6]"></span>
-                  <span className="font-mono text-[#3b82f6] font-bold">{fplsBalance} FPLS</span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--emerald-glow)] animate-pulse shadow-[0_0_8px_var(--emerald-glow)]"></span>
+                  <span className="font-mono text-[var(--emerald-glow)] font-bold">{fplsBalance} FPLS</span>
                 </div>
                 <div className="flex items-center">
-                  <LogOut className="w-4 h-4 mr-2 text-[#94a3b8]" />
+                  <LogOut className="w-4 h-4 mr-2 text-[var(--text-secondary)]" />
                   <span className="font-mono text-sm">{userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Logout'}</span>
                 </div>
               </button>
             ) : (
-              <button onClick={login} className="glass-button primary py-2">
+              <button onClick={login} className="rh-button py-2">
                 <LogIn className="w-4 h-4 mr-2" />
                 <span>Connect Wallet</span>
               </button>
@@ -2510,21 +2617,21 @@ Current app data:
         { }
         { }
         <div className="flex justify-center">
-          <Navigation currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
+          <LimelightNav currentView={currentView} setCurrentView={setCurrentView} onInfoClick={() => setShowInfoPopup(true)} isAdmin={isAdmin} />
         </div>
         { }
         <div className="md:hidden flex justify-center items-center mt-4 space-x-4">
           <ThemeToggle theme={theme} setTheme={setTheme} />
           {authenticated ? (
-            <button onClick={logout} className="glass-button primary bg-transparent border border-[#2C2C2E] text-white py-2 text-sm px-3 flex flex-col items-center justify-center">
-              <span className="font-mono text-[#3b82f6] text-[10px] font-bold mb-1">{fplsBalance} FPLS</span>
+            <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 text-sm px-3 flex flex-col items-center justify-center">
+              <span className="font-mono text-[var(--emerald-glow)] text-[10px] font-bold mb-1">{fplsBalance} FPLS</span>
               <div className="flex items-center">
-                <LogOut className="w-3 h-3 mr-1 text-[#94a3b8]" />
+                <LogOut className="w-3 h-3 mr-1 text-[var(--text-secondary)]" />
                 <span className="font-mono text-[10px]">{userWallet ? `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}` : 'Out'}</span>
               </div>
             </button>
           ) : (
-            <button onClick={login} className="glass-button primary py-2 text-sm px-3">
+            <button onClick={login} className="rh-button py-2 text-sm px-3">
               <LogIn className="w-4 h-4 mr-1" />
               <span>Login</span>
             </button>
@@ -2537,18 +2644,21 @@ Current app data:
         { }
         <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="lg" intensity={0.9}>
           <h2 className="text-4xl md:text-5xl font-black text-black bg-white px-6 py-4 rounded-2xl mb-6 text-center cinematic-text" style={{
-            
+            textShadow: '3px 3px 0px rgba(255,215,0,0.4)',
             border: '4px solid #000',
-            }}>HOW FPL.STOCKS WORKS</h2>
+            boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
+          }}>HOW FPL.STOCKS WORKS</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
             <div className="text-center">
               <div className="bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center font-bold text-black text-xl mx-auto mb-3 cinematic-text" style={{
                 border: '2px solid #000',
-                }}>1</div>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>1</div>
               <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" style={{
                 fontSize: '10px',
                 border: '2px solid #000',
-                }}>BUILD TEAM</h3>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>BUILD TEAM</h3>
               <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
                 SELECT 11 PLAYERS WITH £80M BUDGET
               </p>
@@ -2556,11 +2666,13 @@ Current app data:
             <div className="text-center">
               <div className="bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center font-bold text-black text-xl mx-auto mb-3 cinematic-text" style={{
                 border: '2px solid #000',
-                }}>2</div>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>2</div>
               <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" style={{
                 fontSize: '10px',
                 border: '2px solid #000',
-                }}>STAKE & ENTER</h3>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>STAKE & ENTER</h3>
               <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
                 PAY 0.05 Stocks TO JOIN GAMEWEEK
               </p>
@@ -2568,11 +2680,13 @@ Current app data:
             <div className="text-center">
               <div className="bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center font-bold text-black text-xl mx-auto mb-3 cinematic-text" style={{
                 border: '2px solid #000',
-                }}>3</div>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>3</div>
               <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" style={{
                 fontSize: '10px',
                 border: '2px solid #000',
-                }}>SCORE POINTS</h3>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>SCORE POINTS</h3>
               <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
                 EARN FROM REAL PLAYER PERFORMANCE
               </p>
@@ -2580,11 +2694,13 @@ Current app data:
             <div className="text-center">
               <div className="bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center font-bold text-black text-xl mx-auto mb-3 cinematic-text" style={{
                 border: '2px solid #000',
-                }}>4</div>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>4</div>
               <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" style={{
                 fontSize: '10px',
                 border: '2px solid #000',
-                }}>WIN Stocks</h3>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>WIN Stocks</h3>
               <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
                 TOP PERFORMERS GET 95% OF PRIZE POOL
               </p>
@@ -2593,9 +2709,10 @@ Current app data:
         </SpotlightCard>
         {activeGameweek ? <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-8 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={1}>
           <h2 className="text-4xl md:text-5xl font-black text-black bg-white px-6 py-4 rounded-2xl mb-4 cinematic-text text-center" style={{
-            
+            textShadow: '3px 3px 0px rgba(255,215,0,0.4)',
             border: '4px solid #000',
-            }}>
+            boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
+          }}>
             GAMEWEEK {activeGameweek.gameweek}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -2622,7 +2739,8 @@ Current app data:
           )}
           {activeGameweek.status === 'finished' && activeGameweek.winnerId && <div className="mt-6 p-4 bg-yellow-600/20 rounded-lg border border-yellow-600/50">
             <h3 className="text-yellow-600 font-bold mb-2 cinematic-text gold-glow" style={{
-              }}>🏆 GAMEWEEK WINNER</h3>
+              textShadow: '2px 2px 0px #000'
+            }}>🏆 GAMEWEEK WINNER</h3>
             <p className="text-gray-300 body-text">
               Winner: {activeGameweek.winnerId.slice(0, 8)}...{activeGameweek.winnerId.slice(-4)}
             </p>
@@ -2686,7 +2804,7 @@ Current app data:
                   boxShadow: theme === 'dark' ? '0 4px 20px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.1)'
                 }}>
                   <div className="text-center">
-                    <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 rounded-none mx-auto mb-2 object-cover border-4 border-black" style={{ }} onError={e => {
+                    <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-16 h-16 rounded-none mx-auto mb-2 object-cover border-4 border-black" style={{ boxShadow: '4px 4px 0px black' }} onError={e => {
                       e.target.style.display = 'none';
                     }} />
                     <h3 className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} truncate pixel-text`}>
@@ -2700,7 +2818,8 @@ Current app data:
                     </p>
                     <div className="mt-2 bg-green-600/20 rounded-lg p-2 border border-green-500/30">
                       <p className="text-green-400 font-bold text-lg cinematic-text gold-glow" style={{
-                        }}>
+                        textShadow: '2px 2px 0px #000'
+                      }}>
                         {player.event_points || 0} PTS
                       </p>
                     </div>
@@ -2724,7 +2843,8 @@ Current app data:
               </h2>
             </div>
             <span className="text-yellow-600 hover:text-yellow-500 transition-colors text-2xl font-bold cinematic-text gold-glow" style={{
-              }}>
+              textShadow: '2px 2px 0px #000'
+            }}>
               {showFixtures ? '↑' : '↓'}
             </span>
           </div>
@@ -2738,12 +2858,14 @@ Current app data:
                 }
               }} disabled={selectedFixtureGameweek <= Math.min(...getAvailableGameweeks())} className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-black p-2 rounded-lg transition-colors cinematic-text" style={{
                 border: '2px solid #000',
-                }}>
+                boxShadow: '2px 2px 0px rgba(0,0,0,0.8)'
+              }}>
                 ← PREVIOUS
               </button>
               <div className="text-center">
                 <h3 className="text-xl font-bold text-gray-100 mb-2 cinematic-text gold-glow" style={{
-                  }}>
+                  textShadow: '2px 2px 0px #000'
+                }}>
                   GAMEWEEK {selectedFixtureGameweek}
                 </h3>
                 <p className="text-gray-400 text-sm body-text">
@@ -2758,7 +2880,8 @@ Current app data:
                 }
               }} disabled={selectedFixtureGameweek >= Math.max(...getAvailableGameweeks())} className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-black p-2 rounded-lg transition-colors cinematic-text" style={{
                 border: '2px solid #000',
-                }}>
+                boxShadow: '2px 2px 0px rgba(0,0,0,0.8)'
+              }}>
                 NEXT →
               </button>
             </div>
@@ -2773,9 +2896,10 @@ Current app data:
               filter: 'drop-shadow(2px 2px 0px #000)'
             }} />
             <h2 className="text-3xl md:text-4xl font-black text-black bg-white px-6 py-4 rounded-2xl cinematic-text" style={{
-              
+              textShadow: '3px 3px 0px rgba(255,215,0,0.4)',
               border: '4px solid #000',
-              }}>YOUR PROFILE</h2>
+              boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
+            }}>YOUR PROFILE</h2>
           </div>
           { }
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-8">
@@ -2786,11 +2910,13 @@ Current app data:
                 }} />
                 <div>
                   <p className="text-white text-xs md:text-sm" style={{
-                    
-                    }}>Wins</p>
+                    fontFamily: 'Inter, sans-serif',
+                    textShadow: '1px 1px 0px #000'
+                  }}>Wins</p>
                   <p className="text-lg md:text-2xl font-bold text-white" style={{
-                    
-                    }}>{userStats?.wins || 0}</p>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>{userStats?.wins || 0}</p>
                 </div>
               </div>
             </SpotlightCard>
@@ -2801,11 +2927,13 @@ Current app data:
                 }} />
                 <div>
                   <p className="text-white text-xs md:text-sm" style={{
-                    
-                    }}>GW {activeGameweek?.gameweek || '-'} Rank</p>
+                    fontFamily: 'Inter, sans-serif',
+                    textShadow: '1px 1px 0px #000'
+                  }}>GW {activeGameweek?.gameweek || '-'} Rank</p>
                   <p className="text-lg md:text-2xl font-bold text-white" style={{
-                    
-                    }}>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>
                     {(() => {
                       if (!activeGameweek || !userWallet || leaderboard.length === 0) return 'N/A';
                       const userIndex = leaderboard.findIndex(entry => entry.userId === userWallet);
@@ -2822,11 +2950,13 @@ Current app data:
                 }} />
                 <div>
                   <p className="text-white text-xs md:text-sm" style={{
-                    
-                    }}>Entries</p>
+                    fontFamily: 'Inter, sans-serif',
+                    textShadow: '1px 1px 0px #000'
+                  }}>Entries</p>
                   <p className="text-lg md:text-2xl font-bold text-white" style={{
-                    
-                    }}>{userEntries.length}</p>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>{userEntries.length}</p>
                 </div>
               </div>
             </SpotlightCard>
@@ -2840,28 +2970,33 @@ Current app data:
                   filter: 'drop-shadow(2px 2px 0px #000)'
                 }} />
                 <h3 className="text-xl font-bold text-white" style={{
-                  
-                  }}>Performance Stats</h3>
+                  fontFamily: 'JetBrains Mono, monospace',
+                  textShadow: '2px 2px 0px #000'
+                }}>Performance Stats</h3>
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Games Played:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Games Played:</span>
                   <span className="text-white font-bold">{userEntries.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Wins:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Wins:</span>
                   <span className="text-green-400 font-bold">{userStats?.wins || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Losses:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Losses:</span>
                   <span className="text-red-400 font-bold">{userStats?.losses || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Win Rate:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Win Rate:</span>
                   <span className="text-yellow-400 font-bold">
                     {userEntries.length > 0 ? Math.round((userStats?.wins || 0) / userEntries.length * 100) : 0}%
                   </span>
@@ -2875,20 +3010,23 @@ Current app data:
                   filter: 'drop-shadow(2px 2px 0px #000)'
                 }} />
                 <h3 className="text-xl font-bold text-white" style={{
-                  
-                  }}>🎉 Claimable Winnings</h3>
+                  fontFamily: 'JetBrains Mono, monospace',
+                  textShadow: '2px 2px 0px #000'
+                }}>🎉 Claimable Winnings</h3>
               </div>
               <div className="space-y-4">
                 {claimableWinnings.map(game => <div key={game.id} className="bg-yellow-700/20 border border-yellow-500/50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <h4 className="text-yellow-400 font-bold text-lg" style={{
-                        
-                        }}>
+                        fontFamily: 'JetBrains Mono, monospace',
+                        textShadow: '2px 2px 0px #000'
+                      }}>
                         Gameweek {game.gameweek} Winner! 🏆
                       </h4>
                       <p className="text-green-100 text-sm" style={{
-                        }}>
+                        fontFamily: 'Inter, sans-serif'
+                      }}>
                         Prize: {(game.prizePool * 0.95).toFixed(3)} Stocks
                       </p>
                     </div>
@@ -2897,7 +3035,8 @@ Current app data:
                     </AnimatedButton>
                   </div>
                   <p className="text-yellow-200 text-xs" style={{
-                    }}>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
                     Total Prize Pool: {game.prizePool} Stocks • You get 95%
                   </p>
                 </div>)}
@@ -2910,23 +3049,27 @@ Current app data:
                   filter: 'drop-shadow(2px 2px 0px #000)'
                 }} />
                 <h3 className="text-xl font-bold text-white" style={{
-                  
-                  }}>Achievements</h3>
+                  fontFamily: 'JetBrains Mono, monospace',
+                  textShadow: '2px 2px 0px #000'
+                }}>Achievements</h3>
               </div>
               <div className="space-y-4">
                 <div className="bg-green-700/20 border border-green-500/50 rounded-lg p-4">
                   <p className="text-green-100 text-sm mb-2" style={{
-                    }}>Share this code with friends:</p>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Share this code with friends:</p>
                   <div className="flex items-center space-x-2">
                     <code className="bg-black/50 text-green-300 px-3 py-2 rounded text-lg font-bold border border-green-700/50 select-all cursor-pointer" style={{
-                      
-                      }}>
+                      fontFamily: 'JetBrains Mono, monospace',
+                      textShadow: '1px 1px 0px #000'
+                    }}>
                       {userInviteCode.code}
                     </code>
                   </div>
                 </div>
                 <p className="text-green-200 text-xs" style={{
-                  }}>
+                  fontFamily: 'Inter, sans-serif'
+                }}>
                   Each code can only be used once. You'll get a new code when someone uses yours!
                 </p>
               </div>
@@ -2938,8 +3081,9 @@ Current app data:
                   filter: 'drop-shadow(2px 2px 0px #000)'
                 }} />
                 <h3 className="text-xl font-bold text-white" style={{
-                  
-                  }}>Achievements</h3>
+                  fontFamily: 'JetBrains Mono, monospace',
+                  textShadow: '2px 2px 0px #000'
+                }}>Achievements</h3>
               </div>
               <div className="space-y-3">
                 <div className={`p-3 rounded-lg ${userEntries.length > 0 ? 'bg-green-700/30' : 'bg-gray-700/30'}`}>
@@ -2970,12 +3114,14 @@ Current app data:
           {userEntries.length > 0 && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-green-700/30 mt-6" glowColor="green" size="md" intensity={0.8}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-white" style={{
-                
-                }}>Game History</h3>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>Game History</h3>
               <button onClick={loadUserData} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors flex items-center space-x-2" style={{
                 border: '2px solid #000',
-                
-                }}>
+                boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                fontFamily: 'JetBrains Mono, monospace'
+              }}>
                 <RotateCcw className="w-4 h-4" />
                 <span>Refresh</span>
               </button>
@@ -3004,15 +3150,17 @@ Current app data:
       {currentView === 'team' && <div className="space-y-8">
         <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-green-700/30" glowColor="purple" size="lg" intensity={1.1}>
           <h2 className="text-3xl md:text-4xl font-black text-black bg-white px-6 py-4 rounded-2xl mb-4 cinematic-text text-center" style={{
-            
+            textShadow: '3px 3px 0px rgba(255,215,0,0.4)',
             border: '4px solid #000',
-            }}>
+            boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
+          }}>
             {isTeamSubmitted ? 'YOUR GAMEWEEK TEAM' : 'BUILD YOUR TEAM'}
           </h2>
           {isTeamSubmitted && <div className="bg-green-700/30 p-4 rounded-lg mb-6 text-center border border-green-500/50">
             <p className="text-green-100 font-bold text-lg" style={{
-              
-              }}>
+              fontFamily: 'JetBrains Mono, monospace',
+              textShadow: '2px 2px 0px #000'
+            }}>
               Your team is locked in for Gameweek {activeGameweek?.gameweek}!
             </p>
             <p className="text-white mt-2">
@@ -3028,34 +3176,41 @@ Current app data:
           </div>}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-2 sm:space-y-0">
             <p className="text-green-100 text-lg md:text-xl" style={{
-              
-              }}>
+              fontFamily: 'Inter, sans-serif',
+              textShadow: '1px 1px 0px #000'
+            }}>
               Budget Remaining: <span className="text-yellow-400 font-bold text-xl md:text-2xl" style={{
-                
-                }}>{formatPrice(teamBudget)}</span>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>{formatPrice(teamBudget)}</span>
             </p>
             <p className="text-green-100 text-lg md:text-xl" style={{
-              
-              }}>
+              fontFamily: 'Inter, sans-serif',
+              textShadow: '1px 1px 0px #000'
+            }}>
               Players Selected: <span className="text-white font-bold text-xl md:text-2xl" style={{
-                
-                }}>{selectedTeam.length}/11</span>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>{selectedTeam.length}/11</span>
             </p>
           </div>
           <div className="space-y-6 mb-6">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-semibold text-white" style={{
-                
-                }}>Your Pitch</h3>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>Your Pitch</h3>
               {!isTeamSubmitted && <div className="flex justify-center space-x-3">
                 <button onClick={resetTeam} className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center" style={{
                   border: '2px solid #000',
-                  }} title="Reset Team">
+                  boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+                }} title="Reset Team">
                   <RotateCcw className="w-5 h-5" />
                 </button>
                 {selectedTeam.length < 11 && <button onClick={autoCompleteTeam} className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center" style={{
                   border: '2px solid #000',
-                  }} title="Auto Complete Team">
+                  boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+                }} title="Auto Complete Team">
                   <Zap className="w-5 h-5" />
                 </button>}
                 {selectedTeam.length === 11 && <button onClick={() => {
@@ -3063,7 +3218,8 @@ Current app data:
                   setTimeout(intelligentAutoComplete, 100);
                 }} className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center" style={{
                   border: '2px solid #000',
-                  }} title="Retry Auto Complete">
+                  boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+                }} title="Retry Auto Complete">
                   <Zap className="w-5 h-5" />
                 </button>}
               </div>}
@@ -3079,23 +3235,27 @@ Current app data:
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className={`font-bold mb-1 ${isAfterDeadline ? 'text-red-400' : 'text-yellow-400'}`} style={{
-                    
-                    }}>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>
                     {isAfterDeadline ? '🚫 Submission Deadline Passed' : '⏰ Submission Deadline'}
                   </h4>
                   <p className="text-green-100 text-sm" style={{
-                    }}>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
                     {isAfterDeadline ? 'You can no longer submit teams for this gameweek' : 'Teams must be submitted before first fixture starts'}
                   </p>
                 </div>
                 {!isAfterDeadline && <div className="text-right">
                   <div className="text-yellow-400 font-bold text-lg" style={{
-                    
-                    }}>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>
                     {formatDeadline(gameweekDeadline)}
                   </div>
                   <div className="text-green-100 text-xs" style={{
-                    }}>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
                     remaining
                   </div>
                 </div>}
@@ -3107,7 +3267,7 @@ Current app data:
                   Submit Team & Pay 0.05 Stocks
                 </AnimatedButton>}
                 {isFormationValid() && captain && activeGameweek && isAfterDeadline && !isAdmin && <div className="flex-1 py-3 px-6 bg-red-600 text-white rounded-lg text-center border-2 border-black opacity-75" style={{
-                  
+                  fontFamily: 'JetBrains Mono, monospace',
                   fontSize: '18px'
                 }}>
                   Deadline Passed - Cannot Submit
@@ -3116,7 +3276,7 @@ Current app data:
                   Submit Team (Admin Override)
                 </AnimatedButton>}
                 {isFormationValid() && !captain && <div className="flex-1 py-3 px-6 bg-gray-600 text-white rounded-lg text-center border-2 border-black opacity-50" style={{
-                  
+                  fontFamily: 'JetBrains Mono, monospace',
                   fontSize: '18px'
                 }}>
                   Select a Captain First
@@ -3128,97 +3288,113 @@ Current app data:
             </div>
             {showFilters && <SpotlightCard className="bg-black/30 rounded-lg p-6 mb-6 border border-green-700/30" glowColor="blue" size="md" intensity={0.8}>
               <h4 className="text-white font-semibold mb-4 text-lg" style={{
-                
-                }}>Filter Players</h4>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>Filter Players</h4>
               <div className="mb-4">
                 <label className="block text-green-100 text-sm mb-2" style={{
-                  }}>Search Players</label>
+                  fontFamily: 'Inter, sans-serif'
+                }}>Search Players</label>
                 <input type="text" value={filters.search} onChange={e => setFilters({
                   ...filters,
                   search: e.target.value
                 })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" style={{
-                  
-                  }} placeholder="Search by player name..." />
+                  fontFamily: 'Inter, sans-serif',
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                }} placeholder="Search by player name..." />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
                   <label className="block text-green-100 text-sm mb-2" style={{
-                    }}>Club</label>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Club</label>
                   <select value={filters.club} onChange={e => setFilters({
                     ...filters,
                     club: e.target.value
                   })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" style={{
-                    
-                    }}>
+                    fontFamily: 'Inter, sans-serif',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}>
                     <option value="">All Clubs</option>
                     {teams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-green-100 text-sm mb-2" style={{
-                    }}>Position</label>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Position</label>
                   <select value={filters.position} onChange={e => setFilters({
                     ...filters,
                     position: e.target.value
                   })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" style={{
-                    
-                    }}>
+                    fontFamily: 'Inter, sans-serif',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}>
                     <option value="">All Positions</option>
                     {positions.map(position => <option key={position.id} value={position.id}>{position.singular_name}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-green-100 text-sm mb-2" style={{
-                    }}>Min Price (£M)</label>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Min Price (£M)</label>
                   <input type="number" step="0.1" value={filters.minPrice} onChange={e => setFilters({
                     ...filters,
                     minPrice: e.target.value
                   })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" style={{
-                    
-                    }} placeholder="e.g. 4.0" />
+                    fontFamily: 'Inter, sans-serif',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }} placeholder="e.g. 4.0" />
                 </div>
                 <div>
                   <label className="block text-green-100 text-sm mb-2" style={{
-                    }}>Max Price (£M)</label>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Max Price (£M)</label>
                   <input type="number" step="0.1" value={filters.maxPrice} onChange={e => setFilters({
                     ...filters,
                     maxPrice: e.target.value
                   })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" style={{
-                    
-                    }} placeholder="e.g. 15.0" />
+                    fontFamily: 'Inter, sans-serif',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }} placeholder="e.g. 15.0" />
                 </div>
               </div>
               <div className="mb-4">
                 <label className="block text-green-100 text-sm mb-2" style={{
-                  }}>Sort Players</label>
+                  fontFamily: 'Inter, sans-serif'
+                }}>Sort Players</label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   <button onClick={() => setSortOption({
                     field: 'total_points',
                     direction: sortOption.field === 'total_points' && sortOption.direction === 'desc' ? 'asc' : 'desc'
                   })} className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${sortOption.field === 'total_points' ? 'bg-green-600 text-white border-2 border-green-400' : 'bg-black/50 text-green-100 border-2 border-green-700/50 hover:border-green-400'}`} style={{
-                    
-                    }}>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}>
                     Points {sortOption.field === 'total_points' ? sortOption.direction === 'desc' ? '↓' : '↑' : ''}
                   </button>
                   <button onClick={() => setSortOption({
                     field: 'now_cost',
                     direction: sortOption.field === 'now_cost' && sortOption.direction === 'desc' ? 'asc' : 'desc'
                   })} className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${sortOption.field === 'now_cost' ? 'bg-yellow-600 text-white border-2 border-yellow-400' : 'bg-black/50 text-green-100 border-2 border-green-700/50 hover:border-green-400'}`} style={{
-                    
-                    }}>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}>
                     Price {sortOption.field === 'now_cost' ? sortOption.direction === 'desc' ? '↓' : '↑' : ''}
                   </button>
                   <button onClick={() => setSortOption({
                     field: 'selected_by_percent',
                     direction: sortOption.field === 'selected_by_percent' && sortOption.direction === 'desc' ? 'asc' : 'desc'
                   })} className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${sortOption.field === 'selected_by_percent' ? 'bg-purple-600 text-white border-2 border-purple-400' : 'bg-black/50 text-green-100 border-2 border-green-700/50 hover:border-green-400'}`} style={{
-                    
-                    }}>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                  }}>
                     Popular {sortOption.field === 'selected_by_percent' ? sortOption.direction === 'desc' ? '↓' : '↑' : ''}
                   </button>
                 </div>
                 <p className="text-green-200 text-xs mt-2" style={{
-                  }}>
+                  fontFamily: 'Inter, sans-serif'
+                }}>
                   Click sort buttons to toggle between highest/lowest first
                 </p>
               </div>
@@ -3283,17 +3459,20 @@ Current app data:
       {currentView === 'leaderboard' && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-green-700/30" glowColor="yellow" size="lg" intensity={1}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl md:text-4xl font-black text-black bg-white px-6 py-4 rounded-2xl cinematic-text" style={{
-            
+            textShadow: '3px 3px 0px rgba(255,215,0,0.4)',
             border: '4px solid #000',
-            }}>LEADERBOARD</h2>
+            boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
+          }}>LEADERBOARD</h2>
           {activeGameweek?.status === 'active' && <div className="text-right">
             <p className="text-green-400 text-sm font-bold" style={{
-              
-              }}>
+              fontFamily: 'JetBrains Mono, monospace',
+              textShadow: '1px 1px 0px #000'
+            }}>
               {isGameweekStarted ? '🔴 LIVE' : '⏳ PENDING'} GAMEWEEK {activeGameweek.gameweek}
             </p>
             <p className="text-green-200 text-xs" style={{
-              }}>
+              fontFamily: 'Inter, sans-serif'
+            }}>
               {isGameweekStarted ? 'Points update live' : 'Waiting for first fixture'}
             </p>
           </div>}
@@ -3340,9 +3519,10 @@ Current app data:
               filter: 'drop-shadow(2px 2px 0px #000)'
             }} />
             <h2 className="text-3xl md:text-4xl font-black text-black bg-red-500 px-6 py-4 rounded-2xl cinematic-text" style={{
-              
+              textShadow: '3px 3px 0px rgba(0,0,0,0.3)',
               border: '4px solid #000',
-              }}>ADMIN DASHBOARD</h2>
+              boxShadow: '6px 6px 0px rgba(0,0,0,0.8)'
+            }}>ADMIN DASHBOARD</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-red-700/30" glowColor="red" size="sm" intensity={0.8}>
@@ -3351,19 +3531,23 @@ Current app data:
                   filter: 'drop-shadow(2px 2px 0px #000)'
                 }} />
                 <h3 className="text-xl font-bold text-white" style={{
-                  
-                  }}>Generate Invite Codes</h3>
+                  fontFamily: 'JetBrains Mono, monospace',
+                  textShadow: '2px 2px 0px #000'
+                }}>Generate Invite Codes</h3>
               </div>
               <div className="space-y-4">
                 <div className="bg-red-700/20 border border-red-500/50 rounded-lg p-4">
                   <p className="text-red-100 text-sm mb-3" style={{
-                    }}>Generate new invite codes for distribution:</p>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Generate new invite codes for distribution:</p>
                   <div className="flex items-center space-x-3 mb-3">
                     <label className="text-red-100 text-sm" style={{
-                      }}>Count:</label>
+                      fontFamily: 'Inter, sans-serif'
+                    }}>Count:</label>
                     <input type="number" min="1" max="50" value={generateCount} onChange={e => setGenerateCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))} className="bg-black/50 border-2 border-red-700/50 rounded px-3 py-2 text-white text-sm w-24 focus:border-red-400 transition-colors" style={{
-                      
-                      }} />
+                      fontFamily: 'Inter, sans-serif',
+                      boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                    }} />
                     <AnimatedButton onClick={generateAdminInviteCodes} color="red" hoverText="Generate!" className="py-2 px-4">
                       Generate Codes
                     </AnimatedButton>
@@ -3377,28 +3561,33 @@ Current app data:
                   filter: 'drop-shadow(2px 2px 0px #000)'
                 }} />
                 <h3 className="text-xl font-bold text-white" style={{
-                  
-                  }}>Code Statistics</h3>
+                  fontFamily: 'JetBrains Mono, monospace',
+                  textShadow: '2px 2px 0px #000'
+                }}>Code Statistics</h3>
               </div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Total Generated:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Total Generated:</span>
                   <span className="text-white font-bold text-xl">{adminInviteCodes.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Available:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Available:</span>
                   <span className="text-green-400 font-bold text-xl">{adminInviteCodes.filter(code => !code.used).length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Used:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Used:</span>
                   <span className="text-red-400 font-bold text-xl">{adminInviteCodes.filter(code => code.used).length}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-green-100" style={{
-                    }}>Usage Rate:</span>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>Usage Rate:</span>
                   <span className="text-yellow-400 font-bold text-xl">
                     {adminInviteCodes.length > 0 ? Math.round(adminInviteCodes.filter(code => code.used).length / adminInviteCodes.length * 100) : 0}%
                   </span>
@@ -3409,8 +3598,9 @@ Current app data:
           <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-blue-700/30 mt-6" glowColor="blue" size="md" intensity={0.8}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-white" style={{
-                
-                }}>All Invite Codes ({adminInviteCodes.length})</h3>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>All Invite Codes ({adminInviteCodes.length})</h3>
               <div className="flex items-center space-x-2">
                 {adminInviteCodes.filter(code => !code.used).length > 0 && <button onClick={async () => {
                   try {
@@ -3432,15 +3622,17 @@ Current app data:
                   }
                 }} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" style={{
                   border: '2px solid #000',
-                  
-                  }}>
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                  fontFamily: 'JetBrains Mono, monospace'
+                }}>
                   <span>📋</span>
                   <span>Copy All Available</span>
                 </button>}
                 <button onClick={loadAdminInviteCodes} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" style={{
                   border: '2px solid #000',
-                  
-                  }}>
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                  fontFamily: 'JetBrains Mono, monospace'
+                }}>
                   <RotateCcw className="w-4 h-4" />
                   <span>Refresh</span>
                 </button>
@@ -3451,12 +3643,14 @@ Current app data:
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <span className="text-white font-bold text-lg" style={{
-                      }}>
+                      fontFamily: 'JetBrains Mono, monospace'
+                    }}>
                       #{adminInviteCodes.length - index}
                     </span>
                     <code className="bg-black/50 text-green-300 px-3 py-2 rounded text-lg font-bold border border-green-700/50" style={{
-                      
-                      }}>
+                      fontFamily: 'JetBrains Mono, monospace',
+                      textShadow: '1px 1px 0px #000'
+                    }}>
                       {code.code}
                     </code>
                     <span className={`text-sm px-3 py-1 rounded font-medium ${code.used ? 'bg-gray-600/80 text-gray-200' : 'bg-green-600/80 text-green-100'}`}>
@@ -3466,7 +3660,8 @@ Current app data:
                   <div className="flex items-center space-x-3">
                     {code.used && code.usedBy && <div className="text-right">
                       <p className="text-gray-300 text-sm" style={{
-                        }}>Used by:</p>
+                        fontFamily: 'Inter, sans-serif'
+                      }}>Used by:</p>
                       <p className="text-white font-medium">{code.usedBy.slice(0, 8)}...{code.usedBy.slice(-4)}</p>
                     </div>}
                     <button onClick={async () => {
@@ -3485,8 +3680,9 @@ Current app data:
                       }
                     }} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors flex items-center space-x-2" style={{
                       border: '2px solid #000',
-                      
-                      }}>
+                      boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                      fontFamily: 'JetBrains Mono, monospace'
+                    }}>
                       <span>📋</span>
                       <span>Copy</span>
                     </button>
@@ -3502,11 +3698,13 @@ Current app data:
               {adminInviteCodes.length === 0 && <div className="text-center py-8">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-red-200 text-lg" style={{
-                  }}>
+                  fontFamily: 'Inter, sans-serif'
+                }}>
                   No invite codes generated yet.
                 </p>
                 <p className="text-red-300 text-sm mt-2" style={{
-                  }}>
+                  fontFamily: 'Inter, sans-serif'
+                }}>
                   Use the generator above to create your first batch of codes.
                 </p>
               </div>}
@@ -3520,17 +3718,20 @@ Current app data:
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
               </svg>
               <h3 className="text-xl font-bold text-white" style={{
-                
-                }}>AI Social Media Hype Generator</h3>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>AI Social Media Hype Generator</h3>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-yellow-100 text-sm mb-2" style={{
-                  }}>Select Topic:</label>
+                  fontFamily: 'Inter, sans-serif'
+                }}>Select Topic:</label>
                 <select value={selectedShareTopic} onChange={e => setSelectedShareTopic(e.target.value)} className="w-full bg-black/50 border-2 border-yellow-700/50 rounded px-3 py-2 text-white text-sm focus:border-yellow-400 transition-colors" style={{
-                  
-                  }}>
+                  fontFamily: 'Inter, sans-serif',
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.5)'
+                }}>
                   <option value="gameweek">Gameweek Status</option>
                   <option value="deadline">Team Deadline</option>
                   <option value="squad">Squad Building</option>
@@ -3551,15 +3752,17 @@ Current app data:
               {generatedShareMessage && <div className="bg-yellow-700/20 border border-yellow-500/50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-yellow-400 font-bold text-sm" style={{
-                    
-                    }}>Generated Post:</h4>
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>Generated Post:</h4>
                   <span className="text-yellow-200 text-xs">
                     {generatedShareMessage.length}/280 chars
                   </span>
                 </div>
                 <div className="bg-black/50 border border-yellow-700/30 rounded p-3 mb-3">
                   <p className="text-white text-sm leading-relaxed" style={{
-                    }}>
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
                     {generatedShareMessage}
                   </p>
                 </div>
@@ -3572,8 +3775,9 @@ Current app data:
                     alert('Message copied to clipboard!');
                   }} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" style={{
                     border: '2px solid #000',
-                    
-                    }}>
+                    boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                    fontFamily: 'JetBrains Mono, monospace'
+                  }}>
                     📋 Copy
                   </button>
                 </div>
@@ -3584,12 +3788,14 @@ Current app data:
           <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-purple-700/30 mt-6" glowColor="purple" size="md" intensity={0.8}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-white" style={{
-                
-                }}>Historical Gameweeks ({historicalGames.length})</h3>
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>Historical Gameweeks ({historicalGames.length})</h3>
               <button onClick={loadHistoricalGames} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" style={{
                 border: '2px solid #000',
-                
-                }}>
+                boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                fontFamily: 'JetBrains Mono, monospace'
+              }}>
                 <RotateCcw className="w-4 h-4" />
                 <span>Refresh</span>
               </button>
@@ -3599,12 +3805,14 @@ Current app data:
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h4 className="text-purple-400 font-bold text-lg" style={{
-                      
-                      }}>
+                      fontFamily: 'JetBrains Mono, monospace',
+                      textShadow: '2px 2px 0px #000'
+                    }}>
                       Gameweek {game.gameweek}
                     </h4>
                     <p className="text-green-100 text-sm" style={{
-                      }}>
+                      fontFamily: 'Inter, sans-serif'
+                    }}>
                       Prize Pool: {game.prizePool.toFixed(3)} Stocks
                     </p>
                   </div>
@@ -3618,27 +3826,32 @@ Current app data:
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-yellow-400 font-bold text-sm mb-1" style={{
-                        }}>🏆 WINNER</p>
+                        fontFamily: 'JetBrains Mono, monospace'
+                      }}>🏆 WINNER</p>
                       <p className="text-white font-medium text-sm" style={{
-                        }}>
+                        fontFamily: 'Inter, sans-serif'
+                      }}>
                         {game.winnerId.slice(0, 8)}...{game.winnerId.slice(-4)}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-green-400 font-bold text-lg" style={{
-                        
-                        }}>
+                        fontFamily: 'JetBrains Mono, monospace',
+                        textShadow: '1px 1px 0px #000'
+                      }}>
                         {game.winnerScore} pts
                       </p>
                       <p className="text-yellow-400 text-sm" style={{
-                        }}>
+                        fontFamily: 'Inter, sans-serif'
+                      }}>
                         Won: {(game.prizePool * 0.95).toFixed(3)} Stocks
                       </p>
                     </div>
                   </div>
                   {game.hasClaimed && game.payout && <div className="mt-2 pt-2 border-t border-purple-700/30">
                     <p className="text-green-300 text-xs" style={{
-                      }}>
+                      fontFamily: 'Inter, sans-serif'
+                    }}>
                       Claimed: {(game.payout.amount || 0).toFixed(3)} Stocks
                     </p>
                   </div>}
@@ -3647,11 +3860,13 @@ Current app data:
               {historicalGames.length === 0 && <div className="text-center py-8">
                 <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-purple-200 text-lg" style={{
-                  }}>
+                  fontFamily: 'Inter, sans-serif'
+                }}>
                   No finished gameweeks yet.
                 </p>
                 <p className="text-purple-300 text-sm mt-2" style={{
-                  }}>
+                  fontFamily: 'Inter, sans-serif'
+                }}>
                   Historical data will appear here once gameweeks are completed.
                 </p>
               </div>}
@@ -3659,13 +3874,13 @@ Current app data:
           </SpotlightCard>
 
           {/* TOKENOMICS ENGINE */}
-          <div className="glass-card p-6 mt-6 relative overflow-hidden group">
+          <div className="rh-card p-6 mt-6 relative overflow-hidden group">
             <div className="absolute inset-0 bg-red-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
             <h3 className="text-red-400 font-bold mb-2 text-xl font-mono uppercase tracking-widest relative z-10 flex items-center space-x-2">
               <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.8)]"></span>
               <span>Tokenomics Engine</span>
             </h3>
-            <p className="text-[#94a3b8] mb-6 text-sm font-mono relative z-10">
+            <p className="text-[var(--text-secondary)] mb-6 text-sm font-mono relative z-10">
               Simulate the DeFi loop: Burn all FPLS entry fees, swap tax revenue for real-world stocks, and airdrop prizes.
             </p>
             
@@ -3673,7 +3888,7 @@ Current app data:
               onClick={() => {
                 alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 45,000 $FPLS... (SUCCESS)\n> Swapping Tax Revenue for AAPL Stocks... (SUCCESS)\n> Distributing Prizes to Top 10 Managers...\n> Airdropping Participation Stocks...\n\nSimulation Complete!");
               }} 
-              className="w-full bg-[rgba(255,255,255,0.05)] border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 py-4 font-mono font-bold uppercase tracking-[0.2em] transition-all hover:bg-red-900/20 relative z-10 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] rounded-lg overflow-hidden"
+              className="w-full bg-[var(--carbon-surface)] border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 py-4 font-mono font-bold uppercase tracking-[0.2em] transition-all hover:bg-red-900/20 relative z-10 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)] rounded-lg overflow-hidden"
             >
               <span className="relative z-10">Execute Gameweek Tokenomics</span>
             </button>
@@ -3694,7 +3909,8 @@ Current app data:
               </span>
               <a href="https://x.com/fpl_sol" target="_blank" rel="noopener noreferrer" className="bg-yellow-600 hover:bg-yellow-700 text-black p-2 rounded-lg transition-all duration-200 group" style={{
                 border: '2px solid #000',
-                }}>
+                boxShadow: '3px 3px 0px rgba(0,0,0,0.8)'
+              }}>
                 <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor" style={{
                   filter: 'drop-shadow(1px 1px 0px #000)'
                 }}>
@@ -3714,8 +3930,9 @@ Current app data:
           <LoadingWave bars={8} message={loadingMessage || "Processing..."} messagePosition="bottom" size="lg" color="yellow" />
           <div className="space-y-2">
             <p className="text-yellow-100 text-sm" style={{
-              
-              }}>
+              fontFamily: 'Inter, sans-serif',
+              textShadow: '1px 1px 0px #000'
+            }}>
               Please wait, this may take a moment...
             </p>
             <div className="flex justify-center">
@@ -3725,7 +3942,125 @@ Current app data:
         </div>
       </SpotlightCard>
     </div>}
+    {showInfoPopup && <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-hidden">
+      <SpotlightCard className="bg-black/90 backdrop-blur-md rounded-xl border border-green-700/50 max-w-2xl max-h-[85vh] w-full flex flex-col overflow-hidden" glowColor="blue" size="lg" intensity={1.2}>
+        <div className="p-6 md:p-8 overflow-y-auto flex-1" style={{
+          maxHeight: 'calc(85vh - 2rem)'
+        }}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-5xl md:text-6xl font-black text-black bg-white px-8 py-6 rounded-3xl cinematic-text text-center" style={{
+              textShadow: '4px 4px 0px rgba(255,215,0,0.4)',
+              border: '4px solid #000',
+              boxShadow: '8px 8px 0px rgba(0,0,0,0.8)'
+            }}>HOW IT WORKS</h2>
+            <button onClick={() => setShowInfoPopup(false)} className="text-white hover:text-red-400 transition-colors text-2xl font-bold bg-red-600/80 rounded-full w-8 h-8 flex items-center justify-center" style={{
+              border: '2px solid #000',
+              boxShadow: '2px 2px 0px rgba(0,0,0,0.8)'
+            }}>
+              ×
+            </button>
+          </div>
+          <div className="space-y-6 text-white">
+            <div className="bg-green-700/20 rounded-lg p-4 border border-green-700/30">
+              <h3 className="text-xl font-bold text-yellow-400 mb-2" style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                textShadow: '2px 2px 0px #000'
+              }}>🏆 Welcome to fpl.sol</h3>
+              <p className="text-green-100" style={{
+                fontFamily: 'Inter, sans-serif'
+              }}>
+                The future of fantasy football where your tactical genius meets crypto rewards! Build your dream Premier League squad and compete for Stocks prizes.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-white text-lg flex-shrink-0" style={{
+                  border: '2px solid #000',
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                  fontFamily: 'JetBrains Mono, monospace'
+                }}>1</div>
+                <div>
+                  <h4 className="text-lg font-bold text-blue-400" style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>Build Your Squad</h4>
+                  <p className="text-green-100 text-sm" style={{
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
+                    Select 11 players with £80M budget. Choose 1 goalkeeper, 3-5 defenders, 2-5 midfielders, and 1-3 forwards. Pick a captain for double points!
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-white text-lg flex-shrink-0" style={{
+                  border: '2px solid #000',
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                  fontFamily: 'JetBrains Mono, monospace'
+                }}>2</div>
+                <div>
+                  <h4 className="text-lg font-bold text-purple-400" style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>Stake & Enter</h4>
+                  <p className="text-green-100 text-sm" style={{
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
+                    Pay 0.05 Stocks entry fee to join the gameweek. Your payment goes into the prize pool for winners to claim.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="bg-green-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-white text-lg flex-shrink-0" style={{
+                  border: '2px solid #000',
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                  fontFamily: 'JetBrains Mono, monospace'
+                }}>3</div>
+                <div>
+                  <h4 className="text-lg font-bold text-green-400" style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>Score Points</h4>
+                  <p className="text-green-100 text-sm" style={{
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
+                    Earn points based on real Premier League player performances. Goals, assists, clean sheets, and more all count towards your total.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start space-x-3">
+                <div className="bg-yellow-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-black text-lg flex-shrink-0" style={{
+                  border: '2px solid #000',
+                  boxShadow: '2px 2px 0px rgba(0,0,0,0.8)',
+                  fontFamily: 'JetBrains Mono, monospace'
+                }}>4</div>
+                <div>
+                  <h4 className="text-lg font-bold text-yellow-400" style={{
+                    fontFamily: 'JetBrains Mono, monospace',
+                    textShadow: '2px 2px 0px #000'
+                  }}>Win Stocks Rewards</h4>
+                  <p className="text-green-100 text-sm" style={{
+                    fontFamily: 'Inter, sans-serif'
+                  }}>
+                    Top performers split 95% of the prize pool. Climb the leaderboard and earn crypto rewards for your fantasy football skills!
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="text-center">
+              <button onClick={() => setShowInfoPopup(false)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors" style={{
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: '18px',
+                border: '2px solid #000',
+                boxShadow: '4px 4px 0px rgba(0,0,0,0.8)',
+                textShadow: '1px 1px 0px #000'
+              }}>
+                Got It! Let's Play
+              </button>
+            </div>
+          </div>
+        </div>
+      </SpotlightCard>
+    </div>}
   </div>;
 }
-
 export default App;

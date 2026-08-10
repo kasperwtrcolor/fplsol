@@ -2522,7 +2522,7 @@ Current app data:
   if (!hasEnteredApp) {
     return <div className="min-h-screen bg-[var(--bank-bg)] flex flex-col font-sans" style={{ backgroundImage: 'linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05)), linear-gradient(45deg, rgba(0,0,0,0.05) 25%, transparent 25%, transparent 75%, rgba(0,0,0,0.05) 75%, rgba(0,0,0,0.05))', backgroundSize: '20px 20px', backgroundPosition: '0 0, 10px 10px' }}>
       <header className="p-6 border-b-4 border-black bg-[var(--bank-green)] flex justify-between items-center shadow-[4px_4px_0px_rgba(0,0,0,1)] z-10">
-        <h1 className="text-[var(--bank-gold)] text-3xl font-bold tracking-tight" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '4px 4px 0px black' }}>STONK BANKERS</h1>
+        <h1 className="text-[var(--bank-gold)] text-3xl font-bold tracking-tight" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '4px 4px 0px black' }}>FPL.STOCKS</h1>
         <div className="flex space-x-4">
           {authenticated ? (
             <button onClick={logout} className="rh-button bg-red-500 text-white border-black">
@@ -2539,11 +2539,18 @@ Current app data:
       <main className="flex-1 flex flex-col lg:flex-row max-w-7xl mx-auto w-full p-6 gap-12 items-center relative">
         <div className="flex-1 flex flex-col justify-center">
           <h2 className="text-5xl md:text-6xl font-bold text-black mb-6 leading-tight" style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '4px 4px 0px white', lineHeight: '1.2' }}>
-            BECOME THE <br/> <span className="text-[var(--bank-green)]">ULTIMATE</span> <br/> STONK BANKER
+            BURN $FPLS. <br/> <span className="text-[var(--bank-green)]">EARN STOCKS.</span>
           </h2>
-          <p className="text-black text-2xl mb-8 max-w-xl font-bold bg-white p-4 border-4 border-black shadow-[6px_6px_0px_rgba(0,0,0,1)]" style={{ fontFamily: "'VT323', monospace" }}>
-            Build your Premier League dream team, stake your Stock Tokens, and compete against other bankers to win the entire prize pool. Fully decentralized.
-          </p>
+          
+          <div className="bg-white border-4 border-black shadow-[6px_6px_0px_rgba(0,0,0,1)] p-6 mb-8 text-black" style={{ fontFamily: "'VT323', monospace", fontSize: '22px', lineHeight: '1.4' }}>
+            <p className="font-bold mb-4 text-2xl border-b-2 border-black pb-2">How It Works:</p>
+            <ul className="space-y-3">
+              <li><span className="text-[var(--bank-green)] font-bold">1. GET $FPLS:</span> Buy $FPLS on the Robinhood Chain.</li>
+              <li><span className="text-[var(--bank-green)] font-bold">2. BURN TO ENTER:</span> Burn 1000 $FPLS to submit your 11-man dream team. (100% of entry fees are burned to reward holders!)</li>
+              <li><span className="text-[var(--bank-green)] font-bold">3. WIN STOCKS:</span> Protocol tax revenue buys real-world Robinhood Stocks. The Top 10 managers win the majority of the prize pool!</li>
+              <li><span className="text-[var(--bank-green)] font-bold">4. EVERYONE EARNS:</span> All participants receive a guaranteed airdrop of Stocks just for playing.</li>
+            </ul>
+          </div>
           
           <button onClick={() => setHasEnteredApp(true)} className="rh-button w-full md:w-auto text-xl py-6 px-12 inline-block shadow-[8px_8px_0px_rgba(0,0,0,1)] text-center">
             ENTER THE BANK

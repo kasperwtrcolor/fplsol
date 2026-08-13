@@ -425,7 +425,15 @@ function App() {
   const { writeContractAsync } = useWriteContract();
   
   const [trendingTokens, setTrendingTokens] = useState([]);
-  
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setToast({ title: '🔥 Pool Update', message: 'Reward pool increased by +0.005 $GME!' });
+      setTimeout(() => setToast(null), 4000);
+    }, 45000);
+    return () => clearInterval(interval);
+  }, []);
   const login = () => {
     connect({ connector: injected() });
   };
@@ -457,7 +465,7 @@ function App() {
   const [selectedFixtureGameweek, setSelectedFixtureGameweek] = useState(1);
   const [selectedGameweekFixtures, setSelectedGameweekFixtures] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState([]);
-  const [teamBudget, setTeamBudget] = useState(800);
+  const [teamBudget, setTeamBudget] = useState(600);
   const [captain, setCaptain] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [userEntries, setUserEntries] = useState([]);
@@ -489,6 +497,7 @@ function App() {
   const [liveFixtures, setLiveFixtures] = useState([]);
   const [fplTeams, setFplTeams] = useState({});
   const [targetDate, setTargetDate] = useState(null);
+  const [livePoints, setLivePoints] = useState({});
 
   useEffect(() => {
     const fetchFplData = async () => {
@@ -510,6 +519,19 @@ function App() {
           const fixturesData = await fixturesRes.json();
           const nextGwFixtures = fixturesData.filter(f => f.event === nextGw.id).slice(0, 3);
           setLiveFixtures(nextGwFixtures);
+        }
+
+        const currentGw = bootstrapData.events.find(e => e.is_current);
+        if (currentGw) {
+          const liveRes = await fetch(`https://corsproxy.io/?https://fantasy.premierleague.com/api/event/${currentGw.id}/live/`);
+          if (liveRes.ok) {
+            const liveData = await liveRes.json();
+            const pointsMap = {};
+            liveData.elements.forEach(el => {
+              pointsMap[el.id] = el.stats.total_points;
+            });
+            setLivePoints(pointsMap);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch FPL API data:", err);
@@ -594,10 +616,11 @@ function App() {
       return () => clearInterval(interval);
     }
   }, [activeGameweek?.id, activeGameweek?.status, activeGameweek?.gameweek, isGameweekStarted]);
+
   useEffect(() => {
-    if (rawLeaderboard.length > 0 && activeGameweek?.status === 'active') {
+    if (rawLeaderboard && rawLeaderboard.length > 0) {
       if (players.length > 0 && isGameweekStarted) {
-        const liveLeaderboard = calculateLiveLeaderboard(rawLeaderboard, players);
+        const liveLeaderboard = calculateLiveLeaderboard(rawLeaderboard, players, livePoints);
         setLeaderboard(liveLeaderboard);
         setUserEntries(prevEntries => {
           return prevEntries.map(entry => {
@@ -637,7 +660,7 @@ function App() {
         const captainPlayer = teamPlayers.find(p => p.id.toString() === currentUserEntry.captain);
         setCaptain(captainPlayer);
         const teamCost = teamPlayers.reduce((acc, p) => acc + p.now_cost, 0);
-        setTeamBudget(800 - teamCost);
+        setTeamBudget(600 - teamCost);
       } catch (e) {
         console.error("Error parsing submitted team:", e);
       }
@@ -1568,7 +1591,7 @@ function App() {
   };
   const resetTeam = () => {
     setSelectedTeam([]);
-    setTeamBudget(800);
+    setTeamBudget(600);
     setCaptain(null);
   };
   const getFormationRequirements = formation => {
@@ -1580,7 +1603,7 @@ function App() {
       4: att
     };
   };
-  const calculateLiveLeaderboard = (entries, players) => {
+  const calculateLiveLeaderboard = (entries, players, livePointsMap = {}) => {
     if (!entries || !players || players.length === 0) return [];
     if (!isGameweekStarted) {
       return entries.map(entry => ({
@@ -1597,7 +1620,7 @@ function App() {
         teamIds.forEach(playerId => {
           const player = players.find(p => p.id === playerId);
           if (player) {
-            const points = player.event_points || 0;
+            const points = livePointsMap[player.id] !== undefined ? livePointsMap[player.id] : (player.event_points || 0);
             if (player.id.toString() === captainId) {
               gameweekPoints += points * 2;
             } else {
@@ -2135,7 +2158,7 @@ Current app data:
         gameId: activeGameweek.id,
         team: JSON.stringify(playerIds),
         captain: captain.id.toString(),
-        teamValue: 800 - teamBudget,
+        teamValue: 600 - teamBudget,
         points: 0,
         txHash: enterTx
       });
@@ -2561,7 +2584,7 @@ Current app data:
             <p className="text-[var(--text-secondary)] text-sm text-left">
               1. A 3% tax is applied to all $FPLS transfers, automatically swapped for real-world Robinhood Stocks (e.g. AAPL, TSLA).<br/><br/>
               2. 1000 $FPLS is burned per gameweek entry, reducing the total supply forever.<br/><br/>
-              3. At gameweek resolution, the accumulated $GME is distributed entirely to players based on their rank.
+              3. At gameweek resolution, 90% of the accumulated $GME is distributed to all players based on their rank, and 10% is allocated to the platform treasury for development.
             </p>
           </div>
         </div>
@@ -2593,6 +2616,19 @@ Current app data:
     </div>;
   }
   return <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-black via-gray-900 to-black film-grain' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100'}`}>
+    {toast && (
+      <div className="fixed bottom-4 right-4 z-[100] bg-black/90 backdrop-blur-xl border border-green-500/50 p-4 rounded-xl shadow-[0_0_20px_rgba(74,222,128,0.2)] animate-fade-in-up flex items-center space-x-3">
+        <div className="bg-green-500/20 p-2 rounded-full">
+          <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <h4 className="text-green-400 font-bold text-xs tracking-widest uppercase">{toast.title}</h4>
+          <p className="text-gray-200 text-sm mt-0.5">{toast.message}</p>
+        </div>
+      </div>
+    )}
     <header className={`${theme === 'dark' ? 'bg-black/40' : 'bg-white/90'} backdrop-blur-sm border-b ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`}>
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between mb-4">
@@ -2658,8 +2694,26 @@ Current app data:
       {currentView === 'home' && <div className="space-y-8">
         { }
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Countdown & Fixtures */}
+          {/* Left Column: Countdown, Stats, & Fixtures */}
           <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-red-900/50' : 'border-red-300/50'}`} glowColor="red" size="sm" intensity={0.5}>
+                <div className="text-center">
+                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS BURNED 🔥</h3>
+                  <div className="text-xl md:text-2xl font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+                    {(entriesCount * 1000).toLocaleString()}
+                  </div>
+                </div>
+              </SpotlightCard>
+              <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-green-900/50' : 'border-green-300/50'}`} glowColor="green" size="sm" intensity={0.5}>
+                <div className="text-center">
+                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TOTAL REWARDS</h3>
+                  <div className="text-xl md:text-2xl font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
+                    {(entriesCount * 0.05).toFixed(2)} $GME
+                  </div>
+                </div>
+              </SpotlightCard>
+            </div>
             <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="blue" size="lg" intensity={0.8}>
               <div className="text-center">
                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 font-mono">Gameweek 1 Kicks Off In</h3>
@@ -3705,7 +3759,7 @@ Current app data:
             
             <button 
               onClick={() => {
-                alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 45,000 $FPLS... (SUCCESS)\n> Swapping Tax Revenue for $GME Stocks... (SUCCESS)\n> Distributing Prizes to Top 10 Managers...\n> Airdropping Participation $GME...\n\nSimulation Complete!");
+                alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 100% of $FPLS... (SUCCESS)\n> Generating $GME Rewards...\n> Allocating 10% to Treasury...\n> Distributing 90% to ALL Players...\n\nSimulation Complete!");
               }} 
               className="w-full bg-[var(--carbon-surface)] border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 py-4 font-mono font-bold uppercase tracking-[0.2em] transition-all hover:bg-red-900/20 relative z-10 hover: rounded-lg overflow-hidden"
             >

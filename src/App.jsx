@@ -502,7 +502,7 @@ function App() {
   useEffect(() => {
     const fetchFplData = async () => {
       try {
-        const bootstrapRes = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/bootstrap-static/');
+        const bootstrapRes = await fetch('/api/fpl?path=bootstrap-static/');
         const bootstrapData = await bootstrapRes.json();
         
         const teamsMap = {};
@@ -515,7 +515,7 @@ function App() {
         if (nextGw) {
           setTargetDate(new Date(nextGw.deadline_time).getTime());
           
-          const fixturesRes = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/fixtures/');
+          const fixturesRes = await fetch('/api/fpl?path=fixtures/');
           const fixturesData = await fixturesRes.json();
           const nextGwFixtures = fixturesData.filter(f => f.event === nextGw.id).slice(0, 3);
           setLiveFixtures(nextGwFixtures);
@@ -523,7 +523,7 @@ function App() {
 
         const currentGw = bootstrapData.events.find(e => e.is_current);
         if (currentGw) {
-          const liveRes = await fetch(`https://corsproxy.io/?https://fantasy.premierleague.com/api/event/${currentGw.id}/live/`);
+          const liveRes = await fetch(`/api/fpl?path=event/${currentGw.id}/live/`);
           if (liveRes.ok) {
             const liveData = await liveRes.json();
             const pointsMap = {};
@@ -969,7 +969,7 @@ function App() {
   const autoStartNewGameweek = async () => {
     console.log("Attempting to auto-start new gameweek...");
     try {
-      const response = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/bootstrap-static/');
+      const response = await fetch('/api/fpl?path=bootstrap-static/');
       const data = await response.json();
       const currentFplEvent = data.events.find(event => event.is_current === true);
       if (!currentFplEvent) {
@@ -2518,54 +2518,54 @@ Current app data:
         </div>
       </header>
       
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[1200px] mx-auto px-6 relative z-10 pt-10 pb-32">
-        <div className="text-center mb-16">
-          <p className="text-[#8b9a90] uppercase tracking-[0.3em] text-sm mb-4 font-bold">The Robinhood Chain Protocol</p>
-          <h2 className="text-[6vw] leading-[0.9] font-black text-white uppercase tracking-tighter mx-auto max-w-4xl" >
+      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[1000px] mx-auto px-6 relative z-10 pt-10 pb-20">
+        <div className="text-center mb-10">
+          <p className="text-[#8b9a90] uppercase tracking-[0.3em] text-xs mb-4 font-mono font-bold">The Robinhood Chain Protocol</p>
+          <h2 className="text-3xl md:text-5xl leading-tight font-mono font-black text-white uppercase tracking-tighter mx-auto max-w-4xl" >
             BURN $FPLS.<br/>
             <span className="text-[var(--emerald-glow)]">EARN STOCKS.</span>
           </h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full mb-20">
-          <div className="rh-card flex flex-col text-left py-8">
-            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-4">01 / LIQUIDITY</p>
-            <h3 className="text-white text-lg font-bold uppercase mb-4 tracking-tight">GET $FPLS</h3>
-            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full mb-12">
+          <div className="rh-card flex flex-col text-left py-6 px-4">
+            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">01 / LIQUIDITY</p>
+            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">GET $FPLS</h3>
+            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
               Acquire $FPLS native tokens directly on the Robinhood Chain to begin your management career.
             </p>
           </div>
           
-          <div className="rh-card flex flex-col text-left py-8">
-            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-4">02 / DEFLATION</p>
-            <h3 className="text-white text-lg font-bold uppercase mb-4 tracking-tight">BURN TO ENTER</h3>
-            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+          <div className="rh-card flex flex-col text-left py-6 px-4">
+            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">02 / DEFLATION</p>
+            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">BURN TO ENTER</h3>
+            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
               Burn 1000 $FPLS to submit your 11-man team. 100% of fees are destroyed forever to reward holders.
             </p>
           </div>
           
-          <div className="rh-card flex flex-col text-left py-8">
-            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-4">03 / ASCENSION</p>
-            <h3 className="text-white text-lg font-bold uppercase mb-4 tracking-tight">WIN STOCKS</h3>
-            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+          <div className="rh-card flex flex-col text-left py-6 px-4">
+            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">03 / ASCENSION</p>
+            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">WIN STOCKS</h3>
+            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
               Tax revenue buys real-world equity. The Top 10 managers seize the primary prize pool.
             </p>
           </div>
           
-          <div className="rh-card flex flex-col text-left py-8">
-            <p className="text-[var(--emerald-glow)] font-mono text-xs font-bold tracking-wider mb-4">04 / EQUALITY</p>
-            <h3 className="text-white text-lg font-bold uppercase mb-4 tracking-tight">EVERYONE EARNS</h3>
-            <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+          <div className="rh-card flex flex-col text-left py-6 px-4">
+            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">04 / EQUALITY</p>
+            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">EVERYONE EARNS</h3>
+            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
               No one leaves empty-handed. All valid participants receive a guaranteed airdrop of fractionals.
             </p>
           </div>
         </div>
         
         <div className="flex flex-col items-center">
-          <button onClick={() => setHasEnteredApp(true)} className="rh-button text-lg px-16 py-5 mb-4">
+          <button onClick={() => setHasEnteredApp(true)} className="rh-button text-sm font-mono uppercase tracking-widest px-8 py-3 mb-4">
             ENTER THE BANK
           </button>
-          <p className="text-[#8b9a90] text-xs font-serif uppercase tracking-widest opacity-60">
+          <p className="text-[#8b9a90] text-[10px] font-mono uppercase tracking-widest opacity-60">
             Real-world assets secured by on-chain burning
           </p>
         </div>
@@ -2700,7 +2700,7 @@ Current app data:
               <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-red-900/50' : 'border-red-300/50'}`} glowColor="red" size="sm" intensity={0.5}>
                 <div className="text-center">
                   <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS BURNED 🔥</h3>
-                  <div className="text-xl md:text-2xl font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+                  <div className="text-lg md:text-xl font-mono font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
                     {(entriesCount * 1000).toLocaleString()}
                   </div>
                 </div>
@@ -2708,7 +2708,7 @@ Current app data:
               <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-green-900/50' : 'border-green-300/50'}`} glowColor="green" size="sm" intensity={0.5}>
                 <div className="text-center">
                   <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TOTAL REWARDS</h3>
-                  <div className="text-xl md:text-2xl font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
+                  <div className="text-lg md:text-xl font-mono font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
                     {(entriesCount * 0.05).toFixed(2)} $GME
                   </div>
                 </div>
@@ -2716,16 +2716,16 @@ Current app data:
             </div>
             <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="blue" size="lg" intensity={0.8}>
               <div className="text-center">
-                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 font-mono">Gameweek 1 Kicks Off In</h3>
-                <div className="text-4xl md:text-5xl font-black text-white bg-black/50 p-4 rounded-xl cinematic-text border border-gray-800 tracking-wider">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 font-mono">Gameweek 1 Kicks Off In</h3>
+                <div className="text-2xl md:text-3xl font-mono font-black text-white bg-black/50 p-4 rounded-xl cinematic-text border border-gray-800 tracking-wider">
                   {gw1Countdown}
                 </div>
               </div>
             </SpotlightCard>
             
             <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={0.5}>
-              <h2 className="text-xl font-black text-black bg-white px-4 py-2 rounded-xl mb-4 cinematic-text inline-block">OPENING FIXTURES</h2>
-              <div className="space-y-3 font-mono text-sm">
+              <h2 className="text-sm font-mono font-black text-black bg-white px-3 py-1 rounded-lg mb-4 cinematic-text inline-block">OPENING FIXTURES</h2>
+              <div className="space-y-3 font-mono text-xs">
                 {liveFixtures.length > 0 ? liveFixtures.map((fixture) => (
                   <div key={fixture.id} className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
                     <span className="text-gray-300 font-bold">{fplTeams[fixture.team_h] || fixture.team_h}</span>
@@ -2747,28 +2747,37 @@ Current app data:
             <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-green-700/30' : 'border-green-300/50'} h-full`} glowColor="green" size="lg" intensity={0.7}>
               <div className="flex items-center space-x-3 mb-6">
                 <div className="bg-green-500/20 p-2 rounded-lg">
-                  <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h2 className="text-xl font-black text-green-400 cinematic-text">RWAs ON ROBINHOOD CHAIN</h2>
+                <h2 className="text-sm font-mono font-black text-green-400 cinematic-text">RWAs ON ROBINHOOD CHAIN</h2>
               </div>
-              
-              <div className="space-y-5 text-gray-300 font-mono text-sm leading-relaxed">
-                <p>
-                  FPL.STOCKS leverages the <strong className="text-white">Robinhood Chain</strong> to bring Real World Assets (RWAs) to fantasy sports.
-                </p>
-                <div className="bg-black/50 p-4 rounded-lg border border-green-900/30">
-                  <h4 className="text-green-400 font-bold mb-2">1. The Entry Pool</h4>
-                  <p>When you stake your 0.05 $GME entry fee, it is locked into our decentralized smart contract vault.</p>
+              <div className="space-y-4">
+                <div className="bg-black/40 p-4 rounded-xl border border-green-900/50">
+                  <h3 className="text-[10px] font-mono text-green-500 uppercase tracking-widest mb-2">The Engine</h3>
+                  <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
+                    FPL.Stocks bridges Fantasy Premier League data with DeFi tokenomics. 
+                    The protocol operates on a deflationary cycle synced with the official English Premier League schedule.
+                  </p>
                 </div>
-                <div className="bg-black/50 p-4 rounded-lg border border-green-900/30">
-                  <h4 className="text-green-400 font-bold mb-2">2. The Yield Engine</h4>
-                  <p>The total prize pool represents tokenized shares of $GME (GameStop Corp). The blockchain ensures verifiable ownership of these real-world stock derivatives.</p>
-                </div>
-                <div className="bg-black/50 p-4 rounded-lg border border-green-900/30">
-                  <h4 className="text-green-400 font-bold mb-2">3. The Payout</h4>
-                  <p>At the end of the gameweek, Chainlink Oracles fetch the final FPL points. The smart contract automatically settles and distributes the $GME pool to the top managers.</p>
+                
+                <div className="bg-black/40 p-4 rounded-xl border border-green-900/50">
+                  <h3 className="text-[10px] font-mono text-green-500 uppercase tracking-widest mb-2">The Defi Loop</h3>
+                  <ul className="text-[var(--text-secondary)] text-xs font-mono space-y-2">
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2">›</span>
+                      3% tax on $FPLS transfers buys real-world Robinhood Stocks (e.g. AAPL, GME).
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-red-500 mr-2">›</span>
+                      1000 $FPLS burned per gameweek entry, reducing total supply forever.
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-yellow-500 mr-2">›</span>
+                      90% of accumulated $GME is distributed to ALL players. 10% to treasury.
+                    </li>
+                  </ul>
                 </div>
               </div>
             </SpotlightCard>

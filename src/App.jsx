@@ -1578,7 +1578,7 @@ function App() {
   };
   const resetTeam = () => {
     setSelectedTeam([]);
-    setTeamBudget(600);
+    setTeamBudget(700);
     setCaptain(null);
   };
   const getFormationRequirements = formation => {

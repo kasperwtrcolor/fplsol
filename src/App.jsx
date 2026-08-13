@@ -318,29 +318,11 @@ const FormationDock = ({
     value: '5-4-1',
     label: 'Ultra Defensive'
   }];
-  return <motion.div className="flex justify-center items-center gap-2 md:gap-3 bg-black/40 backdrop-blur-md p-2 rounded-2xl border border-green-700/30"  initial={{
-    y: 50,
-    opacity: 0
-  }} animate={{
-    y: 0,
-    opacity: 1
-  }} transition={{
-    delay: 0.2,
-    type: 'spring',
-    stiffness: 100
-  }}>
+  return <div className="flex justify-center items-center gap-2 flex-wrap">
     {formations.map(formation => {
       const isActive = selectedFormation === formation.value;
-      return <motion.button key={formation.value} onClick={() => setSelectedFormation(formation.value)} className={`relative px-3 py-2 md:px-4 md:py-2 rounded-xl transition-colors duration-300 group`}  whileHover={{
-        y: -5,
-        scale: 1.05
-      }} whileTap={{
-        scale: 0.95
-      }} animate={{
-        backgroundColor: isActive ? 'rgba(34, 197, 94, 0.5)' : 'rgba(0, 0, 0, 0.3)',
-        color: isActive ? '#FFFFFF' : '#A3E635'
-      }}>
-        <span className="font-bold text-sm md:text-base" >
+      return <button key={formation.value} onClick={() => setSelectedFormation(formation.value)} className={`relative px-3 py-1 md:px-4 md:py-1 border transition-colors duration-300 font-mono text-[9px] md:text-[10px] tracking-widest ${isActive ? 'bg-white text-black border-white' : 'bg-transparent text-[#666] border-[#1A1A1A] hover:border-[#333] hover:text-white'}`}>
+        <span className="font-bold">
           {formation.value}
         </span>
         <motion.div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black/90 text-white text-xs px-2 py-1 rounded border border-green-700/50 pointer-events-none"  initial={{
@@ -354,9 +336,9 @@ const FormationDock = ({
         }}>
           {formation.label}
         </motion.div>
-      </motion.button>;
+      </button>;
     })}
-  </motion.div>;
+  </div>;
 };
 const LandingHero = ({ setCurrentView }) => {
   return (
@@ -1573,10 +1555,12 @@ function App() {
     }
   };
   const addPlayerToTeam = player => {
-    const {
-      canAdd
-    } = canAddPlayer(player);
-    if (!canAdd) return;
+    const { canAdd, reason } = canAddPlayer(player);
+    if (!canAdd) {
+      setToast({ title: 'SELECTION ERROR', message: reason });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
     setSelectedTeam([...selectedTeam, player]);
     setTeamBudget(teamBudget - player.now_cost);
   };
@@ -2429,58 +2413,58 @@ Current app data:
       position
     }) => {
       const isCaptain = captain && captain.id === player.id;
-      return <SpotlightCard className="relative group p-[1px] rounded-xl" glowColor={isCaptain ? "yellow" : "green"} size="sm" intensity={isCaptain ? 1.2 : 0.6}>
-        <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-3 text-center min-w-[100px] md:min-w-[120px] h-full" style={{
+      return <motion.div 
+          initial={{ scale: 0.5, opacity: 0 }} 
+          animate={{ scale: 1, opacity: 1 }} 
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="relative group p-[1px] rounded-xl"
+        >
+        <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-1 md:p-2 text-center min-w-[70px] md:min-w-[90px] h-full" style={{
           background: 'linear-gradient(145deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
           border: '1px solid var(--border-light)'
         }}>
-          {isCaptain && <div className="absolute -top-2 -left-2 bg-[var(--emerald-glow)] text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center font-mono ">C</div>}
-          <div className="mb-2 md:mb-3 rounded-lg overflow-hidden border border-[var(--border-light)] bg-white/5">
+          {isCaptain && <div className="absolute -top-2 -left-2 bg-[#00FF00] text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center font-mono z-10">C</div>}
+          <div className="mb-1 md:mb-2 rounded-lg overflow-hidden border border-[#1A1A1A] bg-white/5">
             <img 
               src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
               alt={`${player.first_name} ${player.second_name}`} 
               onError={(e) => { e.target.src = "/pixel_footballer.jpg"; }}
-              className="w-10 h-14 md:w-16 md:h-20 mx-auto object-cover" 
+              className="w-8 h-10 md:w-12 md:h-14 mx-auto object-cover" 
             />
           </div>
-          <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.first_name}</div>
-          <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.second_name}</div>
-          <div className="flex justify-between items-center text-[10px] mt-2 px-1 font-mono">
-            <span className="text-[var(--emerald-glow)]">{formatPrice(player.now_cost)}</span>
+          <div className="text-[9px] font-bold truncate text-white/90 uppercase tracking-widest leading-tight">{player.first_name}</div>
+          <div className="text-[10px] font-bold truncate text-white uppercase tracking-widest leading-tight">{player.second_name}</div>
+          <div className="flex justify-between items-center text-[9px] mt-1 px-1 font-mono">
+            <span className="text-[#8b9a90]">{formatPrice(player.now_cost)}</span>
             {isTeamSubmitted && <span className="text-white font-bold opacity-70">
               {isGameweekStarted ? player.event_points || 0 : 0} pts
             </span>}
           </div>
-          {isCaptain && <div className="text-[9px] text-[var(--emerald-glow)] font-bold mt-1 uppercase tracking-widest">Captain (2x pts)</div>}
+          {isCaptain && <div className="text-[8px] text-[#00FF00] font-bold mt-1 uppercase tracking-widest">Captain</div>}
         </div>
         {!isTeamSubmitted && <>
-          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-[var(--carbon-surface)] border border-[var(--emerald-muted)] text-[var(--emerald-glow)] rounded-full w-6 h-6 md:w-5 md:h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-[var(--emerald-muted)] hover:text-white">
+          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-black border border-[#1A1A1A] text-white rounded-full w-5 h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-red-900/50 hover:text-white z-10 flex items-center justify-center">
             ×
           </button>
-          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-[var(--emerald-glow)] text-black' : 'bg-[var(--carbon-surface)] border border-[var(--emerald-muted)] text-[var(--emerald-glow)]'} rounded-full w-6 h-6 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all font-mono font-bold hover:`}>
+          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-[#00FF00] text-black' : 'bg-black border border-[#1A1A1A] text-white'} rounded-full w-5 h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all font-mono font-bold z-10 flex items-center justify-center`}>
             {isCaptain ? '✓' : 'C'}
           </button>
         </>}
-      </SpotlightCard>;
+      </motion.div>;
     };
     const EmptySlot = ({
       position,
       count
-    }) => <div className="bg-[var(--carbon-surface)] text-[var(--text-secondary)] rounded-xl p-2 text-center min-w-[80px] md:min-w-[100px] border border-[var(--emerald-muted)] border-dashed opacity-50 flex flex-col items-center justify-center h-32 md:h-36">
-        <div className="text-xs uppercase tracking-widest font-mono">Empty</div>
-        <div className="text-[10px] text-[var(--emerald-muted)] uppercase tracking-widest mt-1">{position}</div>
+    }) => <div className="bg-[#050505] text-[#333] rounded-xl p-1 md:p-2 text-center min-w-[70px] md:min-w-[90px] border border-[#1A1A1A] border-dashed opacity-70 flex flex-col items-center justify-center h-24 md:h-28">
+        <div className="text-[9px] uppercase tracking-widest font-mono">Empty</div>
+        <div className="text-[10px] text-[#666] uppercase tracking-widest mt-1 font-bold">{position}</div>
       </div>;
-    return <div className="rounded-3xl p-4 relative overflow-hidden rh-card" style={{
-      background: 'linear-gradient(180deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)'}}>
-      <div className="absolute inset-0 opacity-10" style={{
-        backgroundImage: `radial-gradient(var(--emerald-glow) 1px, transparent 1px)`,
-        backgroundSize: '20px 20px'
-      }}></div>
-      { }
-      <div className="absolute inset-4 border border-[var(--emerald-glow)] rounded-2xl opacity-20">
-        <div className="absolute inset-x-0 top-1/2 h-0 border-t border-[var(--emerald-glow)] border-dashed"></div>
-        <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l border-[var(--emerald-glow)] border-dashed"></div>
-        <div className="absolute left-1/2 top-1/2 w-32 h-32 border border-[var(--emerald-glow)] rounded-full transform -translate-x-1/2 -translate-y-1/2 "></div>
+    return <div className="border border-[#1A1A1A] p-2 relative overflow-hidden bg-black mt-4">
+      {/* Pitch Lines */}
+      <div className="absolute inset-4 border border-[#333] opacity-50">
+        <div className="absolute inset-x-0 top-1/2 h-0 border-t border-[#333]"></div>
+        <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l border-[#333]"></div>
+        <div className="absolute left-1/2 top-1/2 w-32 h-32 border border-[#333] rounded-full transform -translate-x-1/2 -translate-y-1/2 "></div>
       </div>
       <div className="relative z-10 space-y-4 md:space-y-8">
         { }
@@ -3028,69 +3012,69 @@ Current app data:
         </SpotlightCard>
       </div>}
       {currentView === 'team' && <div className="flex flex-col lg:flex-row h-screen max-h-[85vh] w-full bg-black border-t border-[#1A1A1A] text-white">
-        {/* Left Column: SQUAD SELECTION */}
-        <div className="w-full lg:w-[35%] border-r border-[#1A1A1A] flex flex-col p-6 overflow-y-auto">
-          <div className="flex justify-between items-end mb-8">
+        {/* Left Column: SQUAD SELECTION & PITCH */}
+        <div className="w-full lg:w-[45%] border-r border-[#1A1A1A] flex flex-col p-6 overflow-y-auto">
+          <div className="flex justify-between items-end mb-6">
             <div>
-              <h2 className="text-[#8b9a90] text-xs font-mono tracking-[0.2em] mb-1">SQUAD SELECTION ({selectedTeam.length}/11)</h2>
+              <h2 className="text-[#8b9a90] text-[10px] font-mono tracking-[0.2em] mb-1">SQUAD SELECTION ({selectedTeam.length}/11)</h2>
             </div>
-            <div className="text-right">
-              <h2 className="text-white text-2xl font-bold font-sans">£{(teamBudget / 10).toFixed(1)}<span className="text-[#8b9a90] text-sm">M</span></h2>
-              <p className="text-[#8b9a90] text-[9px] font-mono tracking-widest uppercase">Budget</p>
+            <div className="text-right flex items-center space-x-4">
+              {teamBudget < 100 && selectedTeam.length < 11 && (
+                <div className="text-red-500 text-[10px] font-mono uppercase border border-red-500 px-2 py-0.5 animate-pulse">Low Budget!</div>
+              )}
+              <div>
+                <h2 className="text-white text-xl font-bold font-sans">£{(teamBudget / 10).toFixed(1)}<span className="text-[#8b9a90] text-sm">M</span></h2>
+                <p className="text-[#8b9a90] text-[9px] font-mono tracking-widest uppercase">Budget</p>
+              </div>
             </div>
           </div>
           
-          <div className="flex-1 flex flex-col justify-start">
-            {selectedTeam.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-center text-[#333] font-mono text-xs tracking-widest leading-relaxed mt-20">
-                NO PLAYERS SELECTED.<br/>START BUILDING YOUR SQUAD!
-              </div>
-            ) : (
-              <div className="space-y-0">
-                {selectedTeam.map(player => {
-                  const playerTeam = teams.find(t => t.id === player.team);
-                  const playerPos = positions.find(p => p.id === player.element_type);
-                  return (
-                    <div key={player.id} className="flex justify-between items-center border-b border-[#1A1A1A] py-3 hover:bg-[#050505] transition-colors">
-                      <div>
-                        <div className="text-white font-bold text-sm">{player.first_name} {player.second_name}</div>
-                        <div className="text-[#666] text-[10px] uppercase tracking-wider">{playerTeam?.short_name}</div>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="text-[#00FF00] font-mono text-[10px]">{playerPos?.singular_name_short}</div>
-                        <div className="text-white font-mono text-xs">{(player.now_cost / 10).toFixed(1)}M</div>
-                        <button onClick={() => removePlayerFromTeam(player)} className="text-[#666] hover:text-white transition-colors p-1">✕</button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          {/* Captain Reminder */}
+          <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-3 mb-6 text-center">
+            <span className="text-[#666] text-[10px] font-mono tracking-widest uppercase"><span className="text-white">Tip:</span> Click a player on the pitch below to make them Captain (2x Pts)</span>
+          </div>
+
+          <div className="flex-1 flex flex-col justify-start relative">
+            <div className="transform scale-[0.65] sm:scale-75 lg:scale-[0.6] origin-top md:origin-top-left -mx-10 lg:-mx-20">
+              <FormationDisplay isTeamSubmitted={false} />
+            </div>
+          </div>
+          
+          {/* Formation Dock and Auto-Complete */}
+          <div className="mt-2 space-y-4">
+            <FormationDock selectedFormation={selectedFormation} setSelectedFormation={setSelectedFormation} />
+            
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={resetTeam} className="border border-[#1A1A1A] text-[#666] py-2 font-mono text-[9px] tracking-widest hover:border-[#333] hover:text-white transition-colors">RESET</button>
+              <button onClick={autoCompleteTeam} className="border border-[#1A1A1A] text-[#666] py-2 font-mono text-[9px] tracking-widest hover:border-yellow-900 hover:text-yellow-500 transition-colors">AUTO FILL</button>
+              <button onClick={intelligentAutoComplete} className="border border-green-900/50 text-green-500 py-2 font-mono text-[9px] tracking-widest hover:border-green-500 hover:bg-green-900/20 transition-colors">AI OPTIMIZE</button>
+            </div>
           </div>
           
           {/* Submit button at bottom */}
-          <div className="mt-8 pt-4 border-t border-[#1A1A1A]">
+          <div className="mt-6 pt-4 border-t border-[#1A1A1A]">
              {selectedTeam.length === 11 ? (
                 <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (0.05 $GME)</button>
              ) : (
-                <button className="w-full border border-[#333] text-[#333] py-3 font-mono text-xs tracking-widest cursor-not-allowed">SELECT {11 - selectedTeam.length} MORE PLAYERS</button>
+                <button className="w-full border border-[#333] text-[#333] py-3 font-mono text-[10px] tracking-widest cursor-not-allowed">SELECT {11 - selectedTeam.length} MORE PLAYERS</button>
              )}
           </div>
         </div>
 
         {/* Right Column: PLAYER ROSTER */}
-        <div className="w-full lg:w-[65%] flex flex-col bg-black overflow-hidden h-full">
+        <div className="w-full lg:w-[55%] flex flex-col bg-black overflow-hidden h-full">
           {/* Filter Bar */}
-          <div className="flex border-b border-[#1A1A1A] p-4 lg:p-6 justify-between items-center">
+          <div className="flex border-b border-[#1A1A1A] p-4 justify-between items-center">
             <div className="flex space-x-2 overflow-x-auto pb-1 lg:pb-0">
               {['ALL', 'GK', 'DEF', 'MID', 'FWD'].map(pos => {
-                const posId = pos === 'ALL' ? '' : positions.find(p => p.singular_name_short === pos)?.id;
+                const posStr = pos === 'GK' ? 'GKP' : pos;
+                const posId = pos === 'ALL' ? '' : positions.find(p => p.singular_name_short === posStr)?.id;
                 const isActive = (pos === 'ALL' && !filters.position) || (pos !== 'ALL' && filters.position == posId);
                 return (
                   <button 
                     key={pos}
                     onClick={() => setFilters({...filters, position: posId})}
-                    className={`px-4 py-1.5 border font-mono text-[10px] tracking-widest transition-colors ${
+                    className={`px-3 py-1 border font-mono text-[10px] tracking-widest transition-colors ${
                       isActive 
                         ? 'bg-white text-black border-white' 
                         : 'border-[#1A1A1A] text-[#666] hover:border-[#333] hover:text-white'
@@ -3101,57 +3085,52 @@ Current app data:
                 );
               })}
             </div>
-            <div className="relative w-48 lg:w-64 ml-4">
+            <div className="relative w-48 ml-4">
               <input 
                 type="text" 
-                placeholder="Search players..."
+                placeholder="Search..."
                 value={filters.search}
                 onChange={e => setFilters({...filters, search: e.target.value})}
-                className="w-full bg-transparent border border-[#1A1A1A] rounded-none py-1.5 px-3 text-xs text-white placeholder-[#333] focus:outline-none focus:border-[#333] font-mono transition-colors"
+                className="w-full bg-transparent border border-[#1A1A1A] rounded-none py-1 px-3 text-xs text-white placeholder-[#333] focus:outline-none focus:border-[#333] font-mono transition-colors"
               />
             </div>
           </div>
           
           {/* Table Headers */}
-          <div className="flex px-4 lg:px-6 py-3 border-b border-[#1A1A1A] font-mono text-[9px] tracking-[0.2em] text-[#666]">
-            <div className="w-[40%]">PLAYER</div>
-            <div className="w-[20%] text-center">POS</div>
-            <div className="w-[20%] text-center cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'total_points', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PTS {sortOption.field === 'total_points' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
+          <div className="flex px-4 py-2 border-b border-[#1A1A1A] font-mono text-[9px] tracking-[0.2em] text-[#666]">
+            <div className="w-[50%]">PLAYER</div>
+            <div className="w-[15%] text-center">POS</div>
+            <div className="w-[15%] text-center cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'total_points', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PTS {sortOption.field === 'total_points' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
             <div className="w-[20%] text-right cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'now_cost', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PRICE {sortOption.field === 'now_cost' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
           </div>
 
           {/* Player List */}
-          <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-2 pb-20 lg:pb-0">
+          <div className="flex-1 overflow-y-auto px-2 lg:px-4 py-1 pb-20 lg:pb-0">
             {getFilteredPlayers().slice(0, 100).map((player) => {
               const playerPos = positions.find(p => p.id === player.element_type)?.singular_name_short;
               const playerTeam = teams.find(t => t.id === player.team)?.short_name;
-              const { canAdd, reason } = canAddPlayer(player);
+              const isAdded = selectedTeam.some(p => p.id === player.id);
               
               return (
-                <div key={player.id} className="flex items-center py-4 border-b border-[#1A1A1A]/50 hover:bg-[#050505] transition-colors group">
-                  <div className="w-[40%] flex flex-col">
-                    <span className="text-white font-bold text-sm truncate">{player.first_name} {player.second_name}</span>
+                <div 
+                  key={player.id} 
+                  onClick={() => addPlayerToTeam(player)}
+                  className={`flex items-center py-3 px-2 border-b border-[#1A1A1A]/50 transition-colors cursor-pointer group ${
+                    isAdded ? 'opacity-30 pointer-events-none' : 'hover:bg-[#0a0a0a]'
+                  }`}
+                >
+                  <div className="w-[50%] flex flex-col">
+                    <span className="text-white font-bold text-sm truncate group-hover:text-green-500 transition-colors">{player.first_name} {player.second_name}</span>
                     <span className="text-[#666] text-[10px] uppercase tracking-wider mt-0.5">{playerTeam}</span>
                   </div>
-                  <div className="w-[20%] text-center">
+                  <div className="w-[15%] text-center">
                     <span className="text-[#00FF00] font-mono text-[10px]">{playerPos}</span>
                   </div>
-                  <div className="w-[20%] text-center text-white font-mono text-sm">
+                  <div className="w-[15%] text-center text-white font-mono text-xs">
                     {player.total_points}
                   </div>
-                  <div className="w-[20%] flex justify-end items-center space-x-3 lg:space-x-6">
+                  <div className="w-[20%] text-right">
                     <span className="text-[#8b9a90] font-mono text-sm">{(player.now_cost / 10).toFixed(1)}M</span>
-                    <button 
-                      onClick={() => canAdd ? addPlayerToTeam(player) : null}
-                      disabled={!canAdd}
-                      className={`px-3 lg:px-4 py-1 border font-mono text-[9px] tracking-widest transition-colors ${
-                        canAdd 
-                          ? 'border-[#333] text-white hover:bg-white hover:text-black' 
-                          : 'border-[#1A1A1A] text-[#333] cursor-not-allowed'
-                      }`}
-                    >
-                      ADD
-                    </button>
                   </div>
                 </div>
               );
@@ -3159,7 +3138,6 @@ Current app data:
           </div>
         </div>
       </div>}
-      
     </main>
     { }
     <footer className={`${theme === 'dark' ? 'bg-black/80' : 'bg-gray-100/90'} backdrop-blur-md border-t ${theme === 'dark' ? 'border-green-900/50' : 'border-gray-300'} py-12 mt-12`}>

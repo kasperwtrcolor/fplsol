@@ -435,11 +435,7 @@ function App() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setToast({ title: '🔥 Pool Update', message: 'Reward pool increased by +0.005 $GME!' });
-      setTimeout(() => setToast(null), 4000);
-    }, 45000);
-    return () => clearInterval(interval);
+    // Toast notification removed
   }, []);
   const login = () => {
     connect({ connector: injected() });
@@ -2530,8 +2526,8 @@ Current app data:
       {/* New Header */}
       <header className="flex justify-between items-center px-6 py-5 border-b border-gray-900 w-full relative z-10 bg-black">
         <div className="flex items-center space-x-4">
-          <div className="font-bold text-3xl tracking-tighter text-white font-sans">
-            RWA<span className="text-green-500">F</span>
+          <div className="font-bold text-2xl tracking-tighter text-white font-sans">
+            fpl.<span className="text-green-500">stock</span>
           </div>
           <div className="text-[9px] tracking-[0.2em] uppercase border border-gray-800 px-3 py-1.5 rounded-full text-gray-500 font-mono">
             Robinhood Chain
@@ -2634,7 +2630,7 @@ Current app data:
                 <div className="bg-black/40 p-4 rounded-xl border border-green-900/50">
                   <h3 className="text-[10px] font-mono text-green-500 uppercase tracking-widest mb-2">The Engine</h3>
                   <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
-                    FPL.Stocks bridges Fantasy Premier League data with DeFi tokenomics. 
+                    fpl.stock bridges Fantasy Premier League data with DeFi tokenomics. 
                     The protocol operates on a deflationary cycle synced with the official English Premier League schedule.
                   </p>
                 </div>
@@ -3031,629 +3027,139 @@ Current app data:
           </SpotlightCard>}
         </SpotlightCard>
       </div>}
-      {currentView === 'team' && <div className="space-y-8">
-        <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="purple" size="lg" intensity={1.1}>
-          <h2 className="text-lg md:text-lg font-black text-black bg-white px-6 py-4 rounded-2xl mb-4 cinematic-text text-center" >
-            {isTeamSubmitted ? 'YOUR GAMEWEEK TEAM' : 'BUILD YOUR TEAM'}
-          </h2>
-          {isTeamSubmitted && <div className="bg-green-700/30 p-4 rounded-lg mb-4 text-center border border-green-500/50">
-            <p className="text-green-100 font-bold text-lg" >
-              Your team is locked in for Gameweek {activeGameweek?.gameweek}!
-            </p>
-            <p className="text-white mt-2">
-              Total Points: <span className="font-bold text-yellow-400 text-lg">
-                {isGameweekStarted ? currentUserEntry.points || 0 : 0}
-              </span>
-            </p>
-            <div className="mt-4 flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-4">
-              <AnimatedButton onClick={shareTeamOnX} className="bg-blue-600 hover:bg-blue-700" color="blue" hoverText="Share on X!">
-                🐦 Share Team on X
-              </AnimatedButton>
-              <AnimatedButton onClick={handleRequestScore} className="bg-purple-600 hover:bg-purple-700" color="purple" hoverText="Fetch Real Score!">
-                🔄 Fetch Score (Oracle)
-              </AnimatedButton>
+      {currentView === 'team' && <div className="flex flex-col lg:flex-row h-screen max-h-[85vh] w-full bg-black border-t border-[#1A1A1A] text-white">
+        {/* Left Column: SQUAD SELECTION */}
+        <div className="w-full lg:w-[35%] border-r border-[#1A1A1A] flex flex-col p-6 overflow-y-auto">
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <h2 className="text-[#8b9a90] text-xs font-mono tracking-[0.2em] mb-1">SQUAD SELECTION ({selectedTeam.length}/11)</h2>
             </div>
-          </div>}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-            <p className="text-green-100 text-lg md:text-lg" >
-              Budget Remaining: <span className="text-yellow-400 font-bold text-lg md:text-lg" >{formatPrice(teamBudget)}</span>
-            </p>
-            <p className="text-green-100 text-lg md:text-lg" >
-              Players Selected: <span className="text-white font-bold text-lg md:text-lg" >{selectedTeam.length}/11</span>
-            </p>
+            <div className="text-right">
+              <h2 className="text-white text-2xl font-bold font-sans">£{(teamBudget / 10).toFixed(1)}<span className="text-[#8b9a90] text-sm">M</span></h2>
+              <p className="text-[#8b9a90] text-[9px] font-mono tracking-widest uppercase">Budget</p>
+            </div>
           </div>
-          <div className="space-y-6 mb-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-white" >Your Pitch</h3>
-              {!isTeamSubmitted && <div className="flex justify-center space-x-3">
-                <button onClick={resetTeam} className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center"  title="Reset Team">
-                  <RotateCcw className="w-5 h-5" />
-                </button>
-                {selectedTeam.length < 11 && <button onClick={autoCompleteTeam} className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center"  title="Auto Complete Team">
-                  <Zap className="w-5 h-5" />
-                </button>}
-                {selectedTeam.length === 11 && <button onClick={() => {
-                  resetTeam();
-                  setTimeout(intelligentAutoComplete, 100);
-                }} className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-lg transition-colors flex items-center justify-center"  title="Retry Auto Complete">
-                  <Zap className="w-5 h-5" />
-                </button>}
-              </div>}
-            </div>
-            <div id="team-formation-capture">
-              <FormationDisplay isTeamSubmitted={isTeamSubmitted} />
-            </div>
-            {!isTeamSubmitted && <FormationDock selectedFormation={selectedFormation} setSelectedFormation={setSelectedFormation} />}
-          </div>
-          {!isTeamSubmitted && <>
-            { }
-            {gameweekDeadline && activeGameweek?.status === 'active' && <div className={`mb-4 p-4 rounded-lg border ${isAfterDeadline ? 'bg-red-700/30 border-red-500/50' : 'bg-yellow-700/30 border-yellow-500/50'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className={`font-bold mb-1 ${isAfterDeadline ? 'text-red-400' : 'text-yellow-400'}`} >
-                    {isAfterDeadline ? '🚫 Submission Deadline Passed' : '⏰ Submission Deadline'}
-                  </h4>
-                  <p className="text-green-100 text-sm" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    {isAfterDeadline ? 'You can no longer submit teams for this gameweek' : 'Teams must be submitted before first fixture starts'}
-                  </p>
-                </div>
-                {!isAfterDeadline && <div className="text-right">
-                  <div className="text-yellow-400 font-bold text-lg" >
-                    {formatDeadline(gameweekDeadline)}
-                  </div>
-                  <div className="text-green-100 text-xs" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    remaining
-                  </div>
-                </div>}
+          
+          <div className="flex-1 flex flex-col justify-start">
+            {selectedTeam.length === 0 ? (
+              <div className="flex items-center justify-center h-full text-center text-[#333] font-mono text-xs tracking-widest leading-relaxed mt-20">
+                NO PLAYERS SELECTED.<br/>START BUILDING YOUR SQUAD!
               </div>
-            </div>}
-            <div className="flex flex-col gap-3 mb-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                {isFormationValid() && captain && activeGameweek && !isAfterDeadline && <AnimatedButton onClick={submitTeam} className="flex-1 py-3" color="yellow" hoverText="Enter Now!">
-                  Submit Team & Pay 0.05 $GME
-                </AnimatedButton>}
-                {isFormationValid() && captain && activeGameweek && isAfterDeadline && !isAdmin && <div className="flex-1 py-3 px-6 bg-red-600 text-white rounded-lg text-center border-2 border-black opacity-75" style={{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: '18px'
-                }}>
-                  Deadline Passed - Cannot Submit
-                </div>}
-                {isFormationValid() && captain && activeGameweek && isAfterDeadline && isAdmin && <AnimatedButton onClick={submitTeam} className="flex-1 py-3" color="red" hoverText="Admin Override!">
-                  Submit Team (Admin Override)
-                </AnimatedButton>}
-                {isFormationValid() && !captain && <div className="flex-1 py-3 px-6 bg-gray-600 text-white rounded-lg text-center border-2 border-black opacity-50" style={{
-                  fontFamily: 'JetBrains Mono, monospace',
-                  fontSize: '18px'
-                }}>
-                  Select a Captain First
-                </div>}
-              </div>
-              <AnimatedButton onClick={() => setShowFilters(!showFilters)} className="py-3" color="gray" hoverText={showFilters ? "Hide Filters" : "Show Filters"}>
-                {showFilters ? "Hide Player Filters" : "Show Player Filters"}
-              </AnimatedButton>
-            </div>
-            {showFilters && <SpotlightCard className="bg-black/30 rounded-lg p-4 mb-4 border border-green-700/30" glowColor="blue" size="md" intensity={0.8}>
-              <h4 className="text-white font-semibold mb-4 text-lg" >Filter Players</h4>
-              <div className="mb-4">
-                <label className="block text-green-100 text-sm mb-2" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>Search Players</label>
-                <input type="text" value={filters.search} onChange={e => setFilters({
-                  ...filters,
-                  search: e.target.value
-                })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors"  placeholder="Search by player name..." />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <label className="block text-green-100 text-sm mb-2" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Club</label>
-                  <select value={filters.club} onChange={e => setFilters({
-                    ...filters,
-                    club: e.target.value
-                  })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" >
-                    <option value="">All Clubs</option>
-                    {teams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-green-100 text-sm mb-2" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Position</label>
-                  <select value={filters.position} onChange={e => setFilters({
-                    ...filters,
-                    position: e.target.value
-                  })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors" >
-                    <option value="">All Positions</option>
-                    {positions.map(position => <option key={position.id} value={position.id}>{position.singular_name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-green-100 text-sm mb-2" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Min Price (£M)</label>
-                  <input type="number" step="0.1" value={filters.minPrice} onChange={e => setFilters({
-                    ...filters,
-                    minPrice: e.target.value
-                  })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors"  placeholder="e.g. 4.0" />
-                </div>
-                <div>
-                  <label className="block text-green-100 text-sm mb-2" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Max Price (£M)</label>
-                  <input type="number" step="0.1" value={filters.maxPrice} onChange={e => setFilters({
-                    ...filters,
-                    maxPrice: e.target.value
-                  })} className="w-full bg-black/50 border-2 border-green-700/50 rounded px-3 py-2 text-white text-sm focus:border-green-400 transition-colors"  placeholder="e.g. 15.0" />
-                </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-green-100 text-sm mb-2" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>Sort Players</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  <button onClick={() => setSortOption({
-                    field: 'total_points',
-                    direction: sortOption.field === 'total_points' && sortOption.direction === 'desc' ? 'asc' : 'desc'
-                  })} className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${sortOption.field === 'total_points' ? 'bg-green-600 text-white border-2 border-green-400' : 'bg-black/50 text-green-100 border-2 border-green-700/50 hover:border-green-400'}`} >
-                    Points {sortOption.field === 'total_points' ? sortOption.direction === 'desc' ? '↓' : '↑' : ''}
-                  </button>
-                  <button onClick={() => setSortOption({
-                    field: 'now_cost',
-                    direction: sortOption.field === 'now_cost' && sortOption.direction === 'desc' ? 'asc' : 'desc'
-                  })} className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${sortOption.field === 'now_cost' ? 'bg-yellow-600 text-white border-2 border-yellow-400' : 'bg-black/50 text-green-100 border-2 border-green-700/50 hover:border-green-400'}`} >
-                    Price {sortOption.field === 'now_cost' ? sortOption.direction === 'desc' ? '↓' : '↑' : ''}
-                  </button>
-                  <button onClick={() => setSortOption({
-                    field: 'selected_by_percent',
-                    direction: sortOption.field === 'selected_by_percent' && sortOption.direction === 'desc' ? 'asc' : 'desc'
-                  })} className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${sortOption.field === 'selected_by_percent' ? 'bg-purple-600 text-white border-2 border-purple-400' : 'bg-black/50 text-green-100 border-2 border-green-700/50 hover:border-green-400'}`} >
-                    Popular {sortOption.field === 'selected_by_percent' ? sortOption.direction === 'desc' ? '↓' : '↑' : ''}
-                  </button>
-                </div>
-                <p className="text-green-200 text-xs mt-2" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>
-                  Click sort buttons to toggle between highest/lowest first
-                </p>
-              </div>
-              <AnimatedButton onClick={resetFilters} color="gray" hoverText="Reset All">
-                Clear Filters
-              </AnimatedButton>
-            </SpotlightCard>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 max-h-96 overflow-y-auto">
-              {getFilteredPlayers().slice(0, 50).map((player, index) => {
-                const playerTeam = teams.find(t => t.id === player.team);
-                const playerPosition = positions.find(p => p.id === player.element_type);
-                const nextOpponent = getNextOpponent(player.team);
-                const difficulty = nextOpponent ? getDifficultyLevel(nextOpponent.team) : null;
-                const {
-                  canAdd,
-                  reason
-                } = canAddPlayer(player);
-                const glowColors = ['blue', 'purple', 'green', 'red', 'orange'];
-                const playerGlowColor = glowColors[index % glowColors.length];
-                return <SpotlightCard key={player.id} className="bg-black/30 p-3 md:p-4 rounded-lg border border-green-700/20" glowColor={playerGlowColor} size="sm" intensity={0.7}>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-white font-semibold text-sm md:text-base truncate pr-2">
-                      {player.first_name} {player.second_name}
-                    </h4>
-                    <span className="text-yellow-400 font-bold text-sm md:text-base flex-shrink-0">
-                      {formatPrice(player.now_cost)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-green-100 text-xs md:text-sm truncate">{playerTeam?.name}</p>
-                    <p className="text-green-100 text-xs md:text-sm">{playerPosition?.singular_name}</p>
-                  </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-green-100 text-xs md:text-sm">
-                      GW Points: {isGameweekStarted ? player.event_points || 0 : 0} | Season: {player.total_points}
-                    </p>
-                    <p className="text-purple-300 text-xs md:text-sm">{parseFloat(player.selected_by_percent || 0).toFixed(1)}% own</p>
-                  </div>
-                  {nextOpponent && <div className="mb-2 p-2 bg-black/40 rounded border border-green-700/10">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <span className="text-green-100 text-xs">Next:</span>
-                        <span className="text-white text-xs font-medium truncate">
-                          {nextOpponent.isHome ? 'vs' : '@'} {nextOpponent.team?.short_name || 'TBD'}
-                        </span>
+            ) : (
+              <div className="space-y-0">
+                {selectedTeam.map(player => {
+                  const playerTeam = teams.find(t => t.id === player.team);
+                  const playerPos = positions.find(p => p.id === player.element_type);
+                  return (
+                    <div key={player.id} className="flex justify-between items-center border-b border-[#1A1A1A] py-3 hover:bg-[#050505] transition-colors">
+                      <div>
+                        <div className="text-white font-bold text-sm">{player.first_name} {player.second_name}</div>
+                        <div className="text-[#666] text-[10px] uppercase tracking-wider">{playerTeam?.short_name}</div>
                       </div>
-                      {difficulty && <span className={`text-xs px-2 py-1 rounded font-medium ${difficulty.color === 'green' ? 'bg-green-600/80 text-green-100' : difficulty.color === 'yellow' ? 'bg-yellow-600/80 text-yellow-100' : 'bg-red-600/80 text-red-100'}`}>
-                        {difficulty.level}
-                      </span>}
+                      <div className="flex items-center space-x-4">
+                        <div className="text-[#00FF00] font-mono text-[10px]">{playerPos?.singular_name_short}</div>
+                        <div className="text-white font-mono text-xs">{(player.now_cost / 10).toFixed(1)}M</div>
+                        <button onClick={() => removePlayerFromTeam(player)} className="text-[#666] hover:text-white transition-colors p-1">✕</button>
+                      </div>
                     </div>
-                  </div>}
-                  <button onClick={() => addPlayerToTeam(player)} disabled={!canAdd} className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2 rounded transition-colors text-sm md:text-base" title={!canAdd ? reason : ''}>
-                    {selectedTeam.find(p => p.id === player.id) ? 'Selected' : 'Add to Team'}
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          
+          {/* Submit button at bottom */}
+          <div className="mt-8 pt-4 border-t border-[#1A1A1A]">
+             {selectedTeam.length === 11 ? (
+                <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (0.05 $GME)</button>
+             ) : (
+                <button className="w-full border border-[#333] text-[#333] py-3 font-mono text-xs tracking-widest cursor-not-allowed">SELECT {11 - selectedTeam.length} MORE PLAYERS</button>
+             )}
+          </div>
+        </div>
+
+        {/* Right Column: PLAYER ROSTER */}
+        <div className="w-full lg:w-[65%] flex flex-col bg-black overflow-hidden h-full">
+          {/* Filter Bar */}
+          <div className="flex border-b border-[#1A1A1A] p-4 lg:p-6 justify-between items-center">
+            <div className="flex space-x-2 overflow-x-auto pb-1 lg:pb-0">
+              {['ALL', 'GK', 'DEF', 'MID', 'FWD'].map(pos => {
+                const posId = pos === 'ALL' ? '' : positions.find(p => p.singular_name_short === pos)?.id;
+                const isActive = (pos === 'ALL' && !filters.position) || (pos !== 'ALL' && filters.position == posId);
+                return (
+                  <button 
+                    key={pos}
+                    onClick={() => setFilters({...filters, position: posId})}
+                    className={`px-4 py-1.5 border font-mono text-[10px] tracking-widest transition-colors ${
+                      isActive 
+                        ? 'bg-white text-black border-white' 
+                        : 'border-[#1A1A1A] text-[#666] hover:border-[#333] hover:text-white'
+                    }`}
+                  >
+                    {pos}
                   </button>
-                  {!canAdd && reason && <p className="text-red-400 text-xs mt-1 truncate">{reason}</p>}
-                </SpotlightCard>;
+                );
               })}
             </div>
-          </>}
-        </SpotlightCard>
-      </div>}
-      {currentView === 'leaderboard' && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="yellow" size="lg" intensity={1}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg md:text-lg font-black text-black bg-white px-6 py-4 rounded-2xl cinematic-text" >LEADERBOARD</h2>
-          {activeGameweek?.status === 'active' && <div className="text-right">
-            <p className="text-green-400 text-sm font-bold" >
-              {isGameweekStarted ? '🔴 LIVE' : '⏳ PENDING'} GAMEWEEK {activeGameweek.gameweek}
-            </p>
-            <p className="text-green-200 text-xs" style={{
-              fontFamily: 'Inter, sans-serif'
-            }}>
-              {isGameweekStarted ? 'Points update live' : 'Waiting for first fixture'}
-            </p>
-          </div>}
-        </div>
-        {leaderboard.length > 0 ? <div className="space-y-4">
-          {leaderboard.map((entry, index) => {
-            const rankColors = ['yellow', 'blue', 'green', 'purple', 'orange'];
-            const rankGlowColor = index === 0 ? 'yellow' : rankColors[index % rankColors.length];
-            const isLivePoints = activeGameweek?.status === 'active' && entry.isLiveCalculated;
-            return <SpotlightCard key={entry.id} className={`p-4 rounded-lg border ${index === 0 ? 'bg-yellow-500/20 border-yellow-500/50' : 'bg-black/30 border-green-700/30'}`} glowColor={rankGlowColor} size="sm" intensity={index === 0 ? 1.2 : 0.8}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <span className={`text-lg font-bold ${index === 0 ? 'text-yellow-400' : 'text-white'}`}>
-                    #{index + 1}
-                  </span>
-                  {index === 0 && <Trophy className="w-6 h-6 text-yellow-400" />}
-                  <span className="text-white font-semibold">
-                    {entry.userId.slice(0, 8)}...{entry.userId.slice(-4)}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center space-x-2">
-                    <p className={`text-lg font-bold ${index === 0 ? 'text-yellow-400' : 'text-white'}`}>
-                      {entry.points || 0}
-                    </p>
-                    {isLivePoints && <span className="text-green-400 text-xs animate-pulse">●</span>}
-                  </div>
-                  <p className="text-green-100 text-sm">
-                    {activeGameweek?.status === 'active' ? 'GW Points' : 'Final Points'} • {formatPrice(entry.teamValue)}
-                  </p>
-                </div>
-              </div>
-            </SpotlightCard>;
-          })}
-        </div> : <div className="text-center py-12">
-          <Users className="w-10 h-10 text-gray-400 mx-auto mb-4" />
-          <p className="text-green-100">No entries yet for this gameweek</p>
-        </div>}
-      </SpotlightCard>}
-      {currentView === 'admin' && isAdmin && <div className="space-y-8">
-        <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-red-700/30" glowColor="red" size="lg" intensity={1.1}>
-          <div className="flex items-center space-x-3 mb-4">
-            <Users className="w-8 h-8 text-red-400" style={{
-              filter: 'drop-shadow(2px 2px 0px #000)'
-            }} />
-            <h2 className="text-lg md:text-lg font-black text-black bg-red-500 px-6 py-4 rounded-2xl cinematic-text" >ADMIN DASHBOARD</h2>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-red-700/30" glowColor="red" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-3 mb-4">
-                <Users className="w-6 h-6 text-red-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <h3 className="text-lg font-bold text-white" >Generate Invite Codes</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="bg-red-700/20 border border-red-500/50 rounded-lg p-4">
-                  <p className="text-red-100 text-sm mb-3" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Generate new invite codes for distribution:</p>
-                  <div className="flex items-center space-x-3 mb-3">
-                    <label className="text-red-100 text-sm" style={{
-                      fontFamily: 'Inter, sans-serif'
-                    }}>Count:</label>
-                    <input type="number" min="1" max="50" value={generateCount} onChange={e => setGenerateCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))} className="bg-black/50 border-2 border-red-700/50 rounded px-3 py-2 text-white text-sm w-24 focus:border-red-400 transition-colors"  />
-                    <AnimatedButton onClick={generateAdminInviteCodes} color="red" hoverText="Generate!" className="py-2 px-4">
-                      Generate Codes
-                    </AnimatedButton>
-                  </div>
-                </div>
-              </div>
-            </SpotlightCard>
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="green" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-3 mb-4">
-                <BarChart3 className="w-6 h-6 text-green-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <h3 className="text-lg font-bold text-white" >Code Statistics</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Total Generated:</span>
-                  <span className="text-white font-bold text-lg">{adminInviteCodes.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Available:</span>
-                  <span className="text-green-400 font-bold text-lg">{adminInviteCodes.filter(code => !code.used).length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Used:</span>
-                  <span className="text-red-400 font-bold text-lg">{adminInviteCodes.filter(code => code.used).length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Usage Rate:</span>
-                  <span className="text-yellow-400 font-bold text-lg">
-                    {adminInviteCodes.length > 0 ? Math.round(adminInviteCodes.filter(code => code.used).length / adminInviteCodes.length * 100) : 0}%
-                  </span>
-                </div>
-              </div>
-            </SpotlightCard>
-          </div>
-          <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-blue-700/30 mt-6" glowColor="blue" size="md" intensity={0.8}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white" >All Invite Codes ({adminInviteCodes.length})</h3>
-              <div className="flex items-center space-x-2">
-                {adminInviteCodes.filter(code => !code.used).length > 0 && <button onClick={async () => {
-                  try {
-                    const availableCodes = adminInviteCodes.filter(code => !code.used).map(code => code.code);
-                    const codesList = availableCodes.join('\n');
-                    await navigator.clipboard.writeText(codesList);
-                    alert(`Copied ${availableCodes.length} available codes to clipboard!`);
-                  } catch (err) {
-                    console.error('Failed to copy codes:', err);
-                    const availableCodes = adminInviteCodes.filter(code => !code.used).map(code => code.code);
-                    const codesList = availableCodes.join('\n');
-                    const textArea = document.createElement('textarea');
-                    textArea.value = codesList;
-                    document.body.appendChild(textArea);
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    alert(`Copied ${availableCodes.length} available codes to clipboard!`);
-                  }
-                }} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" >
-                  <span>📋</span>
-                  <span>Copy All Available</span>
-                </button>}
-                <button onClick={loadAdminInviteCodes} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Refresh</span>
-                </button>
-              </div>
+            <div className="relative w-48 lg:w-64 ml-4">
+              <input 
+                type="text" 
+                placeholder="Search players..."
+                value={filters.search}
+                onChange={e => setFilters({...filters, search: e.target.value})}
+                className="w-full bg-transparent border border-[#1A1A1A] rounded-none py-1.5 px-3 text-xs text-white placeholder-[#333] focus:outline-none focus:border-[#333] font-mono transition-colors"
+              />
             </div>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {adminInviteCodes.map((code, index) => <div key={code.id} className={`p-4 rounded border transition-all hover:bg-black/40 ${code.used ? 'bg-gray-700/30 border-gray-600/50' : 'bg-blue-700/20 border-blue-500/50'}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <span className="text-white font-bold text-lg" style={{
-                      fontFamily: 'JetBrains Mono, monospace'
-                    }}>
-                      #{adminInviteCodes.length - index}
-                    </span>
-                    <code className="bg-black/50 text-green-300 px-3 py-2 rounded text-lg font-bold border border-green-700/50" >
-                      {code.code}
-                    </code>
-                    <span className={`text-sm px-3 py-1 rounded font-medium ${code.used ? 'bg-gray-600/80 text-gray-200' : 'bg-green-600/80 text-green-100'}`}>
-                      {code.used ? 'Used' : 'Available'}
-                    </span>
+          </div>
+          
+          {/* Table Headers */}
+          <div className="flex px-4 lg:px-6 py-3 border-b border-[#1A1A1A] font-mono text-[9px] tracking-[0.2em] text-[#666]">
+            <div className="w-[40%]">PLAYER</div>
+            <div className="w-[20%] text-center">POS</div>
+            <div className="w-[20%] text-center cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'total_points', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PTS {sortOption.field === 'total_points' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
+            <div className="w-[20%] text-right cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'now_cost', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PRICE {sortOption.field === 'now_cost' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
+          </div>
+
+          {/* Player List */}
+          <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-2 pb-20 lg:pb-0">
+            {getFilteredPlayers().slice(0, 100).map((player) => {
+              const playerPos = positions.find(p => p.id === player.element_type)?.singular_name_short;
+              const playerTeam = teams.find(t => t.id === player.team)?.short_name;
+              const { canAdd, reason } = canAddPlayer(player);
+              
+              return (
+                <div key={player.id} className="flex items-center py-4 border-b border-[#1A1A1A]/50 hover:bg-[#050505] transition-colors group">
+                  <div className="w-[40%] flex flex-col">
+                    <span className="text-white font-bold text-sm truncate">{player.first_name} {player.second_name}</span>
+                    <span className="text-[#666] text-[10px] uppercase tracking-wider mt-0.5">{playerTeam}</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    {code.used && code.usedBy && <div className="text-right">
-                      <p className="text-gray-300 text-sm" style={{
-                        fontFamily: 'Inter, sans-serif'
-                      }}>Used by:</p>
-                      <p className="text-white font-medium">{code.usedBy.slice(0, 8)}...{code.usedBy.slice(-4)}</p>
-                    </div>}
-                    <button onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(code.code);
-                        alert('Code copied to clipboard!');
-                      } catch (err) {
-                        console.error('Failed to copy code:', err);
-                        const textArea = document.createElement('textarea');
-                        textArea.value = code.code;
-                        document.body.appendChild(textArea);
-                        textArea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(textArea);
-                        alert('Code copied to clipboard!');
-                      }
-                    }} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors flex items-center space-x-2" >
-                      <span>📋</span>
-                      <span>Copy</span>
+                  <div className="w-[20%] text-center">
+                    <span className="text-[#00FF00] font-mono text-[10px]">{playerPos}</span>
+                  </div>
+                  <div className="w-[20%] text-center text-white font-mono text-sm">
+                    {player.total_points}
+                  </div>
+                  <div className="w-[20%] flex justify-end items-center space-x-3 lg:space-x-6">
+                    <span className="text-[#8b9a90] font-mono text-sm">{(player.now_cost / 10).toFixed(1)}M</span>
+                    <button 
+                      onClick={() => canAdd ? addPlayerToTeam(player) : null}
+                      disabled={!canAdd}
+                      className={`px-3 lg:px-4 py-1 border font-mono text-[9px] tracking-widest transition-colors ${
+                        canAdd 
+                          ? 'border-[#333] text-white hover:bg-white hover:text-black' 
+                          : 'border-[#1A1A1A] text-[#333] cursor-not-allowed'
+                      }`}
+                    >
+                      ADD
                     </button>
                   </div>
                 </div>
-                {code.used && <div className="mt-3 pt-3 border-t border-gray-600/30">
-                  <div className="flex justify-between text-sm text-gray-300">
-                    <span>Created: {new Date(code.createdAt).toLocaleDateString()}</span>
-                    <span>Used: {new Date(code.updatedAt || code.createdAt).toLocaleDateString()}</span>
-                  </div>
-                </div>}
-              </div>)}
-              {adminInviteCodes.length === 0 && <div className="text-center py-8">
-                <Users className="w-8 h-8 text-gray-400 mx-auto mb-4" />
-                <p className="text-red-200 text-lg" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>
-                  No invite codes generated yet.
-                </p>
-                <p className="text-red-300 text-sm mt-2" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>
-                  Use the generator above to create your first batch of codes.
-                </p>
-              </div>}
-            </div>
-          </SpotlightCard>
-          <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-yellow-700/30 mt-6" glowColor="yellow" size="md" intensity={0.8}>
-            <div className="flex items-center space-x-3 mb-4">
-              <svg className="w-6 h-6 text-yellow-400" viewBox="0 0 24 24" fill="currentColor" style={{
-                filter: 'drop-shadow(2px 2px 0px #000)'
-              }}>
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-              <h3 className="text-lg font-bold text-white" >AI Social Media Hype Generator</h3>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-yellow-100 text-sm mb-2" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>Select Topic:</label>
-                <select value={selectedShareTopic} onChange={e => setSelectedShareTopic(e.target.value)} className="w-full bg-black/50 border-2 border-yellow-700/50 rounded px-3 py-2 text-white text-sm focus:border-yellow-400 transition-colors" >
-                  <option value="gameweek">Gameweek Status</option>
-                  <option value="deadline">Team Deadline</option>
-                  <option value="squad">Squad Building</option>
-                  <option value="leaderboard">Leaderboard Competition</option>
-                  <option value="fixtures">Premier League Fixtures</option>
-                  <option value="players">Player Performances</option>
-                  <option value="prize pool">Prize Pool</option>
-                  <option value="entries">Total Entries</option>
-                </select>
-              </div>
-
-              <div className="flex space-x-3">
-                <AnimatedButton onClick={generateShareMessage} disabled={isGeneratingMessage} color="yellow" hoverText="Generate!" className="flex-1">
-                  {isGeneratingMessage ? '🤖 Generating...' : '🤖 Generate Hype Post'}
-                </AnimatedButton>
-              </div>
-
-              {generatedShareMessage && <div className="bg-yellow-700/20 border border-yellow-500/50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-yellow-400 font-bold text-sm" >Generated Post:</h4>
-                  <span className="text-yellow-200 text-xs">
-                    {generatedShareMessage.length}/280 chars
-                  </span>
-                </div>
-                <div className="bg-black/50 border border-yellow-700/30 rounded p-3 mb-3">
-                  <p className="text-white text-sm leading-relaxed" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    {generatedShareMessage}
-                  </p>
-                </div>
-                <div className="flex space-x-3">
-                  <AnimatedButton onClick={shareOnX} color="blue" hoverText="Post on X!" className="flex-1">
-                    🐦 Share on X
-                  </AnimatedButton>
-                  <button onClick={() => {
-                    navigator.clipboard.writeText(generatedShareMessage);
-                    alert('Message copied to clipboard!');
-                  }} className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" >
-                    📋 Copy
-                  </button>
-                </div>
-              </div>}
-            </div>
-          </SpotlightCard>
-
-          <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-purple-700/30 mt-6" glowColor="purple" size="md" intensity={0.8}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white" >Historical Gameweeks ({historicalGames.length})</h3>
-              <button onClick={loadHistoricalGames} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors flex items-center space-x-2" >
-                <RotateCcw className="w-4 h-4" />
-                <span>Refresh</span>
-              </button>
-            </div>
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {historicalGames.map((game, index) => <div key={game.id} className="p-4 rounded border bg-purple-700/20 border-purple-500/50">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h4 className="text-purple-400 font-bold text-lg" >
-                      Gameweek {game.gameweek}
-                    </h4>
-                    <p className="text-green-100 text-sm" style={{
-                      fontFamily: 'Inter, sans-serif'
-                    }}>
-                      Prize Pool: {game.prizePool.toFixed(3)} $GME
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-sm px-3 py-1 rounded font-medium ${game.hasClaimed ? 'bg-green-600/80 text-green-100' : 'bg-red-600/80 text-red-100'}`}>
-                      {game.hasClaimed ? 'Prize Claimed' : 'Unclaimed Prize'}
-                    </span>
-                  </div>
-                </div>
-                {game.winnerId && <div className="bg-black/30 p-3 rounded border border-purple-700/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-yellow-400 font-bold text-sm mb-1" style={{
-                        fontFamily: 'JetBrains Mono, monospace'
-                      }}>🏆 WINNER</p>
-                      <p className="text-white font-medium text-sm" style={{
-                        fontFamily: 'Inter, sans-serif'
-                      }}>
-                        {game.winnerId.slice(0, 8)}...{game.winnerId.slice(-4)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-green-400 font-bold text-lg" >
-                        {game.winnerScore} pts
-                      </p>
-                      <p className="text-yellow-400 text-sm" style={{
-                        fontFamily: 'Inter, sans-serif'
-                      }}>
-                        Won: {(game.prizePool * 0.95).toFixed(3)} $GME
-                      </p>
-                    </div>
-                  </div>
-                  {game.hasClaimed && game.payout && <div className="mt-2 pt-2 border-t border-purple-700/30">
-                    <p className="text-green-300 text-xs" style={{
-                      fontFamily: 'Inter, sans-serif'
-                    }}>
-                      Claimed: {(game.payout.amount || 0).toFixed(3)} $GME
-                    </p>
-                  </div>}
-                </div>}
-              </div>)}
-              {historicalGames.length === 0 && <div className="text-center py-8">
-                <Trophy className="w-8 h-8 text-gray-400 mx-auto mb-4" />
-                <p className="text-purple-200 text-lg" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>
-                  No finished gameweeks yet.
-                </p>
-                <p className="text-purple-300 text-sm mt-2" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>
-                  Historical data will appear here once gameweeks are completed.
-                </p>
-              </div>}
-            </div>
-          </SpotlightCard>
-
-          {/* TOKENOMICS ENGINE */}
-          <div className="rh-card p-4 mt-6 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-red-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-            <h3 className="text-red-400 font-bold mb-2 text-lg font-mono uppercase tracking-widest relative z-10 flex items-center space-x-2">
-              <span className="inline-block w-2 h-2 bg-red-500 rounded-full animate-pulse "></span>
-              <span>Tokenomics Engine</span>
-            </h3>
-            <p className="text-[var(--text-secondary)] mb-4 text-sm font-mono relative z-10">
-              Simulate the DeFi loop: Burn all FPLS entry fees, swap tax revenue for real-world stocks, and airdrop prizes.
-            </p>
-            
-            <button 
-              onClick={() => {
-                alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 100% of $FPLS... (SUCCESS)\n> Generating $GME Rewards...\n> Allocating 10% to Treasury...\n> Distributing 90% to ALL Players...\n\nSimulation Complete!");
-              }} 
-              className="w-full bg-[var(--carbon-surface)] border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 py-4 font-mono font-bold uppercase tracking-[0.2em] transition-all hover:bg-red-900/20 relative z-10 hover: rounded-lg overflow-hidden"
-            >
-              <span className="relative z-10">Execute Gameweek Tokenomics</span>
-            </button>
+              );
+            })}
           </div>
-        </SpotlightCard>
+        </div>
       </div>}
+      
     </main>
     { }
     <footer className={`${theme === 'dark' ? 'bg-black/80' : 'bg-gray-100/90'} backdrop-blur-md border-t ${theme === 'dark' ? 'border-green-900/50' : 'border-gray-300'} py-12 mt-12`}>

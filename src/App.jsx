@@ -220,23 +220,15 @@ const LimelightNav = ({
     id: 'admin',
     label: 'Admin',
     icon: Users
-  }] : []), {
-    id: 'info',
-    label: 'How it Works',
-    icon: Info
-  }];
+  }] : [])];
   const handleItemClick = item => {
-    if (item.id === 'info') {
-      onInfoClick();
-    } else {
-      setCurrentView(item.id);
-    }
+    setCurrentView(item.id);
   };
   return <motion.nav className="relative bg-black/40 backdrop-blur-md rounded-2xl p-2 border border-green-700/30" >
     <div className="flex items-center space-x-2">
       {navItems.map(item => {
         const IconComponent = item.icon;
-        const isActive = currentView === item.id && item.id !== 'info';
+        const isActive = currentView === item.id;
         return <motion.button key={item.id} onClick={() => handleItemClick(item)} className={`
               relative h-12 w-16 rounded-xl flex items-center justify-center 
               transition-all duration-200 group
@@ -485,7 +477,6 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [theme, setTheme] = useState('dark');
   const [selectedFormation, setSelectedFormation] = useState('4-3-3');
   const [, setHasAccess] = useState(false);
@@ -494,6 +485,26 @@ function App() {
   const [generateCount, setGenerateCount] = useState(5);
   const [gameweekDeadline, setGameweekDeadline] = useState(null);
   const [isAfterDeadline, setIsAfterDeadline] = useState(false);
+  const [gw1Countdown, setGw1Countdown] = useState('');
+  useEffect(() => {
+    const targetDate = new Date('2026-08-14T19:00:00Z').getTime();
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      if (distance < 0) {
+        setGw1Countdown('GAMEWEEK 1 STARTED');
+        return;
+      }
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      setGw1Countdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    };
+    const interval = setInterval(updateTimer, 1000);
+    updateTimer();
+    return () => clearInterval(interval);
+  }, []);
   const [isGameweekStarted, setIsGameweekStarted] = useState(false);
   const [claimableWinnings, setClaimableWinnings] = useState([]);
   const [historicalGames, setHistoricalGames] = useState([]);
@@ -1968,7 +1979,7 @@ Current app data:
 - Gameweek: ${appContext.currentGameweek}
 - Status: ${appContext.gameweekStatus}
 - Entries: ${appContext.totalEntries}
-- Prize Pool: ${appContext.prizePool} Stocks
+- Prize Pool: ${appContext.prizePool} $GME
 - Online Users: ${appContext.onlineUsers}
 - Top Player: ${appContext.topPlayerName} (${appContext.topPlayerPoints} pts)
 - Deadline: ${appContext.deadline}
@@ -1994,7 +2005,7 @@ Current app data:
           userPrompt = `Create a post about Gameweek ${appContext.currentGameweek}. Status: ${appContext.gameweekStatus}`;
           break;
         case 'prize pool':
-          userPrompt = `Create a post highlighting the current prize pool of ${appContext.prizePool} Stocks and potential winnings`;
+          userPrompt = `Create a post highlighting the current prize pool of ${appContext.prizePool} $GME and potential winnings`;
           break;
         case 'entries':
           userPrompt = `Create a post about the ${appContext.totalEntries} managers who have entered and the growing competition`;
@@ -2021,7 +2032,7 @@ Current app data:
       setGeneratedShareMessage(data.text);
     } catch (error) {
       console.error('Error generating share message:', error);
-      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win Stocks rewards on @fpl_sol ⚽💰 #FPL #Robinhood Chain #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
+      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win $GME rewards on @fpl_sol ⚽💰 #FPL #Robinhood Chain #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
     } finally {
       setIsGeneratingMessage(false);
     }
@@ -2517,7 +2528,7 @@ Current app data:
             <p className="text-[var(--text-secondary)] text-sm text-left">
               1. A 3% tax is applied to all $FPLS transfers, automatically swapped for real-world Robinhood Stocks (e.g. AAPL, TSLA).<br/><br/>
               2. 1000 $FPLS is burned per gameweek entry, reducing the total supply forever.<br/><br/>
-              3. At gameweek resolution, the accumulated Stocks are distributed entirely to players based on their rank.
+              3. At gameweek resolution, the accumulated $GME is distributed entirely to players based on their rank.
             </p>
           </div>
         </div>
@@ -2588,7 +2599,7 @@ Current app data:
         { }
         { }
         <div className="flex justify-center">
-          <LimelightNav currentView={currentView} setCurrentView={setCurrentView} onInfoClick={() => setShowInfoPopup(true)} isAdmin={isAdmin} />
+          <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
         </div>
         { }
         <div className="md:hidden flex justify-center items-center mt-4 space-x-4">
@@ -2613,39 +2624,75 @@ Current app data:
     <main className="max-w-7xl mx-auto px-4 py-2 md:py-4">
       {currentView === 'home' && <div className="space-y-8">
         { }
-        <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="lg" intensity={0.9}>
-          <h2 className="text-lg md:text-lg font-black text-black bg-white px-6 py-4 rounded-2xl mb-4 text-center cinematic-text" >HOW FPL.STOCKS WORKS</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-4">
-            <div className="text-center">
-              <div className="bg-yellow-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-black text-lg mx-auto mb-3 cinematic-text" >1</div>
-              <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" >BUILD TEAM</h3>
-              <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
-                SELECT 11 PLAYERS WITH £80M BUDGET
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-yellow-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-black text-lg mx-auto mb-3 cinematic-text" >2</div>
-              <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" >STAKE & ENTER</h3>
-              <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
-                PAY 0.05 Stocks TO JOIN GAMEWEEK
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-yellow-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-black text-lg mx-auto mb-3 cinematic-text" >3</div>
-              <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" >SCORE POINTS</h3>
-              <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
-                EARN FROM REAL PLAYER PERFORMANCE
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-yellow-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-black text-lg mx-auto mb-3 cinematic-text" >4</div>
-              <h3 className="text-sm md:text-base font-black text-black bg-yellow-400 px-3 py-2 rounded-lg mb-2 pixel-text inline-block" >WIN Stocks</h3>
-              <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} text-sm body-text uppercase font-semibold`}>
-                TOP PERFORMERS GET 95% OF PRIZE POOL
-              </p>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column: Countdown & Fixtures */}
+          <div className="space-y-6">
+            <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="blue" size="lg" intensity={0.8}>
+              <div className="text-center">
+                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-2 font-mono">Gameweek 1 Kicks Off In</h3>
+                <div className="text-4xl md:text-5xl font-black text-white bg-black/50 p-4 rounded-xl cinematic-text border border-gray-800 tracking-wider">
+                  {gw1Countdown}
+                </div>
+              </div>
+            </SpotlightCard>
+            
+            <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={0.5}>
+              <h2 className="text-xl font-black text-black bg-white px-4 py-2 rounded-xl mb-4 cinematic-text inline-block">OPENING FIXTURES</h2>
+              <div className="space-y-3 font-mono text-sm">
+                <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                  <span className="text-gray-300 font-bold">MUN</span>
+                  <span className="text-yellow-500 font-bold px-2">VS</span>
+                  <span className="text-gray-300 font-bold">FUL</span>
+                  <span className="text-gray-500 text-xs ml-auto">AUG 14, 20:00</span>
+                </div>
+                <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                  <span className="text-gray-300 font-bold">ARS</span>
+                  <span className="text-yellow-500 font-bold px-2">VS</span>
+                  <span className="text-gray-300 font-bold">WOL</span>
+                  <span className="text-gray-500 text-xs ml-auto">AUG 15, 15:00</span>
+                </div>
+                <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                  <span className="text-gray-300 font-bold">CHE</span>
+                  <span className="text-yellow-500 font-bold px-2">VS</span>
+                  <span className="text-gray-300 font-bold">MCI</span>
+                  <span className="text-gray-500 text-xs ml-auto">AUG 16, 16:30</span>
+                </div>
+              </div>
+            </SpotlightCard>
           </div>
-        </SpotlightCard>
+
+          {/* Right Column: RWAs on Robinhood Chain */}
+          <div className="space-y-6">
+            <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-green-700/30' : 'border-green-300/50'} h-full`} glowColor="green" size="lg" intensity={0.7}>
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="bg-green-500/20 p-2 rounded-lg">
+                  <svg className="w-6 h-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-black text-green-400 cinematic-text">RWAs ON ROBINHOOD CHAIN</h2>
+              </div>
+              
+              <div className="space-y-5 text-gray-300 font-mono text-sm leading-relaxed">
+                <p>
+                  FPL.STOCKS leverages the <strong className="text-white">Robinhood Chain</strong> to bring Real World Assets (RWAs) to fantasy sports.
+                </p>
+                <div className="bg-black/50 p-4 rounded-lg border border-green-900/30">
+                  <h4 className="text-green-400 font-bold mb-2">1. The Entry Pool</h4>
+                  <p>When you stake your 0.05 $GME entry fee, it is locked into our decentralized smart contract vault.</p>
+                </div>
+                <div className="bg-black/50 p-4 rounded-lg border border-green-900/30">
+                  <h4 className="text-green-400 font-bold mb-2">2. The Yield Engine</h4>
+                  <p>The total prize pool represents tokenized shares of $GME (GameStop Corp). The blockchain ensures verifiable ownership of these real-world stock derivatives.</p>
+                </div>
+                <div className="bg-black/50 p-4 rounded-lg border border-green-900/30">
+                  <h4 className="text-green-400 font-bold mb-2">3. The Payout</h4>
+                  <p>At the end of the gameweek, Chainlink Oracles fetch the final FPL points. The smart contract automatically settles and distributes the $GME pool to the top managers.</p>
+                </div>
+              </div>
+            </SpotlightCard>
+          </div>
+        </div>
         {activeGameweek ? <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-8 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={1}>
           <h2 className="text-lg md:text-lg font-black text-black bg-white px-6 py-4 rounded-2xl mb-4 cinematic-text text-center" >
             GAMEWEEK {activeGameweek.gameweek}
@@ -2657,7 +2704,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entry Fee</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 Stocks</p>
+              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 $GME</p>
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entries</p>
@@ -2665,7 +2712,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Prize Pool</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} Stocks</p>
+              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} $GME</p>
             </div>
           </div>
           { }
@@ -2677,7 +2724,7 @@ Current app data:
             <p className="text-gray-300 body-text">
               Winner: {activeGameweek.winnerId.slice(0, 8)}...{activeGameweek.winnerId.slice(-4)}
             </p>
-            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} Stocks</p>
+            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} $GME</p>
             {activeGameweek.winnerId === userWallet && <AnimatedButton onClick={claimPrize} className="mt-4" color="yellow" hoverText="Claim Now!">
               🎉 CLAIM YOUR PRIZE! 🎉
             </AnimatedButton>}
@@ -2913,7 +2960,7 @@ Current app data:
                       <p className="text-green-100 text-sm" style={{
                         fontFamily: 'Inter, sans-serif'
                       }}>
-                        Prize: {(game.prizePool * 0.95).toFixed(3)} Stocks
+                        Prize: {(game.prizePool * 0.95).toFixed(3)} $GME
                       </p>
                     </div>
                     <AnimatedButton onClick={() => claimSpecificPrize(game.id)} color="yellow" hoverText="Claim Now!" className="py-2 px-4">
@@ -2923,7 +2970,7 @@ Current app data:
                   <p className="text-yellow-200 text-xs" style={{
                     fontFamily: 'Inter, sans-serif'
                   }}>
-                    Total Prize Pool: {game.prizePool} Stocks • You get 95%
+                    Total Prize Pool: {game.prizePool} $GME • You get 95%
                   </p>
                 </div>)}
               </div>
@@ -3100,7 +3147,7 @@ Current app data:
             <div className="flex flex-col gap-3 mb-4">
               <div className="flex flex-col sm:flex-row gap-3">
                 {isFormationValid() && captain && activeGameweek && !isAfterDeadline && <AnimatedButton onClick={submitTeam} className="flex-1 py-3" color="yellow" hoverText="Enter Now!">
-                  Submit Team & Pay 0.05 Stocks
+                  Submit Team & Pay 0.05 $GME
                 </AnimatedButton>}
                 {isFormationValid() && captain && activeGameweek && isAfterDeadline && !isAdmin && <div className="flex-1 py-3 px-6 bg-red-600 text-white rounded-lg text-center border-2 border-black opacity-75" style={{
                   fontFamily: 'JetBrains Mono, monospace',
@@ -3561,7 +3608,7 @@ Current app data:
                     <p className="text-green-100 text-sm" style={{
                       fontFamily: 'Inter, sans-serif'
                     }}>
-                      Prize Pool: {game.prizePool.toFixed(3)} Stocks
+                      Prize Pool: {game.prizePool.toFixed(3)} $GME
                     </p>
                   </div>
                   <div className="text-right">
@@ -3589,7 +3636,7 @@ Current app data:
                       <p className="text-yellow-400 text-sm" style={{
                         fontFamily: 'Inter, sans-serif'
                       }}>
-                        Won: {(game.prizePool * 0.95).toFixed(3)} Stocks
+                        Won: {(game.prizePool * 0.95).toFixed(3)} $GME
                       </p>
                     </div>
                   </div>
@@ -3597,7 +3644,7 @@ Current app data:
                     <p className="text-green-300 text-xs" style={{
                       fontFamily: 'Inter, sans-serif'
                     }}>
-                      Claimed: {(game.payout.amount || 0).toFixed(3)} Stocks
+                      Claimed: {(game.payout.amount || 0).toFixed(3)} $GME
                     </p>
                   </div>}
                 </div>}
@@ -3631,7 +3678,7 @@ Current app data:
             
             <button 
               onClick={() => {
-                alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 45,000 $FPLS... (SUCCESS)\n> Swapping Tax Revenue for AAPL Stocks... (SUCCESS)\n> Distributing Prizes to Top 10 Managers...\n> Airdropping Participation Stocks...\n\nSimulation Complete!");
+                alert("Simulating Tokenomics Loop...\n\n> Calculating total $FPLS entry fees...\n> Burning 45,000 $FPLS... (SUCCESS)\n> Swapping Tax Revenue for $GME Stocks... (SUCCESS)\n> Distributing Prizes to Top 10 Managers...\n> Airdropping Participation $GME...\n\nSimulation Complete!");
               }} 
               className="w-full bg-[var(--carbon-surface)] border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 py-4 font-mono font-bold uppercase tracking-[0.2em] transition-all hover:bg-red-900/20 relative z-10 hover: rounded-lg overflow-hidden"
             >
@@ -3642,23 +3689,36 @@ Current app data:
       </div>}
     </main>
     { }
-    <footer className={`${theme === 'dark' ? 'bg-black/40' : 'bg-white/90'} backdrop-blur-sm border-t ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'} py-6 mt-12`}>
+    <footer className={`${theme === 'dark' ? 'bg-black/80' : 'bg-gray-100/90'} backdrop-blur-md border-t ${theme === 'dark' ? 'border-green-900/50' : 'border-gray-300'} py-12 mt-12`}>
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-center">
-          <SpotlightCard className={`${theme === 'dark' ? 'bg-black/60' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="sm" intensity={0.8}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div>
+            <h3 className="font-black text-green-500 mb-4 cinematic-text">FPL.STOCKS</h3>
+            <p className="text-sm text-gray-500 font-mono">
+              The premier fantasy football experience powered by Real World Assets on the Robinhood Chain.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-300 mb-4 font-mono">Legal</h4>
+            <ul className="space-y-2 text-sm text-gray-500 font-mono">
+              <li><a href="#" className="hover:text-green-400 transition-colors">Terms and Conditions</a></li>
+              <li><a href="#" className="hover:text-green-400 transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-green-400 transition-colors">Risk Disclaimer</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-bold text-gray-300 mb-4 font-mono">Community</h4>
             <div className="flex items-center space-x-3">
-              <span className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} text-sm body-text`} >
-                Follow us on X:
-              </span>
-              <a href="https://x.com/fpl_sol" target="_blank" rel="noopener noreferrer" className="bg-yellow-600 hover:bg-yellow-700 text-black p-2 rounded-lg transition-all duration-200 group" >
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor" style={{
-                  filter: 'drop-shadow(1px 1px 0px #000)'
-                }}>
+              <a href="https://x.com/fpl_sol" target="_blank" rel="noopener noreferrer" className="bg-green-900/30 hover:bg-green-800/50 text-green-400 p-3 rounded-lg transition-all duration-200 border border-green-700/30">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </a>
             </div>
-          </SpotlightCard>
+          </div>
+        </div>
+        <div className="border-t border-gray-800 pt-8 text-center">
+          <p className="text-xs text-gray-600 font-mono">&copy; {new Date().getFullYear()} FPL.STOCKS on Robinhood Chain. All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -3679,81 +3739,7 @@ Current app data:
         </div>
       </SpotlightCard>
     </div>}
-    {showInfoPopup && <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-hidden">
-      <SpotlightCard className="bg-black/90 backdrop-blur-md rounded-xl border border-green-700/50 max-w-2xl max-h-[85vh] w-full flex flex-col overflow-hidden" glowColor="blue" size="lg" intensity={1.2}>
-        <div className="p-4 md:p-8 overflow-y-auto flex-1" style={{
-          maxHeight: 'calc(85vh - 2rem)'
-        }}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-3xl md:text-6xl font-black text-black bg-white px-8 py-6 rounded-3xl cinematic-text text-center" >HOW IT WORKS</h2>
-            <button onClick={() => setShowInfoPopup(false)} className="text-white hover:text-red-400 transition-colors text-lg font-bold bg-red-600/80 rounded-full w-8 h-8 flex items-center justify-center" >
-              ×
-            </button>
-          </div>
-          <div className="space-y-6 text-white">
-            <div className="bg-green-700/20 rounded-lg p-4 border border-green-700/30">
-              <h3 className="text-lg font-bold text-yellow-400 mb-2" >🏆 Welcome to fpl.sol</h3>
-              <p className="text-green-100" style={{
-                fontFamily: 'Inter, sans-serif'
-              }}>
-                The future of fantasy football where your tactical genius meets crypto rewards! Build your dream Premier League squad and compete for Stocks prizes.
-              </p>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="bg-blue-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-white text-lg flex-shrink-0" >1</div>
-                <div>
-                  <h4 className="text-lg font-bold text-blue-400" >Build Your Squad</h4>
-                  <p className="text-green-100 text-sm" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    Select 11 players with £80M budget. Choose 1 goalkeeper, 3-5 defenders, 2-5 midfielders, and 1-3 forwards. Pick a captain for double points!
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-white text-lg flex-shrink-0" >2</div>
-                <div>
-                  <h4 className="text-lg font-bold text-purple-400" >Stake & Enter</h4>
-                  <p className="text-green-100 text-sm" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    Pay 0.05 Stocks entry fee to join the gameweek. Your payment goes into the prize pool for winners to claim.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="bg-green-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-white text-lg flex-shrink-0" >3</div>
-                <div>
-                  <h4 className="text-lg font-bold text-green-400" >Score Points</h4>
-                  <p className="text-green-100 text-sm" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    Earn points based on real Premier League player performances. Goals, assists, clean sheets, and more all count towards your total.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="bg-yellow-600 rounded-full w-8 h-8 flex items-center justify-center font-bold text-black text-lg flex-shrink-0" >4</div>
-                <div>
-                  <h4 className="text-lg font-bold text-yellow-400" >Win Stocks Rewards</h4>
-                  <p className="text-green-100 text-sm" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    Top performers split 95% of the prize pool. Climb the leaderboard and earn crypto rewards for your fantasy football skills!
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="text-center">
-              <button onClick={() => setShowInfoPopup(false)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition-colors" >
-                Got It! Let's Play
-              </button>
-            </div>
-          </div>
-        </div>
-      </SpotlightCard>
-    </div>}
+
   </div>;
 }
 export default App;

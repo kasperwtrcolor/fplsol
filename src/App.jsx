@@ -372,7 +372,7 @@ const LandingHero = ({ setCurrentView }) => {
           <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">01</h2>
           <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Real-World Assets</h3>
           <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
-            Connect your Robinhood Chain wallet and use $GME to enter. Entries pool into a massive weekly treasury.
+            Connect your Robinhood Chain wallet and use $FPLS to enter. Entries pool into a massive weekly treasury.
           </p>
         </div>
         
@@ -2022,7 +2022,7 @@ Current app data:
 - Gameweek: ${appContext.currentGameweek}
 - Status: ${appContext.gameweekStatus}
 - Entries: ${appContext.totalEntries}
-- Prize Pool: ${appContext.prizePool} $GME
+- Prize Pool: ${appContext.prizePool} $FPLS
 - Online Users: ${appContext.onlineUsers}
 - Top Player: ${appContext.topPlayerName} (${appContext.topPlayerPoints} pts)
 - Deadline: ${appContext.deadline}
@@ -2048,7 +2048,7 @@ Current app data:
           userPrompt = `Create a post about Gameweek ${appContext.currentGameweek}. Status: ${appContext.gameweekStatus}`;
           break;
         case 'prize pool':
-          userPrompt = `Create a post highlighting the current prize pool of ${appContext.prizePool} $GME and potential winnings`;
+          userPrompt = `Create a post highlighting the current prize pool of ${appContext.prizePool} $FPLS and potential winnings`;
           break;
         case 'entries':
           userPrompt = `Create a post about the ${appContext.totalEntries} managers who have entered and the growing competition`;
@@ -2075,7 +2075,7 @@ Current app data:
       setGeneratedShareMessage(data.text);
     } catch (error) {
       console.error('Error generating share message:', error);
-      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win $GME rewards on @fpl_sol ⚽💰 #FPL #Robinhood Chain #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
+      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win $FPLS rewards on @fpl_sol ⚽💰 #FPL #RobinhoodChain #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
     } finally {
       setIsGeneratingMessage(false);
     }
@@ -2191,6 +2191,20 @@ Current app data:
       setIsLoading(false);
       setLoadingMessage('');
     }
+  };
+  const shareSquadOnX = () => {
+    if (!selectedTeam || selectedTeam.length === 0) return;
+    const formationStr = selectedFormation;
+    const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
+    const teamValue = ((700 - teamBudget) / 10).toFixed(1);
+    const playerLines = selectedTeam.map(p => {
+      const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
+      const isCap = captain && captain.id === p.id;
+      return `${isCap ? '©️ ' : ''}${p.second_name} (${pos})`;
+    }).join(' | ');
+    const shareText = `⚽ My fpl.stock Squad (${formationStr})\n\n${playerLines}\n\n👑 Captain: ${captainName}\n💰 Team Value: £${teamValue}M\n\nBuild yours & compete for the prize pool 👇\nhttps://dev.fun/p/543405b7d79724fbb83d\n\n#FPL #fplstock #RobinhoodChain`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+    window.open(twitterUrl, '_blank');
   };
   const formatPrice = price => `£${(price / 10).toFixed(1)}M`;
   const getFilteredPlayers = () => {
@@ -2413,10 +2427,7 @@ Current app data:
       position
     }) => {
       const isCaptain = captain && captain.id === player.id;
-      return <motion.div 
-          initial={{ scale: 0.5, opacity: 0 }} 
-          animate={{ scale: 1, opacity: 1 }} 
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      return <div 
           className="relative group p-[1px] rounded-xl"
         >
         <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-1 md:p-2 text-center min-w-[70px] md:min-w-[90px] h-full" style={{
@@ -2450,7 +2461,7 @@ Current app data:
             {isCaptain ? '✓' : 'C'}
           </button>
         </>}
-      </motion.div>;
+      </div>;
     };
     const EmptySlot = ({
       position,
@@ -2521,7 +2532,7 @@ Current app data:
         <div className="flex items-center space-x-6 md:space-x-10">
           <div className="hidden md:flex flex-col items-end">
             <span className="text-[9px] text-gray-600 uppercase tracking-widest font-mono">Treasury Balance</span>
-            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 0.05).toFixed(2)} $GME</span>
+            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 0.05).toFixed(2)} $FPLS</span>
           </div>
           {authenticated ? (
             <button onClick={logout} className="flex items-center space-x-3 bg-gray-900/40 border border-gray-800 px-5 py-2 rounded-full hover:border-green-500/50 transition-colors">
@@ -2560,7 +2571,7 @@ Current app data:
                 <div className="text-center">
                   <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TOTAL REWARDS</h3>
                   <div className="text-lg md:text-xl font-mono font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
-                    {(entriesCount * 0.05).toFixed(2)} $GME
+                    {(entriesCount * 0.05).toFixed(2)} $FPLS
                   </div>
                 </div>
               </SpotlightCard>
@@ -2632,7 +2643,7 @@ Current app data:
                     </li>
                     <li className="flex items-start">
                       <span className="text-yellow-500 mr-2">›</span>
-                      90% of accumulated $GME is distributed to ALL players. 10% to treasury.
+                      90% of creator rewards distributed to ALL players. 10% to treasury.
                     </li>
                   </ul>
                 </div>
@@ -2651,7 +2662,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entry Fee</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 $GME</p>
+              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 $FPLS</p>
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entries</p>
@@ -2659,7 +2670,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Prize Pool</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} $GME</p>
+              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} $FPLS</p>
             </div>
           </div>
           { }
@@ -2671,7 +2682,7 @@ Current app data:
             <p className="text-gray-300 body-text">
               Winner: {activeGameweek.winnerId.slice(0, 8)}...{activeGameweek.winnerId.slice(-4)}
             </p>
-            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} $GME</p>
+            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} $FPLS</p>
             {activeGameweek.winnerId === userWallet && <AnimatedButton onClick={claimPrize} className="mt-4" color="yellow" hoverText="Claim Now!">
               🎉 CLAIM YOUR PRIZE! 🎉
             </AnimatedButton>}
@@ -2907,7 +2918,7 @@ Current app data:
                       <p className="text-green-100 text-sm" style={{
                         fontFamily: 'Inter, sans-serif'
                       }}>
-                        Prize: {(game.prizePool * 0.95).toFixed(3)} $GME
+                        Prize: {(game.prizePool * 0.95).toFixed(3)} $FPLS
                       </p>
                     </div>
                     <AnimatedButton onClick={() => claimSpecificPrize(game.id)} color="yellow" hoverText="Claim Now!" className="py-2 px-4">
@@ -2917,7 +2928,7 @@ Current app data:
                   <p className="text-yellow-200 text-xs" style={{
                     fontFamily: 'Inter, sans-serif'
                   }}>
-                    Total Prize Pool: {game.prizePool} $GME • You get 95%
+                    Total Prize Pool: {game.prizePool} $FPLS • You get 95%
                   </p>
                 </div>)}
               </div>
@@ -3053,8 +3064,15 @@ Current app data:
           
           {/* Submit button at bottom */}
           <div className="mt-6 pt-4 border-t border-[#1A1A1A]">
-             {selectedTeam.length === 11 ? (
-                <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (0.05 $GME)</button>
+             {isTeamSubmitted ? (
+                <div className="space-y-2">
+                  <div className="text-center text-green-500 text-[10px] font-mono tracking-widest uppercase mb-2">✓ SQUAD SUBMITTED</div>
+                  <button onClick={shareSquadOnX} className="w-full border border-[#1DA1F2] text-[#1DA1F2] py-3 font-mono text-xs tracking-widest hover:bg-[#1DA1F2] hover:text-black transition-colors flex items-center justify-center space-x-2">
+                    <span>SHARE SQUAD ON 𝕏</span>
+                  </button>
+                </div>
+             ) : selectedTeam.length === 11 ? (
+                <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (0.05 $FPLS)</button>
              ) : (
                 <button className="w-full border border-[#333] text-[#333] py-3 font-mono text-[10px] tracking-widest cursor-not-allowed">SELECT {11 - selectedTeam.length} MORE PLAYERS</button>
              )}

@@ -2560,25 +2560,6 @@ Current app data:
       <div className="w-full border-b border-gray-900/50 bg-black relative z-10">
         <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
       </div>
-        <div className="md:hidden flex justify-center items-center mt-4 space-x-4">
-          <ThemeToggle theme={theme} setTheme={setTheme} />
-          {authenticated ? (
-            <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 text-sm px-3 flex flex-col items-center justify-center">
-              <span className="font-mono text-[var(--emerald-glow)] text-[10px] font-bold mb-1">{fplsBalance} FPLS</span>
-              <div className="flex items-center">
-                <LogOut className="w-3 h-3 mr-1 text-[var(--text-secondary)]" />
-                <span className="font-mono text-[10px]">{userWallet ? `${userWallet.slice(0, 4)}...${userWallet.slice(-4)}` : 'Out'}</span>
-              </div>
-            </button>
-          ) : (
-            <button onClick={login} className="rh-button py-2 text-sm px-3">
-              <LogIn className="w-4 h-4 mr-1" />
-              <span>Login</span>
-            </button>
-          )}
-        </div>
-      </div>
-    </header>
     <main className="flex-1 w-full flex flex-col">
       {currentView === 'home' && <LandingHero setCurrentView={setCurrentView} />}
       {currentView === 'dashboard' && <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 w-full">
@@ -3726,6 +3707,6 @@ Current app data:
       </SpotlightCard>
     </div>}
 
-  </div>;
+  </div>);
 }
 export default App;

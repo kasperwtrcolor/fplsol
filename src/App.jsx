@@ -194,80 +194,31 @@ const LoadingWave = ({
     <MessageComponent />
   </div>;
 };
-const LimelightNav = ({
-  currentView,
-  setCurrentView,
-  onInfoClick,
-  isAdmin
-}) => {
-  const navItems = [{
-    id: 'home',
-    label: 'Home',
-    icon: Home
-  }, {
-    id: 'team',
-    label: 'Build Team',
-    icon: TeamIcon
-  }, {
-    id: 'leaderboard',
-    label: 'Leaderboard',
-    icon: TrendingUp
-  }, {
-    id: 'profile',
-    label: 'Profile',
-    icon: User
-  }, ...(isAdmin ? [{
-    id: 'admin',
-    label: 'Admin',
-    icon: Users
-  }] : [])];
-  const handleItemClick = item => {
-    setCurrentView(item.id);
-  };
-  return <motion.nav className="relative bg-black/40 backdrop-blur-md rounded-2xl p-2 border border-green-700/30" >
-    <div className="flex items-center space-x-2">
+const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
+  const navItems = [
+    { id: 'home', label: 'HOME' },
+    { id: 'dashboard', label: 'DASHBOARD' },
+    { id: 'team', label: 'TEAM BUILDER' },
+    { id: 'profile', label: 'PROFILE' },
+    ...(isAdmin ? [{ id: 'admin', label: 'ADMIN' }] : [])
+  ];
+
+  return (
+    <nav className="flex items-center space-x-6 md:space-x-12 px-4 py-6 text-xs md:text-sm font-mono font-bold tracking-widest text-gray-500 overflow-x-auto w-full justify-center">
       {navItems.map(item => {
-        const IconComponent = item.icon;
         const isActive = currentView === item.id;
-        return <motion.button key={item.id} onClick={() => handleItemClick(item)} className={`
-              relative h-12 w-16 rounded-xl flex items-center justify-center 
-              transition-all duration-200 group
-              ${isActive ? 'text-white bg-green-600/50' : 'text-white hover:text-green-300'}
-            `}  whileHover={{
-            y: -4,
-            scale: 1.05
-          }} whileTap={{
-            scale: 0.95,
-            y: -2
-          }}>
-          <motion.div className="flex items-center justify-center" animate={{
-            scale: isActive ? 1.2 : 1
-          }} transition={{
-            scale: {
-              type: "spring",
-              stiffness: 400,
-              damping: 17
-            }
-          }}>
-            <IconComponent className="w-5 h-5" style={{
-              filter: 'drop-shadow(1px 1px 0px #000)'
-            }} />
-          </motion.div>
-          <motion.div initial={{
-            opacity: 0,
-            y: 10,
-            scale: 0.8
-          }} whileHover={{
-            opacity: 1,
-            y: -40,
-            scale: 1
-          }} className="absolute pointer-events-none bg-black/90 text-white text-xs px-2 py-1 rounded border border-green-700/50" >
+        return (
+          <button 
+            key={item.id} 
+            onClick={() => setCurrentView(item.id)}
+            className={`transition-colors whitespace-nowrap pb-1 border-b-2 ${isActive ? 'text-white border-green-500' : 'hover:text-gray-300 border-transparent'}`}
+          >
             {item.label}
-          </motion.div>
-        </motion.button>;
+          </button>
+        );
       })}
-    </div>
-  </motion.nav>;
+    </nav>
+  );
 };
 const AnimatedButton = ({
   children,
@@ -407,6 +358,62 @@ const FormationDock = ({
     })}
   </motion.div>;
 };
+const LandingHero = ({ setCurrentView }) => {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6 pt-16 pb-32">
+      <div className="relative w-full flex flex-col items-center">
+        {/* Subtle radial crosshair behind the hero */}
+        <div className="absolute inset-0 pointer-events-none z-[-1] opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(0, 255, 106, 0.4) 0%, transparent 70%)', width: '600px', height: '600px', left: '50%', transform: 'translate(-50%, -30%)' }}>
+          <div className="w-full h-full border border-[var(--border-light)] rounded-full opacity-30"></div>
+          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[var(--border-light)] opacity-30"></div>
+          <div className="absolute top-0 left-1/2 w-[1px] h-full bg-[var(--border-light)] opacity-30"></div>
+        </div>
+
+        <h1 className="text-6xl md:text-[110px] leading-[0.85] font-black text-white uppercase tracking-tighter text-center mb-8 font-sans">
+          WINNER<br/>TAKES ALL
+        </h1>
+        
+        <p className="text-[var(--emerald-glow)] font-mono text-[10px] md:text-xs uppercase tracking-[0.25em] text-center max-w-lg leading-relaxed mb-12">
+          The world's first deflationary fantasy premier league game powered by Robinhood Chain.
+        </p>
+        
+        <button 
+          onClick={() => setCurrentView('team')}
+          className="border border-white hover:border-[var(--emerald-glow)] text-white hover:text-[var(--emerald-glow)] px-8 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors"
+        >
+          BUILD SQUAD
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full mt-32 border-t border-[var(--border-light)]">
+        <div className="p-8 border-b md:border-b-0 md:border-r border-[var(--border-light)]">
+          <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">01</h2>
+          <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Real-World Assets</h3>
+          <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
+            Connect your Robinhood Chain wallet and use $GME to enter. Entries pool into a massive weekly treasury.
+          </p>
+        </div>
+        
+        <div className="p-8 border-b md:border-b-0 md:border-r border-[var(--border-light)]">
+          <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">02</h2>
+          <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Deflationary Tokenomics</h3>
+          <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
+            For every entry fee paid, 90% goes to the prize pool and 10% is burned forever, reducing circulating supply.
+          </p>
+        </div>
+        
+        <div className="p-8">
+          <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">03</h2>
+          <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Custom Deadlines</h3>
+          <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
+            Squad deadlines are strictly enforced exactly 1 hour before the first kick-off of each gameweek.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const { address: userWallet, isConnected: authenticated } = useAccount();
   const { connect } = useConnect();
@@ -465,7 +472,7 @@ function App() {
   const [selectedFixtureGameweek, setSelectedFixtureGameweek] = useState(1);
   const [selectedGameweekFixtures, setSelectedGameweekFixtures] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState([]);
-  const [teamBudget, setTeamBudget] = useState(600);
+  const [teamBudget, setTeamBudget] = useState(700);
   const [captain, setCaptain] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [userEntries, setUserEntries] = useState([]);
@@ -507,7 +514,7 @@ function App() {
         
         const teamsMap = {};
         bootstrapData.teams.forEach(t => {
-          teamsMap[t.id] = t.short_name;
+          teamsMap[t.id] = { name: t.short_name, code: t.code };
         });
         setFplTeams(teamsMap);
 
@@ -2158,7 +2165,7 @@ Current app data:
         gameId: activeGameweek.id,
         team: JSON.stringify(playerIds),
         captain: captain.id.toString(),
-        teamValue: 600 - teamBudget,
+        teamValue: 700 - teamBudget,
         points: 0,
         txHash: enterTx
       });
@@ -2432,8 +2439,13 @@ Current app data:
           border: '1px solid var(--border-light)'
         }}>
           {isCaptain && <div className="absolute -top-2 -left-2 bg-[var(--emerald-glow)] text-black text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center font-mono ">C</div>}
-          <div className="mb-2 md:mb-3 rounded-lg overflow-hidden border border-[var(--border-light)]">
-            <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-10 h-10 md:w-20 md:h-20 mx-auto object-cover opacity-80 mix-blend-screen grayscale contrast-125" />
+          <div className="mb-2 md:mb-3 rounded-lg overflow-hidden border border-[var(--border-light)] bg-white/5">
+            <img 
+              src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
+              alt={`${player.first_name} ${player.second_name}`} 
+              onError={(e) => { e.target.src = "/pixel_footballer.jpg"; }}
+              className="w-10 h-14 md:w-16 md:h-20 mx-auto object-cover" 
+            />
           </div>
           <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.first_name}</div>
           <div className="text-xs font-bold truncate text-white/90 uppercase tracking-widest">{player.second_name}</div>
@@ -2498,179 +2510,56 @@ Current app data:
       </div>
     </div>;
   };
-  if (!hasEnteredApp) {
-    return <div className="min-h-screen flex flex-col font-sans text-white relative">
-      <header className="px-12 py-8 flex justify-between items-center z-10 w-full max-w-[1400px] mx-auto">
-        <div className="flex items-center space-x-3">
-          <span className="brand-dot"></span>
-          <h1 className="text-lg font-bold tracking-tight text-white uppercase">FPL.STOCKS</h1>
+  // The main layout
+  return (
+    <div className="min-h-screen bg-black text-white font-mono flex flex-col font-sans">
+      {toast && (
+        <div className="fixed bottom-4 right-4 z-[100] bg-black/90 backdrop-blur-xl border border-green-500/50 p-4 rounded-xl shadow-[0_0_20px_rgba(74,222,128,0.2)] animate-fade-in-up flex items-center space-x-3">
+          <div className="bg-green-500/20 p-2 rounded-full">
+            <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <h4 className="text-green-400 font-bold text-xs tracking-widest uppercase">{toast.title}</h4>
+            <p className="text-gray-200 text-sm mt-0.5">{toast.message}</p>
+          </div>
         </div>
-        <div className="flex space-x-4">
+      )}
+
+      {/* New Header */}
+      <header className="flex justify-between items-center px-6 py-5 border-b border-gray-900 w-full relative z-10 bg-black">
+        <div className="flex items-center space-x-4">
+          <div className="font-bold text-3xl tracking-tighter text-white font-sans">
+            RWA<span className="text-green-500">F</span>
+          </div>
+          <div className="text-[9px] tracking-[0.2em] uppercase border border-gray-800 px-3 py-1.5 rounded-full text-gray-500 font-mono">
+            Robinhood Chain
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-6 md:space-x-10">
+          <div className="hidden md:flex flex-col items-end">
+            <span className="text-[9px] text-gray-600 uppercase tracking-widest font-mono">Treasury Balance</span>
+            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 0.05).toFixed(2)} $GME</span>
+          </div>
           {authenticated ? (
-            <button onClick={logout} className="rh-outline-button">
-              {userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Disconnect'}
+            <button onClick={logout} className="flex items-center space-x-3 bg-gray-900/40 border border-gray-800 px-5 py-2 rounded-full hover:border-green-500/50 transition-colors">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#00ff00]"></div>
+              <span className="text-xs font-mono text-gray-300">{userWallet.slice(0,6)}...{userWallet.slice(-4)}</span>
             </button>
           ) : (
-            <button onClick={login} className="rh-outline-button">
-              Connect Wallet
+            <button onClick={login} className="flex items-center space-x-3 bg-gray-900/40 border border-gray-800 px-5 py-2 rounded-full hover:border-green-500/50 transition-colors">
+              <span className="text-xs font-mono text-gray-300">Connect Wallet</span>
             </button>
           )}
         </div>
       </header>
-      
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-[1000px] mx-auto px-6 relative z-10 pt-10 pb-20">
-        <div className="text-center mb-10">
-          <p className="text-[#8b9a90] uppercase tracking-[0.3em] text-xs mb-4 font-mono font-bold">The Robinhood Chain Protocol</p>
-          <h2 className="text-3xl md:text-5xl leading-tight font-mono font-black text-white uppercase tracking-tighter mx-auto max-w-4xl" >
-            BURN $FPLS.<br/>
-            <span className="text-[var(--emerald-glow)]">EARN STOCKS.</span>
-          </h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full mb-12">
-          <div className="rh-card flex flex-col text-left py-6 px-4">
-            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">01 / LIQUIDITY</p>
-            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">GET $FPLS</h3>
-            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
-              Acquire $FPLS native tokens directly on the Robinhood Chain to begin your management career.
-            </p>
-          </div>
-          
-          <div className="rh-card flex flex-col text-left py-6 px-4">
-            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">02 / DEFLATION</p>
-            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">BURN TO ENTER</h3>
-            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
-              Burn 1000 $FPLS to submit your 11-man team. 100% of fees are destroyed forever to reward holders.
-            </p>
-          </div>
-          
-          <div className="rh-card flex flex-col text-left py-6 px-4">
-            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">03 / ASCENSION</p>
-            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">WIN STOCKS</h3>
-            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
-              Tax revenue buys real-world equity. The Top 10 managers seize the primary prize pool.
-            </p>
-          </div>
-          
-          <div className="rh-card flex flex-col text-left py-6 px-4">
-            <p className="text-[var(--emerald-glow)] font-mono text-[10px] font-bold tracking-wider mb-2">04 / EQUALITY</p>
-            <h3 className="text-white text-sm font-mono font-bold uppercase mb-2 tracking-tight">EVERYONE EARNS</h3>
-            <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
-              No one leaves empty-handed. All valid participants receive a guaranteed airdrop of fractionals.
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex flex-col items-center">
-          <button onClick={() => setHasEnteredApp(true)} className="rh-button text-sm font-mono uppercase tracking-widest px-8 py-3 mb-4">
-            ENTER THE BANK
-          </button>
-          <p className="text-[#8b9a90] text-[10px] font-mono uppercase tracking-widest opacity-60">
-            Real-world assets secured by on-chain burning
-          </p>
-        </div>
-        
-        {/* Detail Section Below Fold */}
-        <div className="mt-40 max-w-3xl mx-auto text-center border-t border-[var(--border-light)] pt-20">
-          <h3 className="text-lg font-bold text-white mb-4 tracking-tight">PROTOCOL MECHANICS</h3>
-          <p className="text-[var(--text-secondary)] text-lg mb-10 leading-relaxed">
-            FPL.Stocks bridges Fantasy Premier League data with DeFi tokenomics. 
-            The protocol operates on a deflationary cycle synced with the official English Premier League schedule. 
-            Before every real-world kickoff, the protocol deadline locks all submissions. 
-            Scores are resolved using Chainlink Oracles that pull official FPL points.
-          </p>
-          <div className="rh-card">
-            <h4 className="text-[var(--emerald-glow)] font-mono text-sm mb-4">THE DEFI LOOP</h4>
-            <p className="text-[var(--text-secondary)] text-sm text-left">
-              1. A 3% tax is applied to all $FPLS transfers, automatically swapped for real-world Robinhood Stocks (e.g. AAPL, TSLA).<br/><br/>
-              2. 1000 $FPLS is burned per gameweek entry, reducing the total supply forever.<br/><br/>
-              3. At gameweek resolution, 90% of the accumulated $GME is distributed to all players based on their rank, and 10% is allocated to the platform treasury for development.
-            </p>
-          </div>
-        </div>
-      </main>
 
-      {/* Footer Ticker */}
-      <footer className="w-full border-t border-[var(--border-light)] bg-[var(--carbon-surface)] py-4 overflow-hidden relative mt-auto">
-        <div className="flex space-x-16 items-center px-8 w-max">
-          {trendingTokens.map((token, i) => (
-            <div key={i} className="flex items-center space-x-3 whitespace-nowrap">
-              <span className="font-bold text-white tracking-wider">{token.symbol}</span>
-              <span className="font-mono text-[#8b9a90] text-sm">{token.price}</span>
-              <span className={`font-mono text-sm ${token.change.startsWith('+') ? 'text-[var(--emerald-glow)]' : 'text-red-500'}`}>
-                {token.change}
-              </span>
-            </div>
-          ))}
-          {trendingTokens.map((token, i) => (
-            <div key={i + 100} className="flex items-center space-x-3 whitespace-nowrap">
-              <span className="font-bold text-white tracking-wider">{token.symbol}</span>
-              <span className="font-mono text-[#8b9a90] text-sm">{token.price}</span>
-              <span className={`font-mono text-sm ${token.change.startsWith('+') ? 'text-[var(--emerald-glow)]' : 'text-red-500'}`}>
-                {token.change}
-              </span>
-            </div>
-          ))}
-        </div>
-      </footer>
-    </div>;
-  }
-  return <div className={`min-h-screen ${theme === 'dark' ? 'bg-gradient-to-br from-black via-gray-900 to-black film-grain' : 'bg-gradient-to-br from-blue-50 via-white to-blue-100'}`}>
-    {toast && (
-      <div className="fixed bottom-4 right-4 z-[100] bg-black/90 backdrop-blur-xl border border-green-500/50 p-4 rounded-xl shadow-[0_0_20px_rgba(74,222,128,0.2)] animate-fade-in-up flex items-center space-x-3">
-        <div className="bg-green-500/20 p-2 rounded-full">
-          <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <div>
-          <h4 className="text-green-400 font-bold text-xs tracking-widest uppercase">{toast.title}</h4>
-          <p className="text-gray-200 text-sm mt-0.5">{toast.message}</p>
-        </div>
+      {/* Navigation */}
+      <div className="w-full border-b border-gray-900/50 bg-black relative z-10">
+        <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
       </div>
-    )}
-    <header className={`${theme === 'dark' ? 'bg-black/40' : 'bg-white/90'} backdrop-blur-sm border-b ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`}>
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <AnimatedTitle title="FPL.STOCKS" />
-            <div className="flex items-center space-x-2">
-              {isConnected && <div className="w-2 h-2 bg-yellow-600 rounded-full animate-pulse"  />}
-              <div className="flex items-center space-x-1 text-gray-300 px-2 py-1 rounded body-text" >
-                <Users className="w-4 h-4" style={{
-                  filter: 'drop-shadow(1px 1px 0px #000)'
-                }} />
-                <span className="text-sm font-medium">{onlineUsers}</span>
-              </div>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center space-x-4">
-            <ThemeToggle theme={theme} setTheme={setTheme} />
-            {authenticated ? (
-              <button onClick={logout} className="rh-button bg-transparent border border-[#2C2C2E] text-white py-2 flex items-center space-x-3">
-                <div className="flex items-center space-x-2 border-r border-[#2C2C2E] pr-3">
-                  <span className="w-2 h-2 rounded-full bg-[var(--emerald-glow)] animate-pulse "></span>
-                  <span className="font-mono text-[var(--emerald-glow)] font-bold">{fplsBalance} FPLS</span>
-                </div>
-                <div className="flex items-center">
-                  <LogOut className="w-4 h-4 mr-2 text-[var(--text-secondary)]" />
-                  <span className="font-mono text-sm">{userWallet ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` : 'Logout'}</span>
-                </div>
-              </button>
-            ) : (
-              <button onClick={login} className="rh-button py-2">
-                <LogIn className="w-4 h-4 mr-2" />
-                <span>Connect Wallet</span>
-              </button>
-            )}
-          </div>
-        </div>
-        { }
-        { }
-        <div className="flex justify-center">
-          <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
-        </div>
-        { }
         <div className="md:hidden flex justify-center items-center mt-4 space-x-4">
           <ThemeToggle theme={theme} setTheme={setTheme} />
           {authenticated ? (
@@ -2690,8 +2579,9 @@ Current app data:
         </div>
       </div>
     </header>
-    <main className="max-w-7xl mx-auto px-4 py-2 md:py-4">
-      {currentView === 'home' && <div className="space-y-8">
+    <main className="flex-1 w-full flex flex-col">
+      {currentView === 'home' && <LandingHero setCurrentView={setCurrentView} />}
+      {currentView === 'dashboard' && <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 w-full">
         { }
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column: Countdown, Stats, & Fixtures */}
@@ -2728,9 +2618,15 @@ Current app data:
               <div className="space-y-3 font-mono text-xs">
                 {liveFixtures.length > 0 ? liveFixtures.map((fixture) => (
                   <div key={fixture.id} className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
-                    <span className="text-gray-300 font-bold">{fplTeams[fixture.team_h] || fixture.team_h}</span>
-                    <span className="text-yellow-500 font-bold px-2">VS</span>
-                    <span className="text-gray-300 font-bold">{fplTeams[fixture.team_a] || fixture.team_a}</span>
+                    <div className="flex items-center space-x-2 w-1/3 justify-end">
+                      <span className="text-gray-300 font-bold text-right">{fplTeams[fixture.team_h]?.name || fixture.team_h}</span>
+                      <img src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_h]?.code}.png`} className="w-5 h-5 object-contain" alt="home team" />
+                    </div>
+                    <span className="text-yellow-500 font-bold px-1 text-[9px] w-auto text-center">VS</span>
+                    <div className="flex items-center space-x-2 w-1/3 justify-start">
+                      <img src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_a]?.code}.png`} className="w-5 h-5 object-contain" alt="away team" />
+                      <span className="text-gray-300 font-bold text-left">{fplTeams[fixture.team_a]?.name || fixture.team_a}</span>
+                    </div>
                     <span className="text-gray-500 text-xs ml-auto">
                       {new Date(fixture.kickoff_time).toLocaleString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </span>

@@ -3,13 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --carbon-base: #060907;
-  --carbon-surface: #101612;
+  --carbon-base: #000000;
+  --carbon-surface: #0a0a0a;
   --emerald-glow: #00ff6a;
   --emerald-muted: #003315;
-  --text-primary: #f0f4f8;
+  --text-primary: #ffffff;
   --text-secondary: #8b9a90;
-  --border-light: rgba(0, 255, 106, 0.1);
+  --border-light: rgba(255, 255, 255, 0.1);
   --glass-tint: rgba(0, 255, 106, 0.05);
 }
 
@@ -25,35 +25,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Background Texture: Topographic Dot Grid & Radial Lines */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: -1;
-  background-image: 
-    radial-gradient(var(--emerald-muted) 1px, transparent 1px),
-    repeating-radial-gradient(
-      circle at 0% 0%, 
-      transparent 0, 
-      transparent 40px, 
-      rgba(0, 255, 106, 0.02) 41px, 
-      transparent 42px
-    ),
-    repeating-radial-gradient(
-      circle at 100% 100%, 
-      transparent 0, 
-      transparent 60px, 
-      rgba(0, 255, 106, 0.03) 61px, 
-      transparent 62px
-    );
-  background-size: 40px 40px, 100% 100%, 100% 100%;
-  background-position: 0 0, center, center;
-}
+/* Background Texture Removed */
 
 .font-mono {
   font-family: 'JetBrains Mono', monospace;

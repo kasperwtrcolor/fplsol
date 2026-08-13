@@ -485,14 +485,47 @@ function App() {
   const [generateCount, setGenerateCount] = useState(5);
   const [gameweekDeadline, setGameweekDeadline] = useState(null);
   const [isAfterDeadline, setIsAfterDeadline] = useState(false);
-  const [gw1Countdown, setGw1Countdown] = useState('');
+  const [gw1Countdown, setGw1Countdown] = useState('Loading...');
+  const [liveFixtures, setLiveFixtures] = useState([]);
+  const [fplTeams, setFplTeams] = useState({});
+  const [targetDate, setTargetDate] = useState(null);
+
   useEffect(() => {
-    const targetDate = new Date('2026-08-14T19:00:00Z').getTime();
+    const fetchFplData = async () => {
+      try {
+        const bootstrapRes = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/bootstrap-static/');
+        const bootstrapData = await bootstrapRes.json();
+        
+        const teamsMap = {};
+        bootstrapData.teams.forEach(t => {
+          teamsMap[t.id] = t.short_name;
+        });
+        setFplTeams(teamsMap);
+
+        const nextGw = bootstrapData.events.find(e => e.is_next) || bootstrapData.events.find(e => e.id === 1) || bootstrapData.events[0];
+        if (nextGw) {
+          setTargetDate(new Date(nextGw.deadline_time).getTime());
+          
+          const fixturesRes = await fetch('https://corsproxy.io/?https://fantasy.premierleague.com/api/fixtures/');
+          const fixturesData = await fixturesRes.json();
+          const nextGwFixtures = fixturesData.filter(f => f.event === nextGw.id).slice(0, 3);
+          setLiveFixtures(nextGwFixtures);
+        }
+      } catch (err) {
+        console.error("Failed to fetch FPL API data:", err);
+      }
+    };
+    fetchFplData();
+  }, []);
+
+  useEffect(() => {
+    if (!targetDate) return;
+    
     const updateTimer = () => {
       const now = new Date().getTime();
       const distance = targetDate - now;
       if (distance < 0) {
-        setGw1Countdown('GAMEWEEK 1 STARTED');
+        setGw1Countdown('GAMEWEEK STARTED');
         return;
       }
       const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -504,7 +537,7 @@ function App() {
     const interval = setInterval(updateTimer, 1000);
     updateTimer();
     return () => clearInterval(interval);
-  }, []);
+  }, [targetDate]);
   const [isGameweekStarted, setIsGameweekStarted] = useState(false);
   const [claimableWinnings, setClaimableWinnings] = useState([]);
   const [historicalGames, setHistoricalGames] = useState([]);
@@ -742,7 +775,7 @@ function App() {
     try {
       console.log('Checking admin status for wallet:', userWallet);
       const walletString = typeof userWallet === 'string' ? userWallet : userWallet?.toBase58?.() || String(userWallet);
-      const adminStatus = userWallet && userWallet.toLowerCase() === '0xf57a9b1f574b1f80c8cebe252706bb8b4d783d21'.toLowerCase();
+      const adminStatus = userWallet && userWallet.toLowerCase() === '0xF027b3FC259c02949f9724E5099f86C177949039'.toLowerCase();
       console.log('Admin status result:', adminStatus);
       setIsAdmin(adminStatus);
       if (adminStatus) {
@@ -1117,7 +1150,7 @@ function App() {
   useEffect(() => {
     if (userWallet) {
       console.log('Admin useEffect triggered for wallet:', userWallet);
-      const adminStatus = userWallet && userWallet.toLowerCase() === '0xf57a9b1f574b1f80c8cebe252706bb8b4d783d21'.toLowerCase();
+      const adminStatus = userWallet && userWallet.toLowerCase() === '0xF027b3FC259c02949f9724E5099f86C177949039'.toLowerCase();
       console.log('Setting admin status to:', adminStatus);
       setIsAdmin(adminStatus);
       if (adminStatus) {
@@ -2639,24 +2672,18 @@ Current app data:
             <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={0.5}>
               <h2 className="text-xl font-black text-black bg-white px-4 py-2 rounded-xl mb-4 cinematic-text inline-block">OPENING FIXTURES</h2>
               <div className="space-y-3 font-mono text-sm">
-                <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
-                  <span className="text-gray-300 font-bold">MUN</span>
-                  <span className="text-yellow-500 font-bold px-2">VS</span>
-                  <span className="text-gray-300 font-bold">FUL</span>
-                  <span className="text-gray-500 text-xs ml-auto">AUG 14, 20:00</span>
-                </div>
-                <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
-                  <span className="text-gray-300 font-bold">ARS</span>
-                  <span className="text-yellow-500 font-bold px-2">VS</span>
-                  <span className="text-gray-300 font-bold">WOL</span>
-                  <span className="text-gray-500 text-xs ml-auto">AUG 15, 15:00</span>
-                </div>
-                <div className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
-                  <span className="text-gray-300 font-bold">CHE</span>
-                  <span className="text-yellow-500 font-bold px-2">VS</span>
-                  <span className="text-gray-300 font-bold">MCI</span>
-                  <span className="text-gray-500 text-xs ml-auto">AUG 16, 16:30</span>
-                </div>
+                {liveFixtures.length > 0 ? liveFixtures.map((fixture) => (
+                  <div key={fixture.id} className="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-gray-800">
+                    <span className="text-gray-300 font-bold">{fplTeams[fixture.team_h] || fixture.team_h}</span>
+                    <span className="text-yellow-500 font-bold px-2">VS</span>
+                    <span className="text-gray-300 font-bold">{fplTeams[fixture.team_a] || fixture.team_a}</span>
+                    <span className="text-gray-500 text-xs ml-auto">
+                      {new Date(fixture.kickoff_time).toLocaleString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )) : (
+                  <div className="text-gray-500 text-center py-4">Loading real-time fixtures...</div>
+                )}
               </div>
             </SpotlightCard>
           </div>

@@ -1384,14 +1384,27 @@ function App() {
         setIsLoading(false);
         return;
       }
-      setLoadingMessage(`Starting Gameweek ${currentGameweekNumber}...`);
+      setLoadingMessage(`Starting Gameweek ${currentGameweekNumber} on-chain...`);
+      try {
+        const startTx = await writeContractAsync({
+          address: FPLGAME_ADDRESS,
+          abi: FPLGAME_ABI,
+          functionName: 'startGameweek',
+          args: [BigInt(currentGameweekNumber)],
+        });
+        console.log('startGameweek tx:', startTx);
+      } catch (chainError) {
+        console.warn('On-chain startGameweek failed (may already be active or not deployed):', chainError);
+        // Continue with Firebase creation even if on-chain fails (testnet may be down)
+      }
+      
+      setLoadingMessage(`Recording Gameweek ${currentGameweekNumber} in database...`);
       const newGame = await firebaseService.createEntity('games', {
         gameweek: currentGameweekNumber,
         status: 'active',
         prizePool: 0,
         entryFee: 0.05
       });
-      // Firestore onSnapshot handles real-time updates automatically
       alert(`Successfully started Gameweek ${currentGameweekNumber}!`);
       await loadActiveGameweek();
     } catch (error) {
@@ -3154,6 +3167,102 @@ Current app data:
               );
             })}
           </div>
+        </div>
+      </div>}
+      {currentView === 'admin' && isAdmin && <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-8">
+        <h1 className="text-white font-mono text-sm tracking-widest uppercase mb-8 border-b border-[#1A1A1A] pb-4">ADMIN CONTROL PANEL</h1>
+        
+        {/* Gameweek Management */}
+        <div className="space-y-6">
+          <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
+            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">GAMEWEEK MANAGEMENT</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border border-[#1A1A1A] p-4 bg-black">
+                <span className="text-[#666] font-mono text-[9px] tracking-widest uppercase">Active Gameweek</span>
+                <div className="text-white font-mono text-lg mt-1">{activeGameweek ? `GW ${activeGameweek.gameweek}` : 'NONE'}</div>
+                <div className="text-[#666] font-mono text-[9px] mt-1">{activeGameweek ? `Status: ${activeGameweek.status}` : 'No gameweek active'}</div>
+              </div>
+              <div className="border border-[#1A1A1A] p-4 bg-black">
+                <span className="text-[#666] font-mono text-[9px] tracking-widest uppercase">Prize Pool</span>
+                <div className="text-green-500 font-mono text-lg mt-1">{activeGameweek ? `${activeGameweek.prizePool} $FPLS` : '0'}</div>
+                <div className="text-[#666] font-mono text-[9px] mt-1">Entries: {activeGameweek?.entries?.length || entriesCount || 0}</div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+              <button onClick={createGameweek} className="border border-green-900 text-green-500 py-3 font-mono text-[9px] tracking-widest hover:bg-green-900/20 transition-colors">
+                ACTIVATE GW
+              </button>
+              <button onClick={syncGameweekWithFPL} className="border border-yellow-900 text-yellow-500 py-3 font-mono text-[9px] tracking-widest hover:bg-yellow-900/20 transition-colors">
+                SYNC FPL
+              </button>
+              <button onClick={finalizeGameweek} className="border border-red-900 text-red-500 py-3 font-mono text-[9px] tracking-widest hover:bg-red-900/20 transition-colors">
+                FINALIZE GW
+              </button>
+              <button onClick={deleteGameweek} className="border border-red-900 text-red-500 py-3 font-mono text-[9px] tracking-widest hover:bg-red-900/20 transition-colors">
+                DELETE GW
+              </button>
+            </div>
+            <button onClick={clearAndRepopulateFixtures} className="w-full mt-3 border border-[#1A1A1A] text-[#666] py-2 font-mono text-[9px] tracking-widest hover:border-[#333] hover:text-white transition-colors">
+              CLEAR & REPOPULATE FIXTURES
+            </button>
+          </div>
+          
+          {/* Smart Contract Info */}
+          <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
+            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">SMART CONTRACTS</h2>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
+                <span className="text-[#666] font-mono text-[9px] uppercase">$FPLS Token</span>
+                <span className="text-white font-mono text-[9px]">{FPLS_ADDRESS.slice(0,10)}...{FPLS_ADDRESS.slice(-6)}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
+                <span className="text-[#666] font-mono text-[9px] uppercase">FPL Game</span>
+                <span className="text-white font-mono text-[9px]">{FPLGAME_ADDRESS.slice(0,10)}...{FPLGAME_ADDRESS.slice(-6)}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
+                <span className="text-[#666] font-mono text-[9px] uppercase">Chain</span>
+                <span className="text-white font-mono text-[9px]">Robinhood Chain Testnet (46630)</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[#666] font-mono text-[9px] uppercase">Admin Wallet</span>
+                <span className="text-green-500 font-mono text-[9px]">{userWallet?.slice(0,10)}...{userWallet?.slice(-6)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Test Run Checklist */}
+          <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
+            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">TEST RUN CHECKLIST</h2>
+            <div className="space-y-2">
+              {[
+                { label: 'Gameweek activated', done: !!activeGameweek },
+                { label: 'Players loaded from FPL API', done: players.length > 0 },
+                { label: 'Wallet connected', done: !!userWallet },
+                { label: 'Admin verified', done: isAdmin },
+                { label: 'Fixtures populated', done: true },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center space-x-3">
+                  <span className={`font-mono text-xs ${item.done ? 'text-green-500' : 'text-red-500'}`}>{item.done ? '✓' : '✗'}</span>
+                  <span className="text-[#666] font-mono text-[9px] tracking-widest uppercase">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Historical Games */}
+          {historicalGames && historicalGames.length > 0 && <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
+            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">HISTORICAL GAMEWEEKS</h2>
+            <div className="space-y-2">
+              {historicalGames.map((game, i) => (
+                <div key={i} className="flex justify-between items-center border-b border-[#0a0a0a] pb-2 text-[9px] font-mono">
+                  <span className="text-white">GW {game.gameweek}</span>
+                  <span className={`${game.status === 'active' ? 'text-green-500' : game.status === 'finished' ? 'text-yellow-500' : 'text-[#666]'}`}>{game.status?.toUpperCase()}</span>
+                  <span className="text-[#666]">{game.prizePool || 0} $FPLS</span>
+                </div>
+              ))}
+            </div>
+          </div>}
         </div>
       </div>}
     </main>

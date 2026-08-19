@@ -2206,6 +2206,7 @@ Current app data:
       
       setLoadingMessage('Recording entry to database...');
       await firebaseService.createEntity('entries', {
+        walletAddress: userWallet,
         gameId: activeGameweek.id,
         team: JSON.stringify(playerIds),
         captain: captain.id.toString(),

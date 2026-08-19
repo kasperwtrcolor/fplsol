@@ -3298,7 +3298,7 @@ Current app data:
           </div>
 
           {/* Historical Games */}
-          {historicalGames && adminGames.length > 0 && <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
+          {adminGames && adminGames.length > 0 && <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
             <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">HISTORICAL GAMEWEEKS</h2>
             <div className="space-y-2">
               {adminGames.map((game, i) => (

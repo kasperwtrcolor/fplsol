@@ -3045,7 +3045,7 @@ Current app data:
         </div>
 
         {/* Right Column: PLAYER ROSTER */}
-        <div className="w-full lg:w-[55%] flex flex-col bg-black overflow-hidden h-full">
+        {!isTeamSubmitted && (<div className="w-full lg:w-[55%] flex flex-col bg-black overflow-hidden h-full">
           {/* Filter Bar */}
           <div className="flex border-b border-[#1A1A1A] p-4 justify-between items-center">
             <div className="flex space-x-2 overflow-x-auto pb-1 lg:pb-0">
@@ -3119,7 +3119,7 @@ Current app data:
               );
             })}
           </div>
-        </div>}
+        </div>)}
       </div>}
       {currentView === 'admin' && isAdmin && <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-white font-mono text-sm tracking-widest uppercase mb-8 border-b border-[#1A1A1A] pb-4">ADMIN CONTROL PANEL</h1>

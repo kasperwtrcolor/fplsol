@@ -1430,26 +1430,12 @@ function App() {
         setIsLoading(false);
         return;
       }
-      setLoadingMessage(`Starting Gameweek ${currentGameweekNumber} on-chain...`);
-      try {
-        const startTx = await writeContractAsync({
-          address: FPLGAME_ADDRESS,
-          abi: FPLGAME_ABI,
-          functionName: 'startGameweek',
-          args: [BigInt(currentGameweekNumber)],
-        });
-        console.log('startGameweek tx:', startTx);
-      } catch (chainError) {
-        console.warn('On-chain startGameweek failed (may already be active or not deployed):', chainError);
-        // Continue with Firebase creation even if on-chain fails (testnet may be down)
-      }
-      
       setLoadingMessage(`Recording Gameweek ${currentGameweekNumber} in database...`);
       const newGame = await firebaseService.createEntity('games', {
         gameweek: currentGameweekNumber,
         status: 'active',
         prizePool: 0,
-        entryFee: 0.05
+        entryFee: 100000
       });
       alert(`Successfully started Gameweek ${currentGameweekNumber}!`);
       await loadActiveGameweek();
@@ -2180,23 +2166,15 @@ Current app data:
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
       
-      setLoadingMessage('Approving $test token transfer (100,000 $test)...');
-      const approveTx = await writeContractAsync({
-        address: FPLS_ADDRESS,
-        abi: FPLS_ABI,
-        functionName: 'approve',
-        args: [FPLGAME_ADDRESS, BigInt('100000000000000000000000')], // 100,000 $test with 18 decimals
-      });
-      console.log('Approve Tx Hash:', approveTx);
-      
-      setLoadingMessage('Burning $FPLS and entering Gameweek...');
+      setLoadingMessage('Burning 100,000 $test to enter Gameweek...');
       const playerIds = selectedTeam.map(p => p.id);
       const enterTx = await writeContractAsync({
-        address: FPLGAME_ADDRESS,
-        abi: FPLGAME_ABI,
-        functionName: 'enterGameweek',
-        args: [playerIds]});
-      console.log('Enter Gameweek Tx Hash:', enterTx);
+        address: FPLS_ADDRESS,
+        abi: FPLS_ABI,
+        functionName: 'transfer',
+        args: ['0x000000000000000000000000000000000000dEaD', BigInt('100000000000000000000000')], // 100,000 $test
+      });
+      console.log('Burn Tx Hash:', enterTx);
       refetchBalance(); // Update user's balance after burn
       
       setLoadingMessage('Recording entry to database...');
@@ -2213,7 +2191,7 @@ Current app data:
       try {
         const currentGame = await firebaseService.getEntity('games', activeGameweek.id);
         console.log('Fetched current game prizePool from Devbase:', currentGame.prizePool);
-        const updatedPrizePool = (currentGame.prizePool || 0) + 0.05;
+        const updatedPrizePool = (currentGame.prizePool || 0) + 100000;
         console.log('Calculated new prizePool:', updatedPrizePool);
         await firebaseService.updateEntity('games', activeGameweek.id, {
           prizePool: updatedPrizePool
@@ -3263,12 +3241,8 @@ Current app data:
                 <span className="text-white font-mono text-[9px]">{FPLS_ADDRESS.slice(0,10)}...{FPLS_ADDRESS.slice(-6)}</span>
               </div>
               <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
-                <span className="text-[#666] font-mono text-[9px] uppercase">FPL Game</span>
-                <span className="text-white font-mono text-[9px]">{FPLGAME_ADDRESS.slice(0,10)}...{FPLGAME_ADDRESS.slice(-6)}</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
                 <span className="text-[#666] font-mono text-[9px] uppercase">Chain</span>
-                <span className="text-white font-mono text-[9px]">Robinhood Chain Testnet (46630)</span>
+                <span className="text-white font-mono text-[9px]">Robinhood Chain Mainnet (4663)</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[#666] font-mono text-[9px] uppercase">Admin Wallet</span>

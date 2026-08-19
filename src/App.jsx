@@ -2209,6 +2209,26 @@ Current app data:
     }
   };
 
+  const authAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    const autoAuthenticate = async () => {
+      if (userWallet && !authAttemptedRef.current) {
+        if (!auth.currentUser || auth.currentUser.uid.toLowerCase() !== userWallet.toLowerCase()) {
+          authAttemptedRef.current = true;
+          try {
+            await ensureAuthenticated();
+          } catch (error) {
+            console.error('Auto-auth failed or rejected:', error);
+            setIsLoading(false);
+            setLoadingMessage('');
+          }
+        }
+      }
+    };
+    autoAuthenticate();
+  }, [userWallet]);
+
   const handleRequestScore = async () => {
     if (!userWallet || !activeGameweek) return;
     setIsLoading(true);

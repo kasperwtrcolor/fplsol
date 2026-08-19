@@ -343,8 +343,12 @@ const FormationDock = ({
 const LandingHero = ({ setCurrentView }) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6 pt-16 pb-32">
-      <div className="relative w-full flex flex-col items-center">
-        {/* Subtle radial crosshair behind the hero */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="relative w-full flex flex-col items-center min-h-[60vh] justify-center"
+      >
         <div className="absolute inset-0 pointer-events-none z-[-1] opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(0, 255, 106, 0.4) 0%, transparent 70%)', width: '600px', height: '600px', left: '50%', transform: 'translate(-50%, -30%)' }}>
           <div className="w-full h-full border border-[var(--border-light)] rounded-full opacity-30"></div>
           <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[var(--border-light)] opacity-30"></div>
@@ -365,32 +369,74 @@ const LandingHero = ({ setCurrentView }) => {
         >
           BUILD SQUAD
         </button>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-0 w-full mt-32 border-t border-[var(--border-light)]">
-        <div className="p-8 border-b md:border-b-0 md:border-r border-[var(--border-light)]">
-          <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">01</h2>
-          <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Real-World Assets</h3>
-          <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
-            Connect your Robinhood Chain wallet and use $FPLS to enter. Entries pool into a massive weekly treasury.
-          </p>
-        </div>
+      {/* How it Works Sections */}
+      <div className="w-full mt-16 space-y-32">
         
-        <div className="p-8 border-b md:border-b-0 md:border-r border-[var(--border-light)]">
-          <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">02</h2>
-          <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Deflationary Tokenomics</h3>
-          <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
-            For every entry fee paid, 90% goes to the prize pool and 10% is burned forever, reducing circulating supply.
-          </p>
-        </div>
-        
-        <div className="p-8">
-          <h2 className="text-gray-500 font-bold text-4xl mb-4 font-sans tracking-tighter">03</h2>
-          <h3 className="text-white font-bold text-sm mb-4 font-sans tracking-tight">Custom Deadlines</h3>
-          <p className="text-gray-400 font-mono text-[10px] leading-relaxed">
-            Squad deadlines are strictly enforced exactly 1 hour before the first kick-off of each gameweek.
-          </p>
-        </div>
+        {/* Section 1: Entry & Pool */}
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col md:flex-row items-center gap-12"
+        >
+          <div className="flex-1 space-y-6">
+            <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Stake to Play</h3>
+            <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
+              Pay the 1000 $FPLS entry fee to join the gameweek. 90% of all entries form the winner-takes-all prize pool. The remaining 10% is burned forever, making the token deflationary.
+            </p>
+          </div>
+          <div className="flex-1 w-full relative">
+            <div className="absolute inset-0 bg-[var(--emerald-glow)] opacity-10 blur-2xl rounded-full"></div>
+            <img src="/fpl_entry.jpg" alt="Terminal Entry" className="relative z-10 w-full border border-[#1A1A1A] rounded-lg shadow-2xl opacity-90 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" />
+          </div>
+        </motion.div>
+
+        {/* Section 2: Budget */}
+        <motion.div 
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col md:flex-row-reverse items-center gap-12"
+        >
+          <div className="flex-1 space-y-6 md:pl-12">
+            <h2 className="text-yellow-500 font-mono text-xs tracking-[0.2em] uppercase">02 / The Budget</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Manage £70M</h3>
+            <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
+              You have exactly £70.0M to build your dream team of 11 players. Player prices match the official Fantasy Premier League data. Spend wisely to maximize your point potential.
+            </p>
+          </div>
+          <div className="flex-1 w-full relative">
+            <div className="absolute inset-0 bg-yellow-500 opacity-10 blur-2xl rounded-full"></div>
+            <img src="/fpl_budget.jpg" alt="Budget Terminal" className="relative z-10 w-full border border-[#1A1A1A] rounded-lg shadow-2xl opacity-90 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" />
+          </div>
+        </motion.div>
+
+        {/* Section 3: Formation & Captain */}
+        <motion.div 
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col md:flex-row items-center gap-12"
+        >
+          <div className="flex-1 space-y-6">
+            <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">03 / Tactics</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Formations & Captains</h3>
+            <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
+              Choose from 6 dynamic formations (e.g. 3-4-3, 4-4-2). Select your Captain carefully—they score double points for the gameweek based on their real-life performance via Chainlink Oracle data.
+            </p>
+          </div>
+          <div className="flex-1 w-full relative">
+            <div className="absolute inset-0 bg-[var(--emerald-glow)] opacity-10 blur-2xl rounded-full"></div>
+            <img src="/fpl_pitch.jpg" alt="Pitch Terminal" className="relative z-10 w-full border border-[#1A1A1A] rounded-lg shadow-2xl opacity-90 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" />
+          </div>
+        </motion.div>
+
       </div>
     </div>
   );

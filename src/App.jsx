@@ -340,7 +340,7 @@ const FormationDock = ({
     })}
   </div>;
 };
-const LandingHero = ({ setCurrentView }) => {
+const LandingHero = ({ setCurrentView, activeGameweek }) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6 pt-16 pb-32">
       <motion.div 
@@ -365,10 +365,17 @@ const LandingHero = ({ setCurrentView }) => {
         
         <button 
           onClick={() => setCurrentView('team')}
-          className="border border-white hover:border-[var(--emerald-glow)] text-white hover:text-[var(--emerald-glow)] px-8 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors"
+          className="border border-white hover:border-[var(--emerald-glow)] text-white hover:text-[var(--emerald-glow)] px-8 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors mb-6"
         >
           BUILD SQUAD
         </button>
+
+        {activeGameweek && (
+          <div className="flex items-center gap-3 bg-[#0a0a0a] border border-[#1a1a1a] px-4 py-2 rounded-full">
+            <div className="w-2 h-2 rounded-full bg-[var(--emerald-glow)] animate-pulse"></div>
+            <span className="text-[var(--emerald-glow)] font-mono text-[10px] uppercase tracking-widest">Gameweek {activeGameweek.gameweek} Active</span>
+          </div>
+        )}
       </motion.div>
 
       {/* How it Works Sections */}
@@ -606,7 +613,7 @@ function App() {
     const unsubGames = firebaseService.subscribeToCollection('games', { status: 'active' }, (games) => {
       if (games.length > 0) {
         const activeGame = games[0];
-        activeGame.entryFee = 0.05;
+        activeGame.entryFee = 100000;
         setActiveGameweek(prev => {
           if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool || prev.status !== activeGame.status) {
             return activeGame;
@@ -730,7 +737,7 @@ function App() {
     if (activeGameweek) {
       setActiveGameweek(prev => ({
         ...prev,
-        prizePool: data.count * (prev?.entryFee || 0.01)
+        prizePool: data.count * (prev?.entryFee || 100000)
       }));
     }
     if (activeGameweek?.id) {
@@ -1013,7 +1020,7 @@ function App() {
         gameweek: currentGameweekNumber,
         status: 'active',
         prizePool: 0,
-        entryFee: 0.05
+        entryFee: 100000
       });
       // Firestore onSnapshot handles real-time updates automatically
       console.log(`Gameweek ${currentGameweekNumber} auto-started successfully.`);
@@ -1037,15 +1044,20 @@ function App() {
       if (games.length > 0) {
         console.log('Found active game:', games[0].id);
         let activeGame = games[0];
-        activeGame.entryFee = 0.05;
+        activeGame.entryFee = 100000;
         const entries = await firebaseService.listEntities('entries', {
           gameId: activeGame.id
         });
         const currentEntriesCount = entries.length;
         if (currentEntriesCount > 0) {
-          activeGame.prizePool = currentEntriesCount * 0.05;
+          activeGame.prizePool = currentEntriesCount * 100000;
         }
-        setActiveGameweek(activeGame);
+        setActiveGameweek(prev => {
+          if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool) {
+            return activeGame;
+          }
+          return prev;
+        });
       } else {
         console.log('No active gameweek found. Attempting to auto-start.');
         setActiveGameweek(null);
@@ -1066,7 +1078,7 @@ function App() {
       setEntriesCount(entries.length);
       const currentGame = await firebaseService.getEntity('games', gameId);
       if (currentGame) {
-        const calculatedPrizePool = entries.length * 0.05;
+        const calculatedPrizePool = entries.length * 100000;
         if (calculatedPrizePool !== currentGame.prizePool) {
           setActiveGameweek(prev => prev && prev.id === gameId ? {
             ...prev,
@@ -1531,7 +1543,7 @@ function App() {
           gameweek: currentFplGameweekNumber,
           status: 'active',
           prizePool: 0,
-          entryFee: 0.05
+          entryFee: 100000
         });
         console.log(`New Gameweek ${currentFplGameweekNumber} created.`);
       }
@@ -1585,20 +1597,16 @@ function App() {
         await firebaseService.deleteEntity('payouts', payout.id);
       }
       await firebaseService.deleteEntity('games', currentActiveGame.id);
-
-      alert(`Gameweek ${currentActiveGame.gameweek} has been completely deleted.`);
-      setActiveGameweek(null);
-      setRawLeaderboard([]);
-      setLeaderboard([]);
-      setEntriesCount(0);
       await loadActiveGameweek();
       await loadUserData();
-    } catch (error) {
-      console.error('Error deleting gameweek:', error);
-      alert('An error occurred while deleting the gameweek. Please check console for details.');
-    } finally {
       setIsLoading(false);
       setLoadingMessage('');
+      alert(`Gameweek ${currentActiveGame.gameweek} has been completely deleted.`);
+    } catch (error) {
+      console.error('Error deleting gameweek:', error);
+      setIsLoading(false);
+      setLoadingMessage('');
+      alert('An error occurred while deleting the gameweek. Please check console for details.');
     }
   };
   const addPlayerToTeam = player => {
@@ -2216,7 +2224,7 @@ Current app data:
     } catch (error) {
       console.error('Error submitting team:', error);
       if (!teamSubmissionSuccess) {
-        alert('Error submitting team. Please try again.');
+        alert('Error submitting team: ' + (error.message || 'Please try again.'));
       } else {
         alert('🎉 Team submitted successfully! Some data may take a moment to update.');
         try {
@@ -2571,7 +2579,7 @@ Current app data:
         <div className="flex items-center space-x-6 md:space-x-10">
           <div className="hidden md:flex flex-col items-end">
             <span className="text-[9px] text-gray-600 uppercase tracking-widest font-mono">Treasury Balance</span>
-            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 0.05).toFixed(2)} $FPLS</span>
+            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 100000).toFixed(2)} $FPLS</span>
           </div>
           {authenticated ? (
             <button onClick={logout} className="flex items-center space-x-3 bg-gray-900/40 border border-gray-800 px-5 py-2 rounded-full hover:border-green-500/50 transition-colors">
@@ -2591,7 +2599,7 @@ Current app data:
         <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
       </div>
     <main className="flex-1 w-full flex flex-col">
-      {currentView === 'home' && <LandingHero setCurrentView={setCurrentView} />}
+      {currentView === 'home' && <LandingHero setCurrentView={setCurrentView} activeGameweek={activeGameweek} />}
       {currentView === 'dashboard' && <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 w-full">
         { }
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -2610,7 +2618,7 @@ Current app data:
                 <div className="text-center">
                   <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TOTAL REWARDS</h3>
                   <div className="text-lg md:text-xl font-mono font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
-                    {(entriesCount * 0.05).toFixed(2)} $FPLS
+                    {(entriesCount * 100000).toFixed(2)} $FPLS
                   </div>
                 </div>
               </SpotlightCard>
@@ -2701,7 +2709,7 @@ Current app data:
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entry Fee</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>0.05 $FPLS</p>
+              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>100,000 $test</p>
             </div>
             <div>
               <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entries</p>
@@ -3111,7 +3119,7 @@ Current app data:
                   </button>
                 </div>
              ) : selectedTeam.length === 11 ? (
-                <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (0.05 $FPLS)</button>
+                <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (100,000 $test)</button>
              ) : (
                 <button className="w-full border border-[#333] text-[#333] py-3 font-mono text-[10px] tracking-widest cursor-not-allowed">SELECT {11 - selectedTeam.length} MORE PLAYERS</button>
              )}

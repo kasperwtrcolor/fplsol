@@ -606,6 +606,22 @@ function App() {
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
   const currentUserEntry = activeGameweek ? userEntries.find(e => e.gameId === activeGameweek.id) : null;
   const isTeamSubmitted = !!currentUserEntry;
+  useEffect(() => {
+    if (currentUserEntry && players.length > 0) {
+      try {
+        const teamIds = JSON.parse(currentUserEntry.team);
+        const submittedTeam = teamIds.map(id => players.find(p => p.id === id)).filter(Boolean);
+        setSelectedTeam(submittedTeam);
+        
+        const cap = players.find(p => p.id.toString() === currentUserEntry.captain);
+        if (cap) setCaptain(cap);
+        
+        setTeamBudget(700 - currentUserEntry.teamValue);
+      } catch (error) {
+        console.error('Error parsing user entry:', error);
+      }
+    }
+  }, [currentUserEntry, players]);
   // Real-time Firestore listeners (replaces socket.io)
   useEffect(() => {
     setIsConnected(true);
@@ -850,11 +866,11 @@ function App() {
   const loadUserData = async () => {
     try {
       const stats = await firebaseService.listEntities('user_stats', {
-        userId: userWallet
+        walletAddress: userWallet
       });
       setUserStats(stats[0] || null);
       const entries = await firebaseService.listEntities('entries', {
-        userId: userWallet
+        walletAddress: userWallet
       });
       const sortedEntries = entries.sort((a, b) => b.createdAt - a.createdAt);
       setUserEntries(sortedEntries);
@@ -2876,218 +2892,102 @@ Current app data:
           </div>}
         </SpotlightCard>}
       </div>}
-      {currentView === 'profile' && <div className="space-y-8">
-        <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="purple" size="lg" intensity={1.1}>
-          <div className="flex items-center space-x-3 mb-4">
-            <User className="w-8 h-8 text-purple-400" style={{
-              filter: 'drop-shadow(2px 2px 0px #000)'
-            }} />
-            <h2 className="text-lg md:text-lg font-black text-black bg-white px-6 py-4 rounded-2xl cinematic-text" >YOUR PROFILE</h2>
+            {currentView === 'profile' && <div className="space-y-6 max-w-4xl mx-auto px-4 py-8 pb-24 w-full">
+        <div className="flex items-center space-x-3 mb-6">
+          <User className="w-8 h-8 text-white" />
+          <h2 className="text-2xl font-bold text-white font-mono tracking-widest uppercase">MANAGER PROFILE</h2>
+        </div>
+
+        {/* Top Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-4 text-center">
+            <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Total Entries</p>
+            <p className="text-white font-mono text-xl">{userEntries.length}</p>
           </div>
-          { }
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-4">
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 md:p-4 border border-green-700/30" glowColor="yellow" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-2 md:space-x-3">
-                <Trophy className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <div>
-                  <p className="text-white text-xs md:text-sm" >Wins</p>
-                  <p className="text-lg md:text-lg font-bold text-white" >{userStats?.wins || 0}</p>
-                </div>
-              </div>
-            </SpotlightCard>
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 md:p-4 border border-green-700/30" glowColor="red" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-2 md:space-x-3">
-                <Medal className="w-6 h-6 md:w-8 md:h-8 text-red-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <div>
-                  <p className="text-white text-xs md:text-sm" >GW {activeGameweek?.gameweek || '-'} Rank</p>
-                  <p className="text-lg md:text-lg font-bold text-white" >
-                    {(() => {
-                      if (!activeGameweek || !userWallet || leaderboard.length === 0) return 'N/A';
-                      const userIndex = leaderboard.findIndex(entry => entry.userId === userWallet);
-                      return userIndex !== -1 ? `#${userIndex + 1}` : 'Not Entered';
-                    })()}
-                  </p>
-                </div>
-              </div>
-            </SpotlightCard>
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 md:p-4 border border-green-700/30" glowColor="green" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-2 md:space-x-3">
-                <Target className="w-6 h-6 md:w-8 md:h-8 text-green-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <div>
-                  <p className="text-white text-xs md:text-sm" >Entries</p>
-                  <p className="text-lg md:text-lg font-bold text-white" >{userEntries.length}</p>
-                </div>
-              </div>
-            </SpotlightCard>
+          <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-4 text-center">
+            <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">$test Burned</p>
+            <p className="text-red-500 font-mono text-xl">{(userEntries.length * 100000).toLocaleString()}</p>
           </div>
-          { }
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            { }
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="blue" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-3 mb-4">
-                <BarChart3 className="w-6 h-6 text-blue-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <h3 className="text-lg font-bold text-white" >Performance Stats</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Games Played:</span>
-                  <span className="text-white font-bold">{userEntries.length}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Wins:</span>
-                  <span className="text-green-400 font-bold">{userStats?.wins || 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Losses:</span>
-                  <span className="text-red-400 font-bold">{userStats?.losses || 0}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-green-100" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Win Rate:</span>
-                  <span className="text-yellow-400 font-bold">
-                    {userEntries.length > 0 ? Math.round((userStats?.wins || 0) / userEntries.length * 100) : 0}%
-                  </span>
-                </div>
-              </div>
-            </SpotlightCard>
-            { }
-            {claimableWinnings.length > 0 && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="yellow" size="sm" intensity={1.0}>
-              <div className="flex items-center space-x-3 mb-4">
-                <Trophy className="w-6 h-6 text-yellow-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <h3 className="text-lg font-bold text-white" >🎉 Claimable Winnings</h3>
-              </div>
-              <div className="space-y-4">
-                {claimableWinnings.map(game => <div key={game.id} className="bg-yellow-700/20 border border-yellow-500/50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h4 className="text-yellow-400 font-bold text-lg" >
-                        Gameweek {game.gameweek} Winner! 🏆
-                      </h4>
-                      <p className="text-green-100 text-sm" style={{
-                        fontFamily: 'Inter, sans-serif'
-                      }}>
-                        Prize: {(game.prizePool * 0.95).toFixed(3)} $FPLS
-                      </p>
-                    </div>
-                    <AnimatedButton onClick={() => claimSpecificPrize(game.id)} color="yellow" hoverText="Claim Now!" className="py-2 px-4">
-                      💰 Claim Prize
-                    </AnimatedButton>
-                  </div>
-                  <p className="text-yellow-200 text-xs" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>
-                    Total Prize Pool: {game.prizePool} $FPLS • You get 95%
-                  </p>
-                </div>)}
-              </div>
-            </SpotlightCard>}
-            { }
-            {userInviteCode && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="yellow" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-3 mb-4">
-                <Medal className="w-6 h-6 text-yellow-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <h3 className="text-lg font-bold text-white" >Achievements</h3>
-              </div>
-              <div className="space-y-4">
-                <div className="bg-green-700/20 border border-green-500/50 rounded-lg p-4">
-                  <p className="text-green-100 text-sm mb-2" style={{
-                    fontFamily: 'Inter, sans-serif'
-                  }}>Share this code with friends:</p>
-                  <div className="flex items-center space-x-2">
-                    <code className="bg-black/50 text-green-300 px-3 py-2 rounded text-lg font-bold border border-green-700/50 select-all cursor-pointer" >
-                      {userInviteCode.code}
-                    </code>
-                  </div>
-                </div>
-                <p className="text-green-200 text-xs" style={{
-                  fontFamily: 'Inter, sans-serif'
-                }}>
-                  Each code can only be used once. You'll get a new code when someone uses yours!
-                </p>
-              </div>
-            </SpotlightCard>}
-            { }
-            <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30" glowColor="yellow" size="sm" intensity={0.8}>
-              <div className="flex items-center space-x-3 mb-4">
-                <Medal className="w-6 h-6 text-yellow-400" style={{
-                  filter: 'drop-shadow(2px 2px 0px #000)'
-                }} />
-                <h3 className="text-lg font-bold text-white" >Achievements</h3>
-              </div>
-              <div className="space-y-3">
-                <div className={`p-3 rounded-lg ${userEntries.length > 0 ? 'bg-green-700/30' : 'bg-gray-700/30'}`}>
-                  <div className="flex items-center space-x-2">
-                    <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-white text-sm font-semibold">First Entry</span>
-                  </div>
-                  <p className="text-green-100 text-xs mt-1">Submit your first team</p>
-                </div>
-                <div className={`p-3 rounded-lg ${(userStats?.wins || 0) > 0 ? 'bg-green-700/30' : 'bg-gray-700/30'}`}>
-                  <div className="flex items-center space-x-2">
-                    <Medal className="w-4 h-4 text-yellow-400" />
-                    <span className="text-white text-sm font-semibold">First Victory</span>
-                  </div>
-                  <p className="text-green-100 text-xs mt-1">Win your first gameweek</p>
-                </div>
-                <div className={`p-3 rounded-lg ${userEntries.length >= 5 ? 'bg-green-700/30' : 'bg-gray-700/30'}`}>
-                  <div className="flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-yellow-400" />
-                    <span className="text-white text-sm font-semibold">Consistent Player</span>
-                  </div>
-                  <p className="text-green-100 text-xs mt-1">Enter 5 gameweeks</p>
-                </div>
-              </div>
-            </SpotlightCard>
+          <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-4 text-center">
+            <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Current Balance</p>
+            <p className="text-green-500 font-mono text-xl">{fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toLocaleString(undefined, {maximumFractionDigits: 0}) : '0'}</p>
           </div>
-          { }
-          {userEntries.length > 0 && <SpotlightCard className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-green-700/30 mt-6" glowColor="green" size="md" intensity={0.8}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white" >Game History</h3>
-              <button onClick={loadUserData} className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition-colors flex items-center space-x-2" >
-                <RotateCcw className="w-4 h-4" />
-                <span>Refresh</span>
-              </button>
+          <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-4 text-center">
+            <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">All-Time Wins</p>
+            <p className="text-yellow-500 font-mono text-xl">{userStats?.wins || 0}</p>
+          </div>
+        </div>
+
+        {/* Current Gameweek Status */}
+        <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-6">
+          <h3 className="text-white font-mono text-sm tracking-widest uppercase mb-4 border-b border-[#1A1A1A] pb-2">Current Gameweek Status</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Gameweek</p>
+              <p className="text-white font-mono">{activeGameweek ? activeGameweek.gameweek : 'None Active'}</p>
             </div>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {userEntries.slice(0, 10).map((entry, index) => {
-                return <div key={entry.id} className="bg-black/30 p-4 rounded-lg border border-green-700/20">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-white font-semibold">Entry #{index + 1}</p>
-                      <p className="text-green-100 text-sm">{formatPrice(entry.teamValue)} team value</p>
-                      <p className="text-gray-400 text-xs">Created: {new Date(entry.createdAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-yellow-400 font-bold text-lg">{entry.points || 0} pts</p>
-                      <p className="text-green-100 text-sm">Game: {entry.gameId.slice(0, 8)}...</p>
-                      {entry.points > 0 && <p className="text-green-300 text-xs">✓ Final Score</p>}
-                    </div>
-                  </div>
-                </div>;
-              })}
+            <div>
+              <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Status</p>
+              <p className={`font-mono ${isTeamSubmitted ? 'text-green-500' : 'text-red-500'}`}>
+                {isTeamSubmitted ? 'SQUAD SUBMITTED' : 'NOT SUBMITTED'}
+              </p>
             </div>
-          </SpotlightCard>}
-        </SpotlightCard>
+            <div>
+              <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Current Rank</p>
+              <p className="text-yellow-500 font-mono font-bold">
+                {(() => {
+                  if (!activeGameweek || !userWallet || leaderboard.length === 0) return '-';
+                  const userIndex = leaderboard.findIndex(entry => entry.walletAddress === userWallet);
+                  return userIndex !== -1 ? `#${userIndex + 1}` : '-';
+                })()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Achievements */}
+        <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-6">
+          <h3 className="text-white font-mono text-sm tracking-widest uppercase mb-4 border-b border-[#1A1A1A] pb-2">Achievements</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className={`p-4 border ${userEntries.length > 0 ? 'border-green-500/50 bg-green-900/10' : 'border-[#1A1A1A] opacity-50'}`}>
+              <div className="flex items-center space-x-2 mb-2">
+                <Trophy className={`w-4 h-4 ${userEntries.length > 0 ? 'text-yellow-500' : 'text-[#666]'}`} />
+                <span className="text-white font-mono text-xs uppercase">First Entry</span>
+              </div>
+              <p className="text-[#666] text-[10px] font-mono">Submit your first team</p>
+            </div>
+            <div className={`p-4 border ${(userStats?.wins || 0) > 0 ? 'border-green-500/50 bg-green-900/10' : 'border-[#1A1A1A] opacity-50'}`}>
+              <div className="flex items-center space-x-2 mb-2">
+                <Medal className={`w-4 h-4 ${(userStats?.wins || 0) > 0 ? 'text-yellow-500' : 'text-[#666]'}`} />
+                <span className="text-white font-mono text-xs uppercase">First Victory</span>
+              </div>
+              <p className="text-[#666] text-[10px] font-mono">Win your first gameweek</p>
+            </div>
+            <div className={`p-4 border ${userEntries.length >= 5 ? 'border-green-500/50 bg-green-900/10' : 'border-[#1A1A1A] opacity-50'}`}>
+              <div className="flex items-center space-x-2 mb-2">
+                <Target className={`w-4 h-4 ${userEntries.length >= 5 ? 'text-yellow-500' : 'text-[#666]'}`} />
+                <span className="text-white font-mono text-xs uppercase">Veteran Manager</span>
+              </div>
+              <p className="text-[#666] text-[10px] font-mono">Enter 5 gameweeks</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Share Button */}
+        <button onClick={() => {
+          const rank = (() => {
+            if (!activeGameweek || !userWallet || leaderboard.length === 0) return 'N/A';
+            const userIndex = leaderboard.findIndex(entry => entry.walletAddress === userWallet);
+            return userIndex !== -1 ? `#${userIndex + 1}` : 'N/A';
+          })();
+          const text = `I just burned ${(userEntries.length * 100000).toLocaleString()} $test playing @fplstocks 📈\n\nCurrent GW Rank: ${rank}\nTotal Wins: ${userStats?.wins || 0}\n\nJoin the game and build your squad! ⚽️\n\n#FPL #FPLStocks`;
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+        }} className="w-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white py-4 font-mono text-sm tracking-widest transition-colors flex items-center justify-center space-x-2 mt-8">
+          <span>SHARE STATS ON 𝕏</span>
+        </button>
+
       </div>}
-      {currentView === 'team' && <div className="flex flex-col lg:flex-row h-screen max-h-[85vh] w-full bg-black border-t border-[#1A1A1A] text-white">
+{currentView === 'team' && <div className="flex flex-col lg:flex-row h-screen max-h-[85vh] w-full bg-black border-t border-[#1A1A1A] text-white">
         {/* Left Column: SQUAD SELECTION & PITCH */}
         <div className="w-full lg:w-[45%] border-r border-[#1A1A1A] flex flex-col p-6 overflow-y-auto">
           <div className="flex justify-between items-end mb-6">
@@ -3219,7 +3119,7 @@ Current app data:
               );
             })}
           </div>
-        </div>
+        </div>}
       </div>}
       {currentView === 'admin' && isAdmin && <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-white font-mono text-sm tracking-widest uppercase mb-8 border-b border-[#1A1A1A] pb-4">ADMIN CONTROL PANEL</h1>

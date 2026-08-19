@@ -12,7 +12,7 @@ contract FPLGame is Ownable, ReentrancyGuard, FunctionsClient {
 
     IERC20 public fplsToken;
     
-    uint256 public entryFee = 10 * 10**18; // Default 10 FPLS
+    uint256 public entryFee = 100000 * 10**18; // Default 100,000 FPLS
     address public constant BURN_ADDRESS = 0x000000000000000000000000000000000000dEaD;
     
     // Chainlink Functions specific variables

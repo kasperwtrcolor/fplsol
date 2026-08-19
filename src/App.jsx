@@ -386,7 +386,7 @@ const LandingHero = ({ setCurrentView }) => {
             <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
             <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Stake to Play</h3>
             <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              Pay the 1000 $FPLS entry fee to join the gameweek. 90% of all entries form the winner-takes-all prize pool. The remaining 10% is burned forever, making the token deflationary.
+              Pay the 100,000 $test entry fee to join the gameweek. 90% of all entries form the winner-takes-all prize pool. The remaining 10% is burned forever, making the token deflationary.
             </p>
           </div>
           <div className="flex-1 w-full relative">
@@ -2180,12 +2180,12 @@ Current app data:
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
       
-      setLoadingMessage('Approving $FPLS token transfer (1000 FPLS)...');
+      setLoadingMessage('Approving $test token transfer (100,000 $test)...');
       const approveTx = await writeContractAsync({
         address: FPLS_ADDRESS,
         abi: FPLS_ABI,
         functionName: 'approve',
-        args: [FPLGAME_ADDRESS, BigInt('1000000000000000000000')], // 1000 FPLS with 18 decimals
+        args: [FPLGAME_ADDRESS, BigInt('100000000000000000000000')], // 100,000 $test with 18 decimals
       });
       console.log('Approve Tx Hash:', approveTx);
       
@@ -2622,7 +2622,7 @@ Current app data:
                 <div className="text-center">
                   <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS BURNED 🔥</h3>
                   <div className="text-lg md:text-xl font-mono font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
-                    {(entriesCount * 1000).toLocaleString()}
+                    {(entriesCount * 100000).toLocaleString()}
                   </div>
                 </div>
               </SpotlightCard>
@@ -2698,7 +2698,7 @@ Current app data:
                     </li>
                     <li className="flex items-start">
                       <span className="text-red-500 mr-2">›</span>
-                      1000 $FPLS burned per gameweek entry, reducing total supply forever.
+                      100,000 $test burned per gameweek entry, reducing total supply forever.
                     </li>
                     <li className="flex items-start">
                       <span className="text-yellow-500 mr-2">›</span>

@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt, useSignMessage } from 'wagmi';
 import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS } from './config/contracts';
 import { injected } from 'wagmi/connectors';
+import { auth } from './firebase';
+import { signInWithCustomToken } from 'firebase/auth';
+import { SiweMessage } from 'siwe';
 import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as firebaseService from './firebaseService';
@@ -454,6 +457,7 @@ function App() {
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
 
+  const { signMessageAsync } = useSignMessage();
   const { data: fplsBalanceRaw, refetch: refetchBalance } = useReadContract({
     address: FPLS_ADDRESS,
     abi: FPLS_ABI,
@@ -2192,6 +2196,56 @@ Current app data:
       console.log('--- submitTeam START ---');
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
+      
+      // --- SIWE AUTHENTICATION START ---
+      if (!auth.currentUser || auth.currentUser.uid.toLowerCase() !== userWallet.toLowerCase()) {
+        try {
+          setLoadingMessage('Authenticating wallet securely...');
+          
+          const nonceRes = await fetch('/api/auth/nonce');
+          if (!nonceRes.ok) throw new Error('Failed to get nonce from server');
+          const { nonce } = await nonceRes.json();
+          
+          const message = new SiweMessage({
+            domain: window.location.host,
+            address: userWallet,
+            statement: 'Sign in to FPL to submit your squad.',
+            uri: window.location.origin,
+            version: '1',
+            chainId: 4663,
+            nonce: nonce
+          });
+          const preparedMessage = message.prepareMessage();
+          
+          setLoadingMessage('Please sign the message in your wallet...');
+          const signature = await signMessageAsync({ message: preparedMessage });
+          
+          setLoadingMessage('Verifying signature...');
+          const verifyRes = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: preparedMessage, signature })
+          });
+          
+          if (!verifyRes.ok) {
+            const err = await verifyRes.json();
+            throw new Error(err.error || 'Verification failed');
+          }
+          
+          const { token } = await verifyRes.json();
+          
+          setLoadingMessage('Logging into database...');
+          await signInWithCustomToken(auth, token);
+          
+        } catch (err) {
+          console.error('SIWE Error:', err);
+          setIsLoading(false);
+          setLoadingMessage('');
+          setTimeout(() => alert('Authentication failed: ' + (err.message || 'Please try again.')), 100);
+          return;
+        }
+      }
+      // --- SIWE AUTHENTICATION END ---
       
       setLoadingMessage('Burning 100,000 $test to enter Gameweek...');
       const playerIds = selectedTeam.map(p => p.id);

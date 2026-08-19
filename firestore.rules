@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Gameweek Data
+    match /games/{gameId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
+         request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
+    }
+    
+    // User Squad Entries
+    match /entries/{entryId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid.lower() == request.resource.data.walletAddress.lower();
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
+         request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
+    }
+    
+    // Prize Claim Requests
+    match /payouts/{payoutId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid.lower() == request.resource.data.walletAddress.lower();
+      allow update, delete: if request.auth != null && 
+        (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
+         request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
+    }
+    
+    // Leaderboard Stats
+    match /user_stats/{statId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
+         request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
+    }
+  }
+}

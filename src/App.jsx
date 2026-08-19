@@ -1402,6 +1402,7 @@ function App() {
   };
   const createGameweek = async () => {
     if (!userWallet || !isAdmin) return;
+    try { await ensureAuthenticated(); } catch(e) { alert('Auth failed'); return; }
     setIsLoading(true);
     setLoadingMessage('Checking for new gameweek to create...');
     try {
@@ -1445,6 +1446,7 @@ function App() {
   };
   const syncGameweekWithFPL = async () => {
     if (!userWallet || !isAdmin) return;
+    try { await ensureAuthenticated(); } catch(e) { alert('Auth failed'); return; }
     setIsLoading(true);
     setLoadingMessage('Syncing gameweek with FPL...');
     try {
@@ -1550,6 +1552,7 @@ function App() {
   };
   const deleteGameweek = async () => {
     if (!userWallet || !isAdmin) return;
+    try { await ensureAuthenticated(); } catch(e) { alert('Auth failed'); return; }
     const confirmed = window.confirm('Are you sure you want to DELETE the current gameweek? This action cannot be undone and will remove all entries and data for this gameweek.');
     if (!confirmed) return;
     const doubleConfirmed = window.confirm('FINAL WARNING: This will permanently delete the active gameweek and all associated entries. Type "DELETE" in the next prompt to confirm.');
@@ -1601,6 +1604,7 @@ function App() {
 
   const deleteSpecificGameweek = async (gameId, gameweekNumber) => {
     if (!userWallet || !isAdmin) return;
+    try { await ensureAuthenticated(); } catch(e) { alert('Auth failed'); return; }
     const finalConfirmation = window.prompt(`Type "DELETE" to confirm deletion of Gameweek ${gameweekNumber}:`);
     if (finalConfirmation !== 'DELETE') {
       return;
@@ -2162,6 +2166,49 @@ Current app data:
     window.open(twitterUrl, '_blank');
   };
 
+  const ensureAuthenticated = async () => {
+    if (!userWallet) throw new Error("Wallet not connected");
+    if (!auth.currentUser || auth.currentUser.uid.toLowerCase() !== userWallet.toLowerCase()) {
+      setLoadingMessage('Authenticating wallet securely...');
+      setIsLoading(true);
+      
+      const nonceRes = await fetch('/api/auth/nonce');
+      if (!nonceRes.ok) throw new Error('Failed to get nonce from server');
+      const { nonce } = await nonceRes.json();
+      
+      const message = new SiweMessage({
+        domain: window.location.host,
+        address: userWallet,
+        statement: 'Sign in to FPL to submit your squad.',
+        uri: window.location.origin,
+        version: '1',
+        chainId: 4663,
+        nonce: nonce
+      });
+      const preparedMessage = message.prepareMessage();
+      
+      setLoadingMessage('Please sign the message in your wallet...');
+      const signature = await signMessageAsync({ message: preparedMessage });
+      
+      setLoadingMessage('Verifying signature...');
+      const verifyRes = await fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: preparedMessage, signature })
+      });
+      
+      if (!verifyRes.ok) {
+        const err = await verifyRes.json();
+        throw new Error(err.error || 'Verification failed');
+      }
+      
+      const { token } = await verifyRes.json();
+      
+      setLoadingMessage('Logging into database...');
+      await signInWithCustomToken(auth, token);
+    }
+  };
+
   const handleRequestScore = async () => {
     if (!userWallet || !activeGameweek) return;
     setIsLoading(true);
@@ -2197,55 +2244,15 @@ Current app data:
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
       
-      // --- SIWE AUTHENTICATION START ---
-      if (!auth.currentUser || auth.currentUser.uid.toLowerCase() !== userWallet.toLowerCase()) {
-        try {
-          setLoadingMessage('Authenticating wallet securely...');
-          
-          const nonceRes = await fetch('/api/auth/nonce');
-          if (!nonceRes.ok) throw new Error('Failed to get nonce from server');
-          const { nonce } = await nonceRes.json();
-          
-          const message = new SiweMessage({
-            domain: window.location.host,
-            address: userWallet,
-            statement: 'Sign in to FPL to submit your squad.',
-            uri: window.location.origin,
-            version: '1',
-            chainId: 4663,
-            nonce: nonce
-          });
-          const preparedMessage = message.prepareMessage();
-          
-          setLoadingMessage('Please sign the message in your wallet...');
-          const signature = await signMessageAsync({ message: preparedMessage });
-          
-          setLoadingMessage('Verifying signature...');
-          const verifyRes = await fetch('/api/auth/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: preparedMessage, signature })
-          });
-          
-          if (!verifyRes.ok) {
-            const err = await verifyRes.json();
-            throw new Error(err.error || 'Verification failed');
-          }
-          
-          const { token } = await verifyRes.json();
-          
-          setLoadingMessage('Logging into database...');
-          await signInWithCustomToken(auth, token);
-          
-        } catch (err) {
-          console.error('SIWE Error:', err);
-          setIsLoading(false);
-          setLoadingMessage('');
-          setTimeout(() => alert('Authentication failed: ' + (err.message || 'Please try again.')), 100);
-          return;
-        }
+      try {
+        await ensureAuthenticated();
+      } catch (err) {
+        console.error('SIWE Error:', err);
+        setIsLoading(false);
+        setLoadingMessage('');
+        setTimeout(() => alert('Authentication failed: ' + (err.message || 'Please try again.')), 100);
+        return;
       }
-      // --- SIWE AUTHENTICATION END ---
       
       setLoadingMessage('Burning 100,000 $test to enter Gameweek...');
       const playerIds = selectedTeam.map(p => p.id);

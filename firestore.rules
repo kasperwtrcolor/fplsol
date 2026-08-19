@@ -10,6 +10,14 @@ service cloud.firestore {
          request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
     }
     
+    // Fixtures
+    match /fixtures/{fixtureId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
+         request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
+    }
+    
     // User Squad Entries
     match /entries/{entryId} {
       allow read: if true;
@@ -32,6 +40,15 @@ service cloud.firestore {
     match /user_stats/{statId} {
       allow read: if true;
       allow write: if request.auth != null && 
+        (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
+         request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
+    }
+    
+    // Invite Codes
+    match /invite_codes/{codeId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid.lower() == request.resource.data.creatorId.lower();
+      allow update, delete: if request.auth != null && 
         (request.auth.uid.lower() == '0xf027b3fc259c02949f9724e5099f86c177949039' || 
          request.auth.uid.lower() == '0x99245db0e115b172b26c5b740a6e3867b36f1c71');
     }

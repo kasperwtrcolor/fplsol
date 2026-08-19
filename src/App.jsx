@@ -600,7 +600,7 @@ function App() {
   }, [targetDate]);
   const [isGameweekStarted, setIsGameweekStarted] = useState(false);
   const [claimableWinnings, setClaimableWinnings] = useState([]);
-  const [historicalGames, setHistoricalGames] = useState([]);
+  const [adminGames, setAdminGames] = useState([]);
   const [selectedShareTopic, setSelectedShareTopic] = useState('gameweek');
   const [generatedShareMessage, setGeneratedShareMessage] = useState('');
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
@@ -841,7 +841,7 @@ function App() {
       setIsAdmin(adminStatus);
       if (adminStatus) {
         loadAdminInviteCodes();
-        loadHistoricalGames();
+        loadAdminGames();
       }
     } catch (error) {
       console.error('Error checking user access:', error);
@@ -973,35 +973,12 @@ function App() {
       console.error('Error loading admin invite codes:', error);
     }
   };
-  const loadHistoricalGames = async () => {
-    if (!userWallet || !isAdmin) return;
+  const loadAdminGames = async () => {
     try {
-      const allGames = await firebaseService.listEntities('games');
-      const finishedGames = allGames.filter(game => game.status === 'finished').sort((a, b) => b.gameweek - a.gameweek);
-      const gamesWithPayouts = [];
-      for (const game of finishedGames) {
-        const payouts = await firebaseService.listEntities('payouts', {
-          gameId: game.id
-        });
-        const hasClaimed = payouts.length > 0;
-        let winnerScore = 0;
-        if (game.winnerId) {
-          const entries = await firebaseService.listEntities('entries', {
-            gameId: game.id
-          });
-          const winnerEntry = entries.find(entry => entry.userId === game.winnerId);
-          winnerScore = winnerEntry ? winnerEntry.points || 0 : 0;
-        }
-        gamesWithPayouts.push({
-          ...game,
-          hasClaimed,
-          winnerScore,
-          payout: payouts[0] || null
-        });
-      }
-      setHistoricalGames(gamesWithPayouts);
+      const games = await firebaseService.listEntities('games');
+      setAdminGames(games.sort((a, b) => b.gameweek - a.gameweek));
     } catch (error) {
-      console.error('Error loading historical games:', error);
+      console.error('Error loading admin games:', error);
     }
   };
   const autoStartNewGameweek = async () => {
@@ -1221,7 +1198,7 @@ function App() {
       setIsAdmin(adminStatus);
       if (adminStatus) {
         loadAdminInviteCodes();
-        loadHistoricalGames();
+        loadAdminGames();
       }
     } else {
       setIsAdmin(false);
@@ -1430,16 +1407,18 @@ function App() {
         currentFplEvent = data.events.find(event => event.is_next === true);
       }
       if (!currentFplEvent) {
-        alert('FPL API does not indicate a current or next gameweek. The season may be over.');
         setIsLoading(false);
+        setLoadingMessage('');
+        alert('FPL API does not indicate a current or next gameweek. The season may be over.');
         return;
       }
       const currentGameweekNumber = currentFplEvent.id;
       const allGames = await firebaseService.listEntities('games');
       const gameExists = allGames.some(game => game.gameweek === currentGameweekNumber);
       if (gameExists) {
-        alert(`Gameweek ${currentGameweekNumber} already exists. No new gameweek started.`);
         setIsLoading(false);
+        setLoadingMessage('');
+        alert(`Gameweek ${currentGameweekNumber} already exists. No new gameweek started.`);
         return;
       }
       setLoadingMessage(`Recording Gameweek ${currentGameweekNumber} in database...`);
@@ -1471,6 +1450,8 @@ function App() {
         currentFplEvent = fplData.events.find(event => event.is_next === true);
       }
       if (!currentFplEvent) {
+        setIsLoading(false);
+        setLoadingMessage('');
         alert('Could not determine current or next FPL gameweek. FPL API might be down or season ended.');
         return;
       }
@@ -1511,6 +1492,8 @@ function App() {
       });
       const currentActiveGame = activeGames.length > 0 ? activeGames[0] : null;
       if (currentActiveGame && currentActiveGame.gameweek === currentFplGameweekNumber) {
+        setIsLoading(false);
+        setLoadingMessage('');
         alert(`Gameweek ${currentFplGameweekNumber} is already active and synced.`);
         return;
       }
@@ -1579,6 +1562,8 @@ function App() {
         status: 'active'
       });
       if (activeGames.length === 0) {
+        setIsLoading(false);
+        setLoadingMessage('');
         alert('No active gameweek found to delete.');
         return;
       }
@@ -1607,6 +1592,38 @@ function App() {
       setIsLoading(false);
       setLoadingMessage('');
       alert('An error occurred while deleting the gameweek. Please check console for details.');
+    }
+  };
+
+  const deleteSpecificGameweek = async (gameId, gameweekNumber) => {
+    if (!userWallet || !isAdmin) return;
+    const finalConfirmation = window.prompt(`Type "DELETE" to confirm deletion of Gameweek ${gameweekNumber}:`);
+    if (finalConfirmation !== 'DELETE') {
+      return;
+    }
+    setIsLoading(true);
+    setLoadingMessage(`Deleting Gameweek ${gameweekNumber}...`);
+    try {
+      const gameEntries = await firebaseService.listEntities('entries', { gameId });
+      for (const entry of gameEntries) {
+        await firebaseService.deleteEntity('entries', entry.id);
+      }
+      const gamePayouts = await firebaseService.listEntities('payouts', { gameId });
+      for (const payout of gamePayouts) {
+        await firebaseService.deleteEntity('payouts', payout.id);
+      }
+      await firebaseService.deleteEntity('games', gameId);
+      await loadAdminGames();
+      await loadActiveGameweek();
+      await loadUserData();
+      setIsLoading(false);
+      setLoadingMessage('');
+      alert(`Gameweek ${gameweekNumber} has been completely deleted.`);
+    } catch (error) {
+      console.error('Error deleting specific gameweek:', error);
+      setIsLoading(false);
+      setLoadingMessage('');
+      alert('An error occurred while deleting the gameweek.');
     }
   };
   const addPlayerToTeam = player => {
@@ -3281,10 +3298,10 @@ Current app data:
           </div>
 
           {/* Historical Games */}
-          {historicalGames && historicalGames.length > 0 && <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
+          {historicalGames && adminGames.length > 0 && <div className="border border-[#1A1A1A] p-6 bg-[#050505]">
             <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">HISTORICAL GAMEWEEKS</h2>
             <div className="space-y-2">
-              {historicalGames.map((game, i) => (
+              {adminGames.map((game, i) => (
                 <div key={i} className="flex justify-between items-center border-b border-[#0a0a0a] pb-2 text-[9px] font-mono">
                   <span className="text-white">GW {game.gameweek}</span>
                   <span className={`${game.status === 'active' ? 'text-green-500' : game.status === 'finished' ? 'text-yellow-500' : 'text-[#666]'}`}>{game.status?.toUpperCase()}</span>

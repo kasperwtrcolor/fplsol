@@ -1437,14 +1437,15 @@ function App() {
         prizePool: 0,
         entryFee: 100000
       });
-      alert(`Successfully started Gameweek ${currentGameweekNumber}!`);
       await loadActiveGameweek();
-    } catch (error) {
-      console.error('Error starting new gameweek:', error);
-      alert('An error occurred while trying to start the new gameweek. Check the console for details.');
-    } finally {
       setIsLoading(false);
       setLoadingMessage('');
+      alert(`Successfully started Gameweek ${currentGameweekNumber}!`);
+    } catch (error) {
+      console.error('Error starting new gameweek:', error);
+      setIsLoading(false);
+      setLoadingMessage('');
+      alert('An error occurred while trying to start the new gameweek. Check the console for details.');
     }
   };
   const syncGameweekWithFPL = async () => {
@@ -1537,14 +1538,15 @@ function App() {
       if (newActiveGame) {
         console.log('New active game set:', newActiveGame.id);
       }
-      alert(`Gameweek synced successfully! Active Gameweek is now ${currentFplGameweekNumber}.`);
       await loadActiveGameweek();
-    } catch (error) {
-      console.error('Error syncing gameweek:', error);
-      alert('An error occurred during gameweek sync. Please check console for details.');
-    } finally {
       setIsLoading(false);
       setLoadingMessage('');
+      alert(`Gameweek synced successfully! Active Gameweek is now ${currentFplGameweekNumber}.`);
+    } catch (error) {
+      console.error('Error syncing gameweek:', error);
+      setIsLoading(false);
+      setLoadingMessage('');
+      alert('An error occurred during gameweek sync. Please check console for details.');
     }
   };
   const deleteGameweek = async () => {

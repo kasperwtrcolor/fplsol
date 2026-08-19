@@ -1408,8 +1408,8 @@ function App() {
       }
       if (!currentFplEvent) {
         setIsLoading(false);
-        setLoadingMessage('');
-        alert('FPL API does not indicate a current or next gameweek. The season may be over.');
+      setLoadingMessage('');
+      setTimeout(() => alert('FPL API does not indicate a current or next gameweek. The season may be over.'), 100);
         return;
       }
       const currentGameweekNumber = currentFplEvent.id;
@@ -1417,8 +1417,8 @@ function App() {
       const gameExists = allGames.some(game => game.gameweek === currentGameweekNumber);
       if (gameExists) {
         setIsLoading(false);
-        setLoadingMessage('');
-        alert(`Gameweek ${currentGameweekNumber} already exists. No new gameweek started.`);
+      setLoadingMessage('');
+      setTimeout(() => alert(`Gameweek ${currentGameweekNumber} already exists. No new gameweek started.`), 100);
         return;
       }
       setLoadingMessage(`Recording Gameweek ${currentGameweekNumber} in database...`);
@@ -1431,12 +1431,12 @@ function App() {
       await loadActiveGameweek();
       setIsLoading(false);
       setLoadingMessage('');
-      alert(`Successfully started Gameweek ${currentGameweekNumber}!`);
+      setTimeout(() => alert(`Successfully started Gameweek ${currentGameweekNumber}!`), 100);
     } catch (error) {
       console.error('Error starting new gameweek:', error);
       setIsLoading(false);
       setLoadingMessage('');
-      alert('An error occurred while trying to start the new gameweek. Check the console for details.');
+      setTimeout(() => alert('An error occurred while trying to start the new gameweek. Check the console for details.'), 100);
     }
   };
   const syncGameweekWithFPL = async () => {
@@ -1451,8 +1451,8 @@ function App() {
       }
       if (!currentFplEvent) {
         setIsLoading(false);
-        setLoadingMessage('');
-        alert('Could not determine current or next FPL gameweek. FPL API might be down or season ended.');
+      setLoadingMessage('');
+      setTimeout(() => alert('Could not determine current or next FPL gameweek. FPL API might be down or season ended.'), 100);
         return;
       }
       setLoadingMessage('Fetching fixture data...');
@@ -1493,8 +1493,8 @@ function App() {
       const currentActiveGame = activeGames.length > 0 ? activeGames[0] : null;
       if (currentActiveGame && currentActiveGame.gameweek === currentFplGameweekNumber) {
         setIsLoading(false);
-        setLoadingMessage('');
-        alert(`Gameweek ${currentFplGameweekNumber} is already active and synced.`);
+      setLoadingMessage('');
+      setTimeout(() => alert(`Gameweek ${currentFplGameweekNumber} is already active and synced.`), 100);
         return;
       }
       if (currentActiveGame) {
@@ -1536,12 +1536,12 @@ function App() {
       await loadActiveGameweek();
       setIsLoading(false);
       setLoadingMessage('');
-      alert(`Gameweek synced successfully! Active Gameweek is now ${currentFplGameweekNumber}.`);
+      setTimeout(() => alert(`Gameweek synced successfully! Active Gameweek is now ${currentFplGameweekNumber}.`), 100);
     } catch (error) {
       console.error('Error syncing gameweek:', error);
       setIsLoading(false);
       setLoadingMessage('');
-      alert('An error occurred during gameweek sync. Please check console for details.');
+      setTimeout(() => alert('An error occurred during gameweek sync. Please check console for details.'), 100);
     }
   };
   const deleteGameweek = async () => {
@@ -1563,8 +1563,8 @@ function App() {
       });
       if (activeGames.length === 0) {
         setIsLoading(false);
-        setLoadingMessage('');
-        alert('No active gameweek found to delete.');
+      setLoadingMessage('');
+      setTimeout(() => alert('No active gameweek found to delete.'), 100);
         return;
       }
       const currentActiveGame = activeGames[0];
@@ -1586,12 +1586,12 @@ function App() {
       await loadUserData();
       setIsLoading(false);
       setLoadingMessage('');
-      alert(`Gameweek ${currentActiveGame.gameweek} has been completely deleted.`);
+      setTimeout(() => alert(`Gameweek ${currentActiveGame.gameweek} has been completely deleted.`), 100);
     } catch (error) {
       console.error('Error deleting gameweek:', error);
       setIsLoading(false);
       setLoadingMessage('');
-      alert('An error occurred while deleting the gameweek. Please check console for details.');
+      setTimeout(() => alert('An error occurred while deleting the gameweek. Please check console for details.'), 100);
     }
   };
 
@@ -1618,12 +1618,12 @@ function App() {
       await loadUserData();
       setIsLoading(false);
       setLoadingMessage('');
-      alert(`Gameweek ${gameweekNumber} has been completely deleted.`);
+      setTimeout(() => alert(`Gameweek ${gameweekNumber} has been completely deleted.`), 100);
     } catch (error) {
       console.error('Error deleting specific gameweek:', error);
       setIsLoading(false);
       setLoadingMessage('');
-      alert('An error occurred while deleting the gameweek.');
+      setTimeout(() => alert('An error occurred while deleting the gameweek.'), 100);
     }
   };
   const addPlayerToTeam = player => {

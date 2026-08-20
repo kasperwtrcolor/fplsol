@@ -503,7 +503,7 @@ function App() {
   const [selectedFixtureGameweek, setSelectedFixtureGameweek] = useState(1);
   const [selectedGameweekFixtures, setSelectedGameweekFixtures] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState([]);
-  const [teamBudget, setTeamBudget] = useState(700);
+  const [teamBudget, setTeamBudget] = useState(1000);
   const [captain, setCaptain] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [userEntries, setUserEntries] = useState([]);
@@ -616,7 +616,7 @@ function App() {
         const cap = players.find(p => p.id.toString() === currentUserEntry.captain);
         if (cap) setCaptain(cap);
         
-        setTeamBudget(700 - currentUserEntry.teamValue);
+        setTeamBudget(1000 - currentUserEntry.teamValue);
       } catch (error) {
         console.error('Error parsing user entry:', error);
       }
@@ -1666,7 +1666,7 @@ function App() {
   };
   const resetTeam = () => {
     setSelectedTeam([]);
-    setTeamBudget(700);
+    setTeamBudget(1000);
     setCaptain(null);
   };
   const getFormationRequirements = formation => {
@@ -2226,7 +2226,7 @@ Current app data:
         gameId: activeGameweek.id,
         team: JSON.stringify(playerIds),
         captain: captain.id.toString(),
-        teamValue: 700 - teamBudget,
+        teamValue: 1000 - teamBudget,
         points: 0,
         txHash: enterTx
       });
@@ -2277,7 +2277,7 @@ Current app data:
     if (!selectedTeam || selectedTeam.length === 0) return;
     const formationStr = selectedFormation;
     const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
-    const teamValue = ((700 - teamBudget) / 10).toFixed(1);
+    const teamValue = ((1000 - teamBudget) / 10).toFixed(1);
     const playerLines = selectedTeam.map(p => {
       const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
       const isCap = captain && captain.id === p.id;
@@ -2509,7 +2509,7 @@ Current app data:
     }) => {
       const isCaptain = captain && captain.id === player.id;
       return <div 
-          className="relative group p-[1px] rounded-xl"
+          className={`relative group p-[1px] rounded-xl ${!isTeamSubmitted ? "cursor-pointer" : ""}`} onClick={() => !isTeamSubmitted && setCaptain(player)}
         >
         <div className="bg-black/40 backdrop-blur-md text-white rounded-xl p-1 md:p-2 text-center min-w-[70px] md:min-w-[90px] h-full" style={{
           background: 'linear-gradient(145deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
@@ -2528,8 +2528,8 @@ Current app data:
           <div className="text-[10px] font-bold truncate text-white uppercase tracking-widest leading-tight">{player.second_name}</div>
           <div className="flex justify-between items-center text-[9px] mt-1 px-1 font-mono">
             <span className="text-[#8b9a90]">{formatPrice(player.now_cost)}</span>
-            {isTeamSubmitted && <span className="text-white font-bold opacity-70">
-              {isGameweekStarted ? player.event_points || 0 : 0} pts
+            {isTeamSubmitted && <span className="text-[#00FF00] font-bold text-[11px] drop-shadow-md">
+              {isGameweekStarted ? player.event_points || 0 : 0} PTS
             </span>}
           </div>
           {isCaptain && <div className="text-[8px] text-[#00FF00] font-bold mt-1 uppercase tracking-widest">Captain</div>}
@@ -2613,7 +2613,7 @@ Current app data:
         <div className="flex items-center space-x-6 md:space-x-10">
           <div className="hidden md:flex flex-col items-end">
             <span className="text-[9px] text-gray-600 uppercase tracking-widest font-mono">Treasury Balance</span>
-            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 100000).toFixed(2)} $FPLS</span>
+            <span className="text-sm font-bold text-green-500 font-mono">{(entriesCount * 100000).toFixed(2)} $GME</span>
           </div>
           {authenticated ? (
             <button onClick={logout} className="flex items-center space-x-3 bg-gray-900/40 border border-gray-800 px-5 py-2 rounded-full hover:border-green-500/50 transition-colors">
@@ -2650,9 +2650,9 @@ Current app data:
               </SpotlightCard>
               <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-green-900/50' : 'border-green-300/50'}`} glowColor="green" size="sm" intensity={0.5}>
                 <div className="text-center">
-                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TOTAL REWARDS</h3>
+                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TREASURY REWARDS</h3>
                   <div className="text-lg md:text-xl font-mono font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
-                    {(entriesCount * 100000).toFixed(2)} $FPLS
+                    {(entriesCount * 100000).toFixed(2)} $GME
                   </div>
                 </div>
               </SpotlightCard>
@@ -3006,13 +3006,13 @@ Current app data:
           </div>
           
           {/* Captain Reminder */}
-          <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-3 mb-6 text-center">
-            <span className="text-[#666] text-[10px] font-mono tracking-widest uppercase"><span className="text-white">Tip:</span> Click a player on the pitch below to make them Captain (2x Pts)</span>
-          </div>
+          {!isTeamSubmitted && <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-3 mb-6 text-center">
+            <span className="text-[#666] text-[10px] font-mono tracking-widest uppercase"><span className="text-white">Tip:</span> Click the C button on a player to make them Captain (2x Pts)</span>
+          </div>}
 
           <div className="flex-1 flex flex-col justify-start relative">
-            <div className="transform scale-[0.65] sm:scale-75 lg:scale-[0.6] origin-top md:origin-top-left -mx-10 lg:-mx-20">
-              <FormationDisplay isTeamSubmitted={false} />
+            <div className={`transform transition-all duration-500 ${isTeamSubmitted ? "scale-[0.85] sm:scale-100 origin-top mx-auto mt-4" : "scale-[0.65] sm:scale-75 lg:scale-[0.6] origin-top md:origin-top-left -mx-10 lg:-mx-20"}`}>
+              <FormationDisplay isTeamSubmitted={isTeamSubmitted} />
             </div>
           </div>
           

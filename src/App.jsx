@@ -394,7 +394,7 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
             <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
             <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Stake to Play</h3>
             <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              Pay the 100,000 $test entry fee to join the gameweek. 100% of all entry fees are sent directly to the Gameweek Prize Pool (held securely in the Treasury) for the winner-takes-all payout.
+              Pay the 100,000 $test entry fee to join the gameweek. 90% goes to the winner-takes-all Prize Pool, and 10% is burned forever to create a deflationary ecosystem.
             </p>
           </div>
           <div className="flex-1 w-full relative">
@@ -2071,7 +2071,7 @@ Be creative and generate different strategies each time. Consider fixture diffic
       if (captain) {
         teamText += `👑 Captain: ${captain.first_name} ${captain.second_name}\n`;
       }
-      const shareText = `⚽ My fpl.sol Gameweek ${activeGameweek?.gameweek} team is locked in! 🚀\n\n${teamText}\n💎 ${currentUserEntry.points || 0} points so far\n💰 ${formatPrice(currentUserEntry.teamValue)} team value\n\nJoin the crypto fantasy revolution: https://dev.fun/p/543405b7d79724fbb83d\n\n@fpl_sol #FPL #Robinhood Chain #Fantasy`;
+      const shareText = `⚽ My fpl.sol Gameweek ${activeGameweek?.gameweek} team is locked in! 🚀\n\n${teamText}\n💎 ${currentUserEntry.points || 0} points so far\n💰 ${formatPrice(currentUserEntry.teamValue)} team value\n\nJoin the crypto fantasy revolution: fplstocks.com\n\n@fpl_sol #FPL #Robinhood Chain #Fantasy`;
       const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
       window.open(twitterUrl, '_blank');
     } catch (error) {
@@ -2104,7 +2104,7 @@ Key guidelines:
 - Include hashtags: #FPL #Robinhood Chain #Fantasy #Crypto
 - Mention @fpl_sol
 - Create FOMO and excitement
-- Include the app link: https://dev.fun/p/543405b7d79724fbb83d
+- Include the app link: fplstocks.com
 - Be energetic and fun
 - Use football/crypto terminology appropriately
 
@@ -2165,7 +2165,7 @@ Current app data:
       setGeneratedShareMessage(data.text);
     } catch (error) {
       console.error('Error generating share message:', error);
-      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win $FPLS rewards on @fpl_sol ⚽💰 #FPL #RobinhoodChain #Fantasy https://dev.fun/p/543405b7d79724fbb83d');
+      setGeneratedShareMessage('🔥 The crypto fantasy revolution is here! Build your Premier League dream team and win $FPLS rewards on @fpl_sol ⚽💰 #FPL #RobinhoodChain #Fantasy fplstocks.com');
     } finally {
       setIsGeneratingMessage(false);
     }
@@ -2323,7 +2323,7 @@ Current app data:
       const isCap = captain && captain.id === p.id;
       return `${isCap ? '©️ ' : ''}${p.second_name} (${pos})`;
     }).join(' | ');
-    const shareText = `⚽ My fpl.stock Squad (${formationStr})\n\n${playerLines}\n\n👑 Captain: ${captainName}\n💰 Team Value: £${teamValue}M\n\nBuild yours & compete for the prize pool 👇\nhttps://dev.fun/p/543405b7d79724fbb83d\n\n#FPL #fplstock #RobinhoodChain`;
+    const shareText = `⚽ My fpl.stock Squad (${formationStr})\n\n${playerLines}\n\n👑 Captain: ${captainName}\n💰 Team Value: £${teamValue}M\n\nBuild yours & compete for the prize pool 👇\nfplstocks.com\n\n#FPL #fplstock #RobinhoodChain`;
     return `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
   };
   
@@ -2337,7 +2337,7 @@ Current app data:
       const isCap = captain && captain.id === p.id;
       return `${isCap ? '©️ ' : ''}${p.second_name} (${pos})`;
     }).join(' | ');
-    const shareText = `⚽ My fpl.stock Squad (${formationStr})\n\n${playerLines}\n\n👑 Captain: ${captainName}\n💰 Team Value: £${teamValue}M\n\nBuild yours & compete for the prize pool 👇\nhttps://dev.fun/p/543405b7d79724fbb83d\n\n#FPL #fplstock #RobinhoodChain`;
+    const shareText = `⚽ My fpl.stock Squad (${formationStr})\n\n${playerLines}\n\n👑 Captain: ${captainName}\n💰 Team Value: £${teamValue}M\n\nBuild yours & compete for the prize pool 👇\nfplstocks.com\n\n#FPL #fplstock #RobinhoodChain`;
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
     window.open(twitterUrl, '_blank');
   };
@@ -2696,7 +2696,7 @@ Current app data:
             <div className="grid grid-cols-2 gap-4">
               <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-yellow-900/50' : 'border-yellow-300/50'}`} glowColor="yellow" size="sm" intensity={0.5}>
                 <div className="text-center">
-                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS LOCKED 🔒</h3>
+                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS BURNED 🔥</h3>
                   <div className="text-lg md:text-xl font-mono font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
                     {(entriesCount * 100000).toLocaleString()}
                   </div>
@@ -2774,7 +2774,7 @@ Current app data:
                     </li>
                     <li className="flex items-start">
                       <span className="text-red-500 mr-2">›</span>
-                      100,000 $test contributed per gameweek entry, sent directly to the decentralized Treasury to fund the prize pool.
+                      100,000 $test per gameweek entry (90,000 to Prize Pool, 10,000 Burned to reduce supply).
                     </li>
                     <li className="flex items-start">
                       <span className="text-yellow-500 mr-2">›</span>

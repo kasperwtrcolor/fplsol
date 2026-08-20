@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS } from './config/contracts';
+import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS, TREASURY_ADDRESS } from './config/contracts';
 import { injected } from 'wagmi/connectors';
 import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -394,7 +394,7 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
             <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
             <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Stake to Play</h3>
             <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              Pay the 100,000 $test entry fee to join the gameweek. 90% of all entries form the winner-takes-all prize pool. The remaining 10% is burned forever, making the token deflationary.
+              Pay the 100,000 $test entry fee to join the gameweek. 100% of all entry fees are sent directly to the Gameweek Prize Pool (held securely in the Treasury) for the winner-takes-all payout.
             </p>
           </div>
           <div className="flex-1 w-full relative">
@@ -2211,16 +2211,16 @@ Current app data:
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
       
-      setLoadingMessage('Burning 100,000 $test to enter Gameweek...');
+      setLoadingMessage('Sending 100,000 $test to Prize Pool...');
       const playerIds = selectedTeam.map(p => p.id);
       const enterTx = await writeContractAsync({
         address: FPLS_ADDRESS,
         abi: FPLS_ABI,
         functionName: 'transfer',
-        args: ['0x000000000000000000000000000000000000dEaD', BigInt('100000000000000000000000')], // 100,000 $test
+        args: [TREASURY_ADDRESS, BigInt('100000000000000000000000')], // 100,000 $test to treasury
       });
-      console.log('Burn Tx Hash:', enterTx);
-      refetchBalance(); // Update user's balance after burn
+      console.log('Transfer Tx Hash:', enterTx);
+      refetchBalance(); // Update user's balance after transfer
       
       setLoadingMessage('Recording entry to database...');
       await firebaseService.createEntity('entries', {
@@ -2694,9 +2694,9 @@ Current app data:
           {/* Left Column: Countdown, Stats, & Fixtures */}
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-red-900/50' : 'border-red-300/50'}`} glowColor="red" size="sm" intensity={0.5}>
+              <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-yellow-900/50' : 'border-yellow-300/50'}`} glowColor="yellow" size="sm" intensity={0.5}>
                 <div className="text-center">
-                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS BURNED 🔥</h3>
+                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS LOCKED 🔒</h3>
                   <div className="text-lg md:text-xl font-mono font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
                     {(entriesCount * 100000).toLocaleString()}
                   </div>
@@ -2774,7 +2774,7 @@ Current app data:
                     </li>
                     <li className="flex items-start">
                       <span className="text-red-500 mr-2">›</span>
-                      100,000 $test burned per gameweek entry, reducing total supply forever.
+                      100,000 $test contributed per gameweek entry, sent directly to the decentralized Treasury to fund the prize pool.
                     </li>
                     <li className="flex items-start">
                       <span className="text-yellow-500 mr-2">›</span>
@@ -2959,8 +2959,8 @@ Current app data:
             <p className="text-white font-mono text-xl">{userEntries.length}</p>
           </div>
           <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-4 text-center">
-            <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">$test Burned</p>
-            <p className="text-red-500 font-mono text-xl">{(userEntries.length * 100000).toLocaleString()}</p>
+            <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">$test Contributed</p>
+            <p className="text-yellow-500 font-mono text-xl">{(userEntries.length * 100000).toLocaleString()}</p>
           </div>
           <div className="bg-[#0a0a0a] border border-[#1A1A1A] p-4 text-center">
             <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Current Balance</p>
@@ -3028,7 +3028,7 @@ Current app data:
         </div>
 
         {/* Share Button */}
-        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just burned ${(userEntries.length * 100000).toLocaleString()} $test playing @fplstocks 📈\n\nCurrent GW Rank: ${(() => {
+        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just contributed ${(userEntries.length * 100000).toLocaleString()} $test playing @fplstocks 📈\n\nCurrent GW Rank: ${(() => {
             if (!activeGameweek || !userWallet || leaderboard.length === 0) return 'N/A';
             const userIndex = leaderboard.findIndex(entry => entry.walletAddress === userWallet);
             return userIndex !== -1 ? `#${userIndex + 1}` : 'N/A';

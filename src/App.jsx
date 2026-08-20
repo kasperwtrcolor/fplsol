@@ -4,6 +4,7 @@ import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS } from './config/c
 import { injected } from 'wagmi/connectors';
 import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+import html2canvas from 'html2canvas';
 import * as firebaseService from './firebaseService';
 // Removed old injected font and style elements
 const AnimatedTitle = ({
@@ -616,7 +617,8 @@ function App() {
         const cap = players.find(p => p.id.toString() === currentUserEntry.captain);
         if (cap) setCaptain(cap);
         
-        setTeamBudget(1000 - currentUserEntry.teamValue);
+        const actualCost = submittedTeam.reduce((sum, p) => sum + p.now_cost, 0);
+        setTeamBudget(1000 - actualCost);
       } catch (error) {
         console.error('Error parsing user entry:', error);
       }
@@ -2273,6 +2275,58 @@ Current app data:
       setLoadingMessage('');
     }
   };
+    const downloadSocialCard = async () => {
+    const pitchElement = document.getElementById('squad-pitch-container');
+    if (!pitchElement) return;
+    try {
+      setLoadingMessage('Generating social card...');
+      setIsLoading(true);
+      
+      // We will temporarily add a watermark before capturing
+      const watermark = document.createElement('div');
+      watermark.id = 'watermark-overlay';
+      watermark.innerHTML = '<div style="position: absolute; bottom: 10px; right: 20px; font-family: monospace; font-weight: bold; font-size: 16px; color: rgba(255, 255, 255, 0.9); text-shadow: 0px 0px 4px rgba(0,0,0,0.8); z-index: 100;">fpl.stocks</div>';
+      pitchElement.appendChild(watermark);
+
+      const canvas = await html2canvas(pitchElement, {
+        backgroundColor: '#050505',
+        scale: 2,
+        useCORS: true, // For images from premierleague.com
+        logging: false
+      });
+      
+      pitchElement.removeChild(watermark);
+      
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement('a');
+      link.href = image;
+      link.download = 'fpl_squad.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error capturing social card:", err);
+      alert("Failed to generate social card image.");
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage('');
+    }
+  };
+
+  const getShareSquadUrl = () => {
+    if (!selectedTeam || selectedTeam.length === 0) return '#';
+    const formationStr = selectedFormation;
+    const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
+    const teamValue = ((1000 - teamBudget) / 10).toFixed(1);
+    const playerLines = selectedTeam.map(p => {
+      const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
+      const isCap = captain && captain.id === p.id;
+      return `${isCap ? '©️ ' : ''}${p.second_name} (${pos})`;
+    }).join(' | ');
+    const shareText = `⚽ My fpl.stock Squad (${formationStr})\n\n${playerLines}\n\n👑 Captain: ${captainName}\n💰 Team Value: £${teamValue}M\n\nBuild yours & compete for the prize pool 👇\nhttps://dev.fun/p/543405b7d79724fbb83d\n\n#FPL #fplstock #RobinhoodChain`;
+    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+  };
+  
   const shareSquadOnX = () => {
     if (!selectedTeam || selectedTeam.length === 0) return;
     const formationStr = selectedFormation;
@@ -2974,17 +3028,13 @@ Current app data:
         </div>
 
         {/* Share Button */}
-        <button onClick={() => {
-          const rank = (() => {
+        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just burned ${(userEntries.length * 100000).toLocaleString()} $test playing @fplstocks 📈\n\nCurrent GW Rank: ${(() => {
             if (!activeGameweek || !userWallet || leaderboard.length === 0) return 'N/A';
             const userIndex = leaderboard.findIndex(entry => entry.walletAddress === userWallet);
             return userIndex !== -1 ? `#${userIndex + 1}` : 'N/A';
-          })();
-          const text = `I just burned ${(userEntries.length * 100000).toLocaleString()} $test playing @fplstocks 📈\n\nCurrent GW Rank: ${rank}\nTotal Wins: ${userStats?.wins || 0}\n\nJoin the game and build your squad! ⚽️\n\n#FPL #FPLStocks`;
-          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-        }} className="w-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white py-4 font-mono text-sm tracking-widest transition-colors flex items-center justify-center space-x-2 mt-8">
+          })()}\nTotal Wins: ${userStats?.wins || 0}\n\nJoin the game and build your squad! ⚽️\n\n#FPL #FPLStocks`)}`} target="_blank" rel="noopener noreferrer" className="w-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white py-4 font-mono text-sm tracking-widest transition-colors flex items-center justify-center space-x-2 mt-8">
           <span>SHARE STATS ON 𝕏</span>
-        </button>
+        </a>
 
       </div>}
 {currentView === 'team' && <div className="flex flex-col lg:flex-row h-screen max-h-[85vh] w-full bg-black border-t border-[#1A1A1A] text-white">
@@ -3011,7 +3061,7 @@ Current app data:
           </div>}
 
           <div className="flex-1 flex flex-col justify-start relative">
-            <div className={`transform transition-all duration-500 ${isTeamSubmitted ? "scale-[0.85] sm:scale-100 origin-top mx-auto mt-4" : "scale-[0.65] sm:scale-75 lg:scale-[0.6] origin-top md:origin-top-left -mx-10 lg:-mx-20"}`}>
+            <div id="squad-pitch-container" className={`transform transition-all duration-500 relative  ${isTeamSubmitted ? "scale-[0.85] sm:scale-100 origin-top mx-auto mt-4" : "scale-[0.65] sm:scale-75 lg:scale-[0.6] origin-top md:origin-top-left -mx-10 lg:-mx-20"}`}>
               <FormationDisplay isTeamSubmitted={isTeamSubmitted} />
             </div>
           </div>
@@ -3032,9 +3082,14 @@ Current app data:
              {isTeamSubmitted ? (
                 <div className="space-y-2">
                   <div className="text-center text-green-500 text-[10px] font-mono tracking-widest uppercase mb-2">✓ SQUAD SUBMITTED</div>
-                  <button onClick={shareSquadOnX} className="w-full border border-[#1DA1F2] text-[#1DA1F2] py-3 font-mono text-xs tracking-widest hover:bg-[#1DA1F2] hover:text-black transition-colors flex items-center justify-center space-x-2">
-                    <span>SHARE SQUAD ON 𝕏</span>
-                  </button>
+                  <div className="flex flex-col space-y-2">
+                    <button onClick={downloadSocialCard} className="w-full bg-[#1A1A1A] text-white border border-[#333] py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors flex items-center justify-center space-x-2">
+                      <span>DOWNLOAD SQUAD IMAGE</span>
+                    </button>
+                    <a href={getShareSquadUrl()} target="_blank" rel="noopener noreferrer" className="w-full border border-[#1DA1F2] text-[#1DA1F2] py-3 font-mono text-xs tracking-widest hover:bg-[#1DA1F2] hover:text-black transition-colors flex items-center justify-center space-x-2">
+                      <span>SHARE SQUAD ON 𝕏</span>
+                    </a>
+                  </div>
                 </div>
              ) : selectedTeam.length === 11 ? (
                 <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors">SUBMIT TEAM (100,000 $test)</button>

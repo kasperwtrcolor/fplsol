@@ -1142,24 +1142,24 @@ function App() {
       const totalPrizePool = entries.length * activeGameweek.entryFee;
       await firebaseService.updateEntity('games', activeGameweek.id, {
         status: 'finished',
-        winnerId: winner.userId,
+        winnerId: winner.walletAddress,
         prizePool: totalPrizePool
       });
       setLoadingMessage('Updating user statistics...');
       for (const entry of entries) {
         try {
           let userStatsRecords = await firebaseService.listEntities('user_stats', {
-            userId: entry.userId
+            walletAddress: entry.walletAddress
           });
           let userStatsRecord;
           if (userStatsRecords.length === 0) {
             userStatsRecord = await firebaseService.createEntity('user_stats', {
-              userId: entry.userId
+              walletAddress: entry.walletAddress
             });
           } else {
             userStatsRecord = userStatsRecords[0];
           }
-          const isWinner = entry.userId === winner.userId;
+          const isWinner = entry.walletAddress === winner.walletAddress;
           const updatedStats = {
             wins: (userStatsRecord.wins || 0) + (isWinner ? 1 : 0),
             losses: (userStatsRecord.losses || 0) + (isWinner ? 0 : 1),
@@ -1167,7 +1167,7 @@ function App() {
           };
           await firebaseService.updateEntity('user_stats', userStatsRecord.id, updatedStats);
         } catch (statError) {
-          console.error(`Error updating stats for user ${entry.userId}:`, statError);
+          console.error(`Error updating stats for user ${entry.walletAddress}:`, statError);
         }
       }
 
@@ -1179,7 +1179,7 @@ function App() {
         await loadLeaderboard(activeGameweek.id);
       }
 
-      alert(`Gameweek finalized! Winner: ${winner.userId.slice(0, 8)}... with ${winner.points || 0} points`);
+      alert(`Gameweek finalized! Winner: ${winner.walletAddress.slice(0, 8)}... with ${winner.points || 0} points`);
     } catch (error) {
       console.error('Error finalizing gameweek:', error);
       alert('Error finalizing gameweek');

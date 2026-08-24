@@ -3080,8 +3080,12 @@ Current app data:
           {/* Submit button at bottom */}
           <div className="mt-6 pt-4 border-t border-[#1A1A1A]">
              {isTeamSubmitted ? (
-                <div className="space-y-2">
-                  <div className="text-center text-green-500 text-[10px] font-mono tracking-widest uppercase mb-2">✓ SQUAD SUBMITTED</div>
+                <div className="space-y-4">
+                  <div className="text-center bg-[#0a0a0a] border border-[#1A1A1A] p-6 rounded-lg shadow-[0_0_15px_rgba(0,255,0,0.1)]">
+                    <p className="text-[#666] text-[10px] font-mono tracking-widest uppercase mb-1">Total Gameweek Points</p>
+                    <p className="text-5xl text-[#00FF00] font-mono drop-shadow-[0_0_10px_rgba(0,255,0,0.3)]">{currentUserEntry?.points || 0}</p>
+                  </div>
+                  <div className="text-center text-green-500 text-[10px] font-mono tracking-widest uppercase mb-2 mt-4">✓ SQUAD SUBMITTED</div>
                   <div className="flex flex-col space-y-2">
                     <button onClick={downloadSocialCard} className="w-full bg-[#1A1A1A] text-white border border-[#333] py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-black transition-colors flex items-center justify-center space-x-2">
                       <span>DOWNLOAD SQUAD IMAGE</span>
@@ -3100,7 +3104,35 @@ Current app data:
         </div>
 
         {/* Right Column: PLAYER ROSTER */}
-        {!isTeamSubmitted && (<div className="w-full lg:w-[55%] flex flex-col bg-black overflow-hidden h-full">
+        {isTeamSubmitted ? (
+  <div className="w-full lg:w-[55%] flex flex-col bg-black overflow-hidden h-full p-4 md:p-8 overflow-y-auto">
+    <h2 className="text-xl font-mono text-white mb-6 uppercase tracking-widest border-b border-[#333] pb-4">Live Leaderboard</h2>
+    <div className="space-y-2">
+      {leaderboard.map((entry, index) => (
+        <div key={entry.walletAddress} className={"flex justify-between items-center p-4 border border-[#1A1A1A] " + (entry.walletAddress === userWallet ? "bg-[#1A1A1A] border-white" : "bg-[#0a0a0a]")}>
+          <div className="flex items-center space-x-4">
+            <span className="text-[#666] font-mono w-6 text-right">#{index + 1}</span>
+            <span className="font-mono text-white">{entry.walletAddress.slice(0,6)}...{entry.walletAddress.slice(-4)}</span>
+            {entry.walletAddress === userWallet && <span className="text-[9px] bg-white text-black px-2 py-0.5 ml-2 font-mono uppercase tracking-widest">YOU</span>}
+          </div>
+          <div className="flex items-center space-x-6">
+            <div className="text-right">
+              <div className="text-[10px] text-[#666] font-mono uppercase tracking-widest mb-1">Points</div>
+              <div className="text-[#00FF00] font-mono">{entry.points || 0}</div>
+            </div>
+            <div className="text-right">
+              <div className="text-[10px] text-[#666] font-mono uppercase tracking-widest mb-1">Stock Rewards</div>
+              <div className="text-[#FFD700] font-mono">{index === 0 ? "WINNER ($GME)" : "-"}</div>
+            </div>
+          </div>
+        </div>
+      ))}
+      {leaderboard.length === 0 && (
+        <div className="text-center text-[#666] font-mono py-8">No entries yet for this Gameweek.</div>
+      )}
+    </div>
+  </div>
+) : (<div className="w-full lg:w-[55%] flex flex-col bg-black overflow-hidden h-full">
           {/* Filter Bar */}
           <div className="flex border-b border-[#1A1A1A] p-4 justify-between items-center">
             <div className="flex space-x-2 overflow-x-auto pb-1 lg:pb-0">

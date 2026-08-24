@@ -1030,37 +1030,82 @@ function App() {
       }
     }
   };
-  const loadActiveGameweek = async () => {
+      const loadActiveGameweek = async () => {
     try {
       console.log('--- loadActiveGameweek START ---');
-      const games = await firebaseService.listEntities('games', {
-        status: 'active'
-      });
-      if (games.length > 0) {
-        console.log('Found active game:', games[0].id);
-        let activeGame = games[0];
-        activeGame.entryFee = 100000;
-        const entries = await firebaseService.listEntities('entries', {
-          gameId: activeGame.id
-        });
-        const currentEntriesCount = entries.length;
-        if (currentEntriesCount > 0) {
-          activeGame.prizePool = currentEntriesCount * 100000;
+      const data = await fetchFplJson('https://fantasy.premierleague.com/api/bootstrap-static/');
+      const fixturesData = await fetchFplJson('https://fantasy.premierleague.com/api/fixtures/');
+      
+      let currentFplEvent = data.events.find(event => event.is_current === true) || data.events.find(event => event.is_next === true);
+      
+      if (!currentFplEvent) {
+        console.log('No current or next event found in FPL API');
+        return;
+      }
+      
+      let currentGameweekNumber = currentFplEvent.id;
+      let isFplFinished = currentFplEvent.finished && currentFplEvent.data_checked;
+
+      // Smart progression: If the current gameweek's fixtures are all finished, move to the next one
+      const gameweekFixtures = fixturesData.filter(fixture => fixture.event === currentGameweekNumber && fixture.kickoff_time !== null);
+      if (gameweekFixtures.length > 0) {
+        const allFixturesFinished = gameweekFixtures.every(fixture => fixture.finished === true);
+        if (allFixturesFinished && !isFplFinished) {
+           isFplFinished = true;
         }
-        setActiveGameweek(prev => {
-          if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool) {
-            return activeGame;
+        
+        if (allFixturesFinished) {
+          const nextEvent = data.events.find(event => event.id === currentGameweekNumber + 1);
+          if (nextEvent) {
+             currentGameweekNumber = nextEvent.id;
+             isFplFinished = false; // Next one hasn't finished yet
           }
-          return prev;
+        }
+      }
+
+      let games = await firebaseService.listEntities('games', {
+        gameweek: currentGameweekNumber
+      });
+      
+      let activeGame;
+      
+      if (games.length === 0) {
+        console.log('Auto-creating gameweek', currentGameweekNumber);
+        activeGame = await firebaseService.createEntity('games', {
+          gameweek: currentGameweekNumber,
+          status: isFplFinished ? 'finished' : 'active',
+          prizePool: 0,
+          entryFee: 100000
         });
       } else {
-        console.log('No active gameweek found. Attempting to auto-start.');
-        setActiveGameweek(null);
-        await autoStartNewGameweek();
+        activeGame = games[0];
+        if (isFplFinished && activeGame.status === 'active') {
+           activeGame = await firebaseService.updateEntity('games', activeGame.id, {
+             status: 'finished'
+           });
+        } else if (!isFplFinished && activeGame.status !== 'active') {
+           activeGame = await firebaseService.updateEntity('games', activeGame.id, {
+             status: 'active'
+           });
+        }
       }
-      console.log('--- loadActiveGameweek END ---');
+      
+      activeGame.entryFee = 100000;
+      const entries = await firebaseService.listEntities('entries', {
+        gameId: activeGame.id
+      });
+      if (entries.length > 0) {
+        activeGame.prizePool = entries.length * 100000;
+      }
+      
+      setActiveGameweek(prev => {
+        if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool || prev.status !== activeGame.status) {
+          return activeGame;
+        }
+        return prev;
+      });
     } catch (error) {
-      console.error('Error loading active gameweek:', error);
+      console.error('Error in loadActiveGameweek:', error);
     }
   };
   const loadLeaderboard = async gameId => {
@@ -2832,15 +2877,11 @@ Current app data:
               BUILD TEAM & ENTER
             </AnimatedButton>}
             {isAdmin && <div className="mt-4 space-y-2">
-              <AnimatedButton onClick={syncGameweekWithFPL} className="w-full" color="orange" hoverText="Sync Now">
-                🔄 Sync Gameweek with FPL (Admin Only)
-              </AnimatedButton>
+              
               <AnimatedButton onClick={finalizeGameweek} className="w-full" color="red" hoverText="Finalize Now">
                 🔒 Finalize Gameweek (Admin Only)
               </AnimatedButton>
-              <AnimatedButton onClick={deleteGameweek} className="w-full" color="red" hoverText="Delete Gameweek">
-                🗑️ Delete Current Gameweek (Admin Only)
-              </AnimatedButton>
+              
               <AnimatedButton onClick={clearAndRepopulateFixtures} className="w-full" color="purple" hoverText="Clear & Reload">
                 🔄 Clear & Repopulate Fixtures (Admin Only)
               </AnimatedButton>
@@ -2850,9 +2891,7 @@ Current app data:
           <Clock className="w-10 h-10 text-gray-500 mx-auto mb-4" />
           <h2 className="text-lg font-bold text-gray-100 mb-2 cinematic-text">NO ACTIVE GAMEWEEK</h2>
           <p className="text-gray-300 mb-4 body-text">Waiting for the next gameweek to begin...</p>
-          {isAdmin && <AnimatedButton onClick={createGameweek} color="yellow" hoverText="Create Now">
-            CREATE GAMEWEEK (ADMIN)
-          </AnimatedButton>}
+          
         </SpotlightCard>}
         {activeGameweek && players.length > 0 && isGameweekStarted && <SpotlightCard className={`${theme === 'dark' ? 'bg-black/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="green" size="lg" intensity={0.9}>
           <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} mb-4 text-center cinematic-text ${theme === 'dark' ? 'gold-glow' : ''}`} >
@@ -3229,18 +3268,12 @@ Current app data:
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              <button onClick={createGameweek} className="border border-green-900 text-green-500 py-3 font-mono text-[9px] tracking-widest hover:bg-green-900/20 transition-colors">
-                ACTIVATE GW
-              </button>
-              <button onClick={syncGameweekWithFPL} className="border border-yellow-900 text-yellow-500 py-3 font-mono text-[9px] tracking-widest hover:bg-yellow-900/20 transition-colors">
-                SYNC FPL
-              </button>
+              
+              
               <button onClick={finalizeGameweek} className="border border-red-900 text-red-500 py-3 font-mono text-[9px] tracking-widest hover:bg-red-900/20 transition-colors">
                 FINALIZE GW
               </button>
-              <button onClick={deleteGameweek} className="border border-red-900 text-red-500 py-3 font-mono text-[9px] tracking-widest hover:bg-red-900/20 transition-colors">
-                DELETE GW
-              </button>
+              
             </div>
             <button onClick={clearAndRepopulateFixtures} className="w-full mt-3 border border-[#1A1A1A] text-[#666] py-2 font-mono text-[9px] tracking-widest hover:border-[#333] hover:text-white transition-colors">
               CLEAR & REPOPULATE FIXTURES

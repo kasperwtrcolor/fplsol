@@ -1078,11 +1078,33 @@ function App() {
           entryFee: 100000
         });
       } else {
+        
+      // AUTO-FINALIZE LOGIC
+      const autoFinalizeGame = async (gameDoc) => {
+        try {
+           const existingEntries = await firebaseService.listEntities('entries', { gameId: gameDoc.id });
+           if (existingEntries.length === 0) {
+             return await firebaseService.updateEntity('games', gameDoc.id, { status: 'finished' });
+           }
+           
+           // Sort by points (assuming points were already calculated by live fetch)
+           const sortedEntries = existingEntries.sort((a, b) => (b.points || 0) - (a.points || 0));
+           const winner = sortedEntries[0];
+           
+           return await firebaseService.updateEntity('games', gameDoc.id, {
+             status: 'finished',
+             winnerId: winner.walletAddress,
+             prizePool: existingEntries.length * gameDoc.entryFee
+           });
+        } catch (e) {
+           console.error("Auto finalize failed", e);
+           return gameDoc;
+        }
+      };
+
         activeGame = games[0];
         if (isFplFinished && activeGame.status === 'active') {
-           activeGame = await firebaseService.updateEntity('games', activeGame.id, {
-             status: 'finished'
-           });
+           activeGame = await autoFinalizeGame(activeGame);
         } else if (!isFplFinished && activeGame.status !== 'active') {
            activeGame = await firebaseService.updateEntity('games', activeGame.id, {
              status: 'active'
@@ -2731,6 +2753,20 @@ Current app data:
       <div className="w-full border-b border-gray-900/50 bg-black relative z-10">
         <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
       </div>
+      {claimableWinnings.length > 0 && (
+        <div className="w-full flex flex-col items-center bg-yellow-600/20 border-b border-yellow-600 p-2 z-20">
+          {claimableWinnings.map(game => (
+            <div key={game.id} className="w-full max-w-4xl flex justify-between items-center py-2 px-4">
+              <div className="font-mono text-xs text-yellow-500 font-bold uppercase tracking-widest drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
+                🏆 YOU WON GAMEWEEK {game.gameweek}!
+              </div>
+              <button onClick={() => claimSpecificPrize(game.id)} className="bg-yellow-500 text-black px-4 py-2 text-[10px] font-mono tracking-widest hover:bg-white transition-colors uppercase font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]">
+                CLAIM {(game.prizePool * 0.95).toLocaleString()} $GME
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     <main className="flex-1 w-full flex flex-col">
       {currentView === 'home' && <LandingHero setCurrentView={setCurrentView} activeGameweek={activeGameweek} />}
       {currentView === 'dashboard' && <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 w-full">

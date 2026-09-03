@@ -892,7 +892,7 @@ function App() {
     if (!userWallet) return;
     try {
       const allGames = await firebaseService.listEntities('games');
-      const finishedWinnerGames = allGames.filter(game => game.status === 'finished' && game.winnerId === userWallet);
+      const finishedWinnerGames = allGames.filter(game => game.status === 'finished' && game.winnerId && userWallet && game.winnerId.toLowerCase() === userWallet.toLowerCase());
       const claimableGames = [];
       for (const game of finishedWinnerGames) {
         const existingPayout = await firebaseService.listEntities('payouts', {
@@ -2761,7 +2761,7 @@ Current app data:
                 🏆 YOU WON GAMEWEEK {game.gameweek}!
               </div>
               <button onClick={() => claimSpecificPrize(game.id)} className="bg-yellow-500 text-black px-4 py-2 text-[10px] font-mono tracking-widest hover:bg-white transition-colors uppercase font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]">
-                CLAIM {(game.prizePool * 0.95).toLocaleString()} $GME
+                CLAIM {(game.prizePool * 0.9).toLocaleString()} $FPLS
               </button>
             </div>
           ))}
@@ -3197,7 +3197,7 @@ Current app data:
             </div>
             <div className="text-right">
               <div className="text-[10px] text-[#666] font-mono uppercase tracking-widest mb-1">Stock Rewards</div>
-              <div className="text-[#FFD700] font-mono">{index === 0 ? "WINNER ($GME)" : "-"}</div>
+              <div className="text-[#FFD700] font-mono">{index === 0 ? "WINNER (90% $FPLS)" : "-"}</div>
             </div>
           </div>
         </div>

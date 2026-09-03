@@ -907,21 +907,57 @@ function App() {
       console.error('Error loading claimable winnings:', error);
     }
   };
-  const claimSpecificPrize = async gameId => {
+    const claimSpecificPrize = async gameId => {
     if (!userWallet) return;
     setIsLoading(true);
-    setLoadingMessage('Processing prize claim...');
+    setLoadingMessage('Securing Oracle Signature...');
     try {
+      const gameToClaim = claimableWinnings.find(g => g.id === gameId);
+      if (!gameToClaim) throw new Error("Game not found in claimable winnings");
+
+      // 1. Fetch Signature from Oracle
+      const response = await fetch('/api/oracle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          gameweek: gameToClaim.gameweek,
+          winner: userWallet,
+          totalPrizePool: gameToClaim.prizePool.toString()
+        })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to get oracle signature');
+      
+      setLoadingMessage('Please confirm the transaction in MetaMask...');
+      
+      // 2. Submit Transaction
+      const { PRIZE_POOL_ADDRESS, PRIZE_POOL_ABI } = await import('./config/contracts.js');
+      
+      const txHash = await writeContractAsync({
+        address: PRIZE_POOL_ADDRESS,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'claimPrize',
+        args: [
+           BigInt(gameToClaim.gameweek),
+           BigInt(gameToClaim.prizePool),
+           data.signature
+        ],
+      });
+      
+      console.log('Claim tx:', txHash);
+      setLoadingMessage('Waiting for confirmation...');
+      
+      // 3. Record in DB
       await firebaseService.createEntity('payouts', {
         gameId: gameId,
-        winnerId: userWallet
+        winnerId: userWallet,
+        txHash: txHash
       });
-      alert('Prize claimed successfully!');
+      
+      alert('Prize claimed successfully on-chain!');
       await loadClaimableWinnings();
       await loadUserData();
-      if (activeGameweek?.id === gameId) {
-        await loadActiveGameweek();
-      }
     } catch (error) {
       console.error('Error claiming prize:', error);
       alert('Error claiming prize. Please try again.');

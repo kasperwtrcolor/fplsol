@@ -212,7 +212,7 @@ const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
           <button 
             key={item.id} 
             onClick={() => setCurrentView(item.id)}
-            className={`transition-colors whitespace-nowrap pb-1 border-b-2 ${isActive ? 'text-white border-green-500' : 'hover:text-gray-300 border-transparent'}`}
+            className={`transition-colors whitespace-nowrap pb-1 border-b-2 font-bold ${isActive ? 'text-black dark:text-white border-black dark:border-white' : 'text-gray-500 hover:text-black dark:hover:text-white border-transparent'}`}
           >
             {item.label}
           </button>
@@ -356,25 +356,23 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
           <div className="absolute top-0 left-1/2 w-[1px] h-full bg-[var(--border-light)] opacity-30"></div>
         </div>
 
-        <h1 className="text-6xl md:text-[110px] leading-[0.85] font-black text-white uppercase tracking-tighter text-center mb-8 font-sans">
+        <h1 className="text-6xl md:text-[110px] leading-[0.85] font-black text-black dark:text-white tracking-tighter text-center mb-8 font-hand">
           WINNER<br/>TAKES ALL
         </h1>
         
-        <p className="text-[var(--emerald-glow)] font-mono text-[10px] md:text-xs uppercase tracking-[0.25em] text-center max-w-lg leading-relaxed mb-12">
+        <p className="text-gray-500 font-mono text-[10px] md:text-xs uppercase tracking-[0.25em] text-center max-w-lg leading-relaxed mb-12">
           The world's first deflationary fantasy premier league game powered by Robinhood Chain.
         </p>
         
-        <button 
-          onClick={() => setCurrentView('team')}
-          className="border border-white hover:border-[var(--emerald-glow)] text-white hover:text-[var(--emerald-glow)] px-8 py-3 text-xs font-mono font-bold tracking-widest uppercase transition-colors mb-6"
-        >
+        <button onClick={() => setCurrentView('team')} className="btn-brutal px-12 py-4 text-xl mb-6">
+        
           BUILD SQUAD
         </button>
 
         {activeGameweek && (
           <div className="flex items-center gap-3 bg-gray-100 dark:bg-zinc-800 border border-[#1a1a1a] px-4 py-2 rounded-full">
             <div className="w-2 h-2 rounded-full bg-[var(--emerald-glow)] animate-pulse"></div>
-            <span className="text-[var(--emerald-glow)] font-mono text-[10px] uppercase tracking-widest">Gameweek {activeGameweek.gameweek} Active</span>
+            <span className="text-black dark:text-white font-mono font-bold text-[10px] uppercase tracking-widest">Gameweek {activeGameweek.gameweek} Active</span>
           </div>
         )}
       </motion.div>
@@ -391,9 +389,9 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
           className="flex flex-col md:flex-row items-center gap-12"
         >
           <div className="flex-1 space-y-6">
-            <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Stake to Play</h3>
-            <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
+            <h2 className="text-black dark:text-white font-bold font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Stake to Play</h3>
+            <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
               Pay the 100,000 $test entry fee to join the gameweek. 90% goes to the winner-takes-all Prize Pool, and 10% is burned forever to create a deflationary ecosystem.
             </p>
           </div>
@@ -413,8 +411,8 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
         >
           <div className="flex-1 space-y-6 md:pl-12">
             <h2 className="text-yellow-500 font-mono text-xs tracking-[0.2em] uppercase">02 / The Budget</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Manage £70M</h3>
-            <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
+            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Manage £70M</h3>
+            <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
               You have exactly £70.0M to build your dream team of 11 players. Player prices match the official Fantasy Premier League data. Spend wisely to maximize your point potential.
             </p>
           </div>
@@ -433,9 +431,9 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
           className="flex flex-col md:flex-row items-center gap-12"
         >
           <div className="flex-1 space-y-6">
-            <h2 className="text-[var(--emerald-glow)] font-mono text-xs tracking-[0.2em] uppercase">03 / Tactics</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">Formations & Captains</h3>
-            <p className="text-gray-400 font-mono text-xs leading-relaxed max-w-md">
+            <h2 className="text-black dark:text-white font-bold font-mono text-xs tracking-[0.2em] uppercase">03 / Tactics</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Formations & Captains</h3>
+            <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
               Choose from 6 dynamic formations (e.g. 3-4-3, 4-4-2). Select your Captain carefully—they score double points for the gameweek based on their real-life performance via Chainlink Oracle data.
             </p>
           </div>
@@ -525,6 +523,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [theme, setTheme] = useState('light');
+  const [showRosterModal, setShowRosterModal] = useState(false);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -2773,7 +2772,7 @@ Current app data:
              <div className="w-8 h-8 bg-transparent dark:bg-white rounded flex items-center justify-center">
                 <span className="text-white dark:text-gray-500lack font-sans text-sm font-black">F</span>
              </div>
-             <span>Just a $FPLS</span>
+             <div className="flex flex-col"><span>Fantasy Premier League Stock</span><span className="text-xs text-gray-500 font-sans tracking-widest uppercase">Powered by $FPLS</span></div>
           </div>
         </div>
         
@@ -3165,7 +3164,7 @@ Current app data:
       </div>}
 {currentView === 'team' && <div className="flex flex-col xl:flex-row min-h-screen w-full bg-transparent text-gray-500lack dark:text-white pb-20">
         {/* Left Column: SQUAD SELECTION & PITCH */}
-        <div className="w-full xl:w-[60%] flex flex-col p-6 xl:p-10 overflow-y-auto items-center">
+        <div className="w-full flex flex-col p-6 xl:p-10 overflow-y-auto items-center">
           <div className="flex justify-between items-end mb-6">
             <div>
               <h2 className="text-gray-500 font-bold font-mono tracking-widest uppercase mb-1">SQUAD SELECTION ({selectedTeam.length}/11)</h2>
@@ -3187,7 +3186,7 @@ Current app data:
           </div>}
 
           <div className="flex-1 flex flex-col justify-start relative">
-            <div id="squad-pitch-container" className={`transform transition-all duration-500 relative  ${isTeamSubmitted ? "scale-[0.85] sm:scale-100 origin-top mx-auto mt-4" : "scale-[0.8] sm:scale-90 xl:scale-100 origin-top mx-auto"}`}>
+            <div id="squad-pitch-container" className={`transform transition-all duration-500 relative  ${isTeamSubmitted ? "scale-[0.85] sm:scale-100 origin-top mx-auto mt-4" : "scale-[0.9] sm:scale-100 xl:scale-125 origin-top mx-auto"}`}>
               <FormationDisplay isTeamSubmitted={isTeamSubmitted} />
             </div>
           </div>
@@ -3204,7 +3203,12 @@ Current app data:
           </div>
           
           {/* Submit button at bottom */}
-          <div className="mt-6 pt-4 border-t border-gray-300 dark:border-gray-700">
+          <div className="mt-20 xl:mt-32 pt-4 border-t border-gray-300 dark:border-gray-700 w-full max-w-2xl text-center">
+    {!isTeamSubmitted && (
+      <button onClick={() => setShowRosterModal(true)} className="btn-brutal w-full mb-4 bg-yellow-300 hover:bg-yellow-400 dark:bg-yellow-600 dark:text-white">
+        🔍 BROWSE PLAYERS
+      </button>
+    )}
              {isTeamSubmitted ? (
                 <div className="space-y-4">
                   <div className="text-center bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-6 rounded-lg shadow-[0_0_15px_rgba(0,255,0,0.1)]">
@@ -3258,7 +3262,21 @@ Current app data:
       )}
     </div>
   </div>
-) : (<div className="w-full xl:w-[40%] flex flex-col h-[600px] xl:h-[80vh] card-brutal mt-8 xl:mt-0 xl:ml-6 overflow-hidden">
+) : (
+  <>
+
+        {/* Roster Modal */}
+        {showRosterModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-2xl flex flex-col h-[85vh] card-brutal overflow-hidden relative">
+              <button 
+                onClick={() => setShowRosterModal(false)}
+                className="absolute top-4 right-4 z-10 bg-white dark:bg-zinc-800 border-2 border-black dark:border-white shadow-brutal w-8 h-8 rounded-full flex items-center justify-center font-bold text-black dark:text-white"
+              >
+                ✕
+              </button>
+              <div className="flex-1 flex flex-col pt-2 bg-white dark:bg-zinc-900">
+
           {/* Filter Bar */}
           <div className="flex border-b border-gray-300 dark:border-gray-700 p-4 justify-between items-center">
             <div className="flex space-x-2 overflow-x-auto pb-1 lg:pb-0">
@@ -3332,7 +3350,12 @@ Current app data:
               );
             })}
           </div>
-        </div>)}
+          </div>
+        </div>
+        </div>
+      )}
+    </>
+  )}
       </div>}
       {currentView === 'admin' && isAdmin && <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-8">
         <h1 className="text-white font-mono text-sm tracking-widest uppercase mb-8 border-b border-gray-300 dark:border-gray-700 pb-4">ADMIN CONTROL PANEL</h1>

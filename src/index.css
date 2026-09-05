@@ -19,7 +19,7 @@
 
 @layer components {
   .btn-brutal {
-    @apply font-hand font-bold text-lg border-2 border-black bg-white shadow-brutal hover:shadow-brutal-hover active:shadow-brutal-active hover:-translate-y-0.5 active:translate-y-1 transition-all px-6 py-2 rounded-xl;
+    @apply font-hand font-bold text-black text-lg border-2 border-black bg-white shadow-brutal hover:shadow-brutal-hover active:shadow-brutal-active hover:-translate-y-0.5 active:translate-y-1 transition-all px-6 py-2 rounded-xl;
   }
   
   .dark .btn-brutal {

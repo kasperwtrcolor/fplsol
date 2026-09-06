@@ -486,6 +486,9 @@ function App() {
   const [userStats, setUserStats] = useState(null);
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [allGames, setAllGames] = useState([]);
+  const [selectedLeaderboardGw, setSelectedLeaderboardGw] = useState(null);
+  const [selectedLeaderboardGame, setSelectedLeaderboardGame] = useState(null);
   const [rawLeaderboard, setRawLeaderboard] = useState([]);
   const [entriesCount, setEntriesCount] = useState(0);
   const [players, setPlayers] = useState([]);
@@ -495,7 +498,7 @@ function App() {
   const [selectedFixtureGameweek, setSelectedFixtureGameweek] = useState(1);
   const [selectedGameweekFixtures, setSelectedGameweekFixtures] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState([]);
-  const [teamBudget, setTeamBudget] = useState(1000);
+  const [teamBudget, setTeamBudget] = useState(700);
   const [captain, setCaptain] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [userEntries, setUserEntries] = useState([]);
@@ -619,7 +622,7 @@ function App() {
         if (cap) setCaptain(cap);
         
         const actualCost = submittedTeam.reduce((sum, p) => sum + p.now_cost, 0);
-        setTeamBudget(1000 - actualCost);
+        setTeamBudget(700 - actualCost);
       } catch (error) {
         console.error('Error parsing user entry:', error);
       }
@@ -629,16 +632,20 @@ function App() {
   useEffect(() => {
     setIsConnected(true);
     // Listen for active game changes
-    const unsubGames = firebaseService.subscribeToCollection('games', { status: 'active' }, (games) => {
+    const unsubGames = firebaseService.subscribeToCollection('games', {}, (games) => {
       if (games.length > 0) {
-        const activeGame = games[0];
-        activeGame.entryFee = 100000;
-        setActiveGameweek(prev => {
-          if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool || prev.status !== activeGame.status) {
-            return activeGame;
-          }
-          return prev;
-        });
+        const sorted = [...games].sort((a, b) => b.gameweek - a.gameweek);
+        setAllGames(sorted);
+        const activeGame = sorted.find(g => g.status === 'active') || sorted[0];
+        if (activeGame) {
+          activeGame.entryFee = 100000;
+          setActiveGameweek(prev => {
+            if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool || prev.status !== activeGame.status) {
+              return activeGame;
+            }
+            return prev;
+          });
+        }
       }
     });
     return () => {
@@ -675,28 +682,28 @@ function App() {
   }, [activeGameweek?.id, activeGameweek?.status, activeGameweek?.gameweek, isGameweekStarted]);
 
   useEffect(() => {
-    if (rawLeaderboard && rawLeaderboard.length > 0) {
-      if (players.length > 0 && isGameweekStarted) {
-        const liveLeaderboard = calculateLiveLeaderboard(rawLeaderboard, players, livePoints);
-        setLeaderboard(liveLeaderboard);
-        setUserEntries(prevEntries => {
-          return prevEntries.map(entry => {
-            const liveEntry = liveLeaderboard.find(le => le.id === entry.id);
-            return liveEntry ? liveEntry : entry;
-          });
-        });
-      } else {
-        const zeroPointsEntries = rawLeaderboard.map(entry => ({
-          ...entry,
-          points: 0
-        }));
-        setLeaderboard(zeroPointsEntries);
-      }
-    } else if (rawLeaderboard.length > 0) {
-      const sortedEntries = [...rawLeaderboard].sort((a, b) => (b.points || 0) - (a.points || 0));
-      setLeaderboard(sortedEntries);
+    if (!rawLeaderboard || rawLeaderboard.length === 0) {
+      setLeaderboard([]);
+      return;
     }
-  }, [rawLeaderboard, players, activeGameweek?.status, isGameweekStarted]);
+    const isFinished = selectedLeaderboardGame?.status === 'finished' || activeGameweek?.status === 'finished';
+    if (players.length > 0 && isGameweekStarted && !isFinished) {
+      const liveLeaderboard = calculateLiveLeaderboard(rawLeaderboard, players, livePoints);
+      setLeaderboard(liveLeaderboard);
+      setUserEntries(prevEntries => {
+        return prevEntries.map(entry => {
+          const liveEntry = liveLeaderboard.find(le => le.id === entry.id);
+          return liveEntry ? liveEntry : entry;
+        });
+      });
+    } else {
+      const entriesWithPoints = rawLeaderboard.map(entry => ({
+        ...entry,
+        points: entry.points || 0
+      })).sort((a, b) => (b.points || 0) - (a.points || 0));
+      setLeaderboard(entriesWithPoints);
+    }
+  }, [rawLeaderboard, players, activeGameweek?.status, selectedLeaderboardGame?.status, isGameweekStarted]);
   useEffect(() => {
     if (!userWallet) return;
     const interval = setInterval(() => {
@@ -1167,6 +1174,39 @@ function App() {
       console.error('Error in loadActiveGameweek:', error);
     }
   };
+    const loadLeaderboardForGameweek = async (gwNumber) => {
+    try {
+      let games = allGames;
+      if (games.length === 0) {
+        games = await firebaseService.listEntities('games');
+        setAllGames(games.sort((a, b) => b.gameweek - a.gameweek));
+      }
+      let targetGame = games.find(g => g.gameweek === gwNumber);
+      if (!targetGame) {
+        const matching = await firebaseService.listEntities('games', { gameweek: gwNumber });
+        if (matching.length > 0) targetGame = matching[0];
+      }
+      setSelectedLeaderboardGame(targetGame || null);
+      if (targetGame) {
+        await loadLeaderboard(targetGame.id);
+      } else {
+        setRawLeaderboard([]);
+        setLeaderboard([]);
+      }
+    } catch (err) {
+      console.error('Error loading leaderboard for gameweek:', gwNumber, err);
+      setRawLeaderboard([]);
+      setLeaderboard([]);
+    }
+  };
+
+  useEffect(() => {
+    if (activeGameweek?.gameweek && selectedLeaderboardGw === null) {
+      setSelectedLeaderboardGw(activeGameweek.gameweek);
+      setSelectedLeaderboardGame(activeGameweek);
+    }
+  }, [activeGameweek?.gameweek, selectedLeaderboardGw]);
+
   const loadLeaderboard = async gameId => {
     if (!gameId) return;
     try {
@@ -1772,7 +1812,7 @@ function App() {
   };
   const resetTeam = () => {
     setSelectedTeam([]);
-    setTeamBudget(1000);
+    setTeamBudget(700);
     setCaptain(null);
   };
   const getFormationRequirements = formation => {
@@ -2332,7 +2372,7 @@ Current app data:
         gameId: activeGameweek.id,
         team: JSON.stringify(playerIds),
         captain: captain.id.toString(),
-        teamValue: 1000 - teamBudget,
+        teamValue: 700 - teamBudget,
         points: 0,
         txHash: enterTx
       });
@@ -2421,7 +2461,7 @@ Current app data:
     if (!selectedTeam || selectedTeam.length === 0) return '#';
     const formationStr = selectedFormation;
     const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
-    const teamValue = ((1000 - teamBudget) / 10).toFixed(1);
+    const teamValue = ((700 - teamBudget) / 10).toFixed(1);
     const playerLines = selectedTeam.map(p => {
       const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
       const isCap = captain && captain.id === p.id;
@@ -2435,7 +2475,7 @@ Current app data:
     if (!selectedTeam || selectedTeam.length === 0) return;
     const formationStr = selectedFormation;
     const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
-    const teamValue = ((1000 - teamBudget) / 10).toFixed(1);
+    const teamValue = ((700 - teamBudget) / 10).toFixed(1);
     const playerLines = selectedTeam.map(p => {
       const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
       const isCap = captain && captain.id === p.id;
@@ -2922,13 +2962,13 @@ Current app data:
               {/* Budget Tracker Gauge */}
               <div className="flex items-center gap-4">
                 <div className={`px-4 py-2 rounded-xl text-center border ${
-                  teamBudget < 100 && selectedTeam.length < 11
+                  teamBudget < 70 && selectedTeam.length < 11
                     ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900'
                     : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900'
                 }`}>
                   <div className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Remaining Budget</div>
                   <div className={`text-lg font-mono font-bold ${
-                    teamBudget < 100 && selectedTeam.length < 11
+                    teamBudget < 70 && selectedTeam.length < 11
                       ? 'text-rose-600 dark:text-rose-400'
                       : 'text-emerald-700 dark:text-emerald-300'
                   }`}>
@@ -3034,20 +3074,74 @@ Current app data:
         {/* VIEW 2: LEADERBOARD & REWARDS */}
         {currentView === 'leaderboard' && (
           <div className="w-full max-w-5xl mx-auto space-y-6">
-            {/* Prize Metrics Header */}
+            {/* Gameweek Selector & Status Bar */}
+            <div className="card-modern p-4 md:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 shadow-sm">
+                  <Trophy className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    Gameweek {selectedLeaderboardGw || activeGameweek?.gameweek || 3} Standings
+                    {selectedLeaderboardGw === activeGameweek?.gameweek ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
+                        Current • Active
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        Historical
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {selectedLeaderboardGw === activeGameweek?.gameweek 
+                      ? 'Live match performance and current gameweek prize pool'
+                      : 'Historical gameweek results, final scores, and prize payouts'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Gameweek Switcher Dropdown */}
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Select Gameweek:</span>
+                <select
+                  value={selectedLeaderboardGw || activeGameweek?.gameweek || 3}
+                  onChange={(e) => {
+                    const gw = Number(e.target.value);
+                    setSelectedLeaderboardGw(gw);
+                    loadLeaderboardForGameweek(gw);
+                  }}
+                  className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs font-semibold px-3 py-2 rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {allGames.length > 0 ? (
+                    allGames.map(g => (
+                      <option key={g.id || g.gameweek} value={g.gameweek}>
+                        Gameweek {g.gameweek} {g.gameweek === activeGameweek?.gameweek ? '(Current)' : `(${g.status || 'Finished'})`}
+                      </option>
+                    ))
+                  ) : (
+                    <option value={activeGameweek?.gameweek || 3}>
+                      Gameweek {activeGameweek?.gameweek || 3} (Current)
+                    </option>
+                  )}
+                </select>
+              </div>
+            </div>
+
+            {/* Prize Metrics Header for Selected Gameweek */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="card-modern p-5 text-center">
                 <div className="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">Total Gameweek Staked</div>
                 <div className="text-2xl font-mono font-black text-slate-900 dark:text-white mt-1">
-                  {((activeGameweek?.prizePool || entriesCount * 100000)).toLocaleString()} <span className="text-xs text-slate-400">$FPLS</span>
+                  {(leaderboard.length * 100000).toLocaleString()} <span className="text-xs text-slate-400">$FPLS</span>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-1">{entriesCount} Total Entries</div>
+                <div className="text-[10px] text-slate-400 mt-1">{leaderboard.length} Total Entries</div>
               </div>
 
               <div className="card-modern p-5 text-center bg-gradient-to-b from-amber-500/10 to-transparent border-amber-300 dark:border-amber-800">
                 <div className="text-xs uppercase font-semibold text-amber-700 dark:text-amber-400">1st Place Winner Pool (90%)</div>
                 <div className="text-2xl font-mono font-black text-amber-600 dark:text-amber-300 mt-1">
-                  {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} <span className="text-xs">$FPLS</span>
+                  {(leaderboard.length * 100000 * 0.9).toLocaleString()} <span className="text-xs">$FPLS</span>
                 </div>
                 <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Winner-Takes-All</div>
               </div>
@@ -3055,24 +3149,28 @@ Current app data:
               <div className="card-modern p-5 text-center">
                 <div className="text-xs uppercase font-semibold text-rose-500">Deflationary Burn (10%) 🔥</div>
                 <div className="text-2xl font-mono font-black text-rose-600 dark:text-rose-400 mt-1">
-                  {((activeGameweek?.prizePool || entriesCount * 100000) * 0.1).toLocaleString()} <span className="text-xs text-rose-400">$FPLS</span>
+                  {(leaderboard.length * 100000 * 0.1).toLocaleString()} <span className="text-xs text-rose-400">$FPLS</span>
                 </div>
                 <div className="text-[10px] text-slate-400 mt-1">Burned forever on-chain</div>
               </div>
             </div>
 
-            {/* Live Rankings Table */}
+            {/* Rankings Table */}
             <div className="card-modern overflow-hidden">
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <div>
-                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">Gameweek {activeGameweek?.gameweek || 1} Standings</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ranked by real Premier League match points</p>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    Standings • Gameweek {selectedLeaderboardGw || activeGameweek?.gameweek || 3}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {leaderboard.length} {leaderboard.length === 1 ? 'manager' : 'managers'} competing
+                  </p>
                 </div>
-                {activeGameweek && (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                    {activeGameweek.status?.toUpperCase()}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    {selectedLeaderboardGame?.status?.toUpperCase() || (selectedLeaderboardGw === activeGameweek?.gameweek ? 'ACTIVE' : 'FINISHED')}
                   </span>
-                )}
+                </div>
               </div>
 
               <div className="overflow-x-auto">
@@ -3091,7 +3189,7 @@ Current app data:
                       const isWinner = index === 0;
                       return (
                         <tr 
-                          key={entry.walletAddress || index} 
+                          key={entry.id || entry.walletAddress || index} 
                           className={`transition-colors ${isCurrentUser ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}
                         >
                           <td className="px-6 py-4">
@@ -3105,8 +3203,13 @@ Current app data:
                                 {entry.walletAddress?.slice(0, 6)}...{entry.walletAddress?.slice(-4)}
                               </span>
                               {isCurrentUser && (
-                                <span className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold">
+                                <span className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold font-sans">
                                   YOU
+                                </span>
+                              )}
+                              {isWinner && (
+                                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold font-sans">
+                                  🏆 1ST PLACE
                                 </span>
                               )}
                             </div>
@@ -3117,7 +3220,7 @@ Current app data:
                           <td className="px-6 py-4 text-right">
                             {isWinner ? (
                               <span className="font-bold text-amber-600 dark:text-amber-400">
-                                {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
+                                {(leaderboard.length * 100000 * 0.9).toLocaleString()} $FPLS
                               </span>
                             ) : (
                               <span className="text-slate-400">-</span>
@@ -3128,8 +3231,28 @@ Current app data:
                     })}
                     {leaderboard.length === 0 && (
                       <tr>
-                        <td colSpan="4" className="px-6 py-12 text-center text-slate-400 font-sans">
-                          No squad entries registered yet for this gameweek. Be the first to build and enter!
+                        <td colSpan="4" className="px-6 py-14 text-center font-sans">
+                          <div className="max-w-md mx-auto space-y-3">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                              <Trophy className="w-6 h-6" />
+                            </div>
+                            <div className="font-bold text-base text-slate-900 dark:text-white">
+                              No Squad Entries for Gameweek {selectedLeaderboardGw || activeGameweek?.gameweek || 3}
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                              {selectedLeaderboardGw === activeGameweek?.gameweek
+                                ? 'No managers have entered this active gameweek yet. Build your team and claim the lead!'
+                                : 'No squads were entered for this historical gameweek.'}
+                            </p>
+                            {selectedLeaderboardGw === activeGameweek?.gameweek && (
+                              <button 
+                                onClick={() => setCurrentView('team')}
+                                className="btn-primary text-xs px-5 py-2.5 mt-2"
+                              >
+                                Build Squad & Enter
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -3140,7 +3263,6 @@ Current app data:
           </div>
         )}
 
-        {/* VIEW 3: FIXTURES & LIVE */}
         {currentView === 'fixtures' && (
           <div className="w-full max-w-5xl mx-auto space-y-6">
             {/* Countdown Banner */}

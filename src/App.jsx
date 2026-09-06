@@ -8,6 +8,7 @@ import html2canvas from 'html2canvas';
 import * as firebaseService from './firebaseService';
 import { VectorKit } from './components/VectorKit';
 import { TeamShield } from './components/TeamShield';
+import { LandingPage } from './components/LandingPage';
 // Removed old injected font and style elements
 const AnimatedTitle = ({
   title = "FPL.STOCKS",
@@ -199,6 +200,7 @@ const LoadingWave = ({
 };
 const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
   const navItems = [
+    { id: 'overview', label: 'Overview', icon: Home },
     { id: 'team', label: 'Team Builder', icon: TeamIcon },
     { id: 'leaderboard', label: 'Leaderboard & Rewards', icon: Trophy },
     { id: 'fixtures', label: 'Fixtures & Live', icon: Calendar },
@@ -336,112 +338,6 @@ const FormationDock = ({ selectedFormation, setSelectedFormation }) => {
     </div>
   );
 };
-const LandingHero = ({ setCurrentView, activeGameweek }) => {
-  return (
-    <div className="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto px-6 pt-16 pb-32">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="relative w-full flex flex-col items-center min-h-[60vh] justify-center"
-      >
-        <div className="absolute inset-0 pointer-events-none z-[-1] opacity-20" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(0, 255, 106, 0.4) 0%, transparent 70%)', width: '600px', height: '600px', left: '50%', transform: 'translate(-50%, -30%)' }}>
-          <div className="w-full h-full border border-[var(--border-light)] rounded-full opacity-30"></div>
-          <div className="absolute top-1/2 left-0 w-full h-[1px] bg-[var(--border-light)] opacity-30"></div>
-          <div className="absolute top-0 left-1/2 w-[1px] h-full bg-[var(--border-light)] opacity-30"></div>
-        </div>
-
-        <h1 className="text-6xl md:text-[110px] leading-[0.85] font-black text-black dark:text-white tracking-tighter text-center mb-8 font-hand">
-          WINNER<br/>TAKES ALL
-        </h1>
-        
-        <p className="text-gray-500 font-mono text-[10px] md:text-xs uppercase tracking-[0.25em] text-center max-w-lg leading-relaxed mb-12">
-          The world's first deflationary fantasy premier league game powered by Robinhood Chain.
-        </p>
-        
-        <button onClick={() => setCurrentView('team')} className="btn-brutal px-12 py-4 text-xl mb-6">
-        
-          BUILD SQUAD
-        </button>
-
-        {activeGameweek && (
-          <div className="flex items-center gap-3 bg-gray-100 dark:bg-zinc-800 border border-[#1a1a1a] px-4 py-2 rounded-full">
-            <div className="w-2 h-2 rounded-full bg-[var(--emerald-glow)] animate-pulse"></div>
-            <span className="text-black dark:text-white font-mono font-bold text-[10px] uppercase tracking-widest">Gameweek {activeGameweek.gameweek} Active</span>
-          </div>
-        )}
-      </motion.div>
-
-      {/* How it Works Sections */}
-      <div className="w-full mt-16 space-y-32">
-        
-        {/* Section 1: Entry & Pool */}
-        <motion.div 
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row items-center gap-12"
-        >
-          <div className="flex-1 space-y-6">
-            <h2 className="text-black dark:text-white font-bold font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Stake to Play</h3>
-            <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              Pay the 100,000 $FPLS entry fee to join the gameweek. 90% goes to the winner-takes-all Prize Pool, and 10% is burned forever to create a deflationary ecosystem.
-            </p>
-          </div>
-          <div className="flex-1 w-full relative">
-            <div className="absolute inset-0 bg-[var(--emerald-glow)] opacity-10 blur-2xl rounded-full"></div>
-            <img src="/fpl_entry.jpg" alt="Terminal Entry" className="relative z-10 w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-2xl opacity-90 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" />
-          </div>
-        </motion.div>
-
-        {/* Section 2: Budget */}
-        <motion.div 
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row-reverse items-center gap-12"
-        >
-          <div className="flex-1 space-y-6 md:pl-12">
-            <h2 className="text-yellow-500 font-mono text-xs tracking-[0.2em] uppercase">02 / The Budget</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Manage £80M</h3>
-            <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              You have exactly £80.0M to build your dream team of 11 players. Player prices match the official Fantasy Premier League data. Spend wisely to maximize your point potential.
-            </p>
-          </div>
-          <div className="flex-1 w-full relative">
-            <div className="absolute inset-0 bg-yellow-500 opacity-10 blur-2xl rounded-full"></div>
-            <img src="/fpl_budget.jpg" alt="Budget Terminal" className="relative z-10 w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-2xl opacity-90 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" />
-          </div>
-        </motion.div>
-
-        {/* Section 3: Formation & Captain */}
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col md:flex-row items-center gap-12"
-        >
-          <div className="flex-1 space-y-6">
-            <h2 className="text-black dark:text-white font-bold font-mono text-xs tracking-[0.2em] uppercase">03 / Tactics</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Formations & Captains</h3>
-            <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              Choose from 6 dynamic formations (e.g. 3-4-3, 4-4-2). Select your Captain carefully—they score double points for the gameweek based on their real-life performance via Chainlink Oracle data.
-            </p>
-          </div>
-          <div className="flex-1 w-full relative">
-            <div className="absolute inset-0 bg-[var(--emerald-glow)] opacity-10 blur-2xl rounded-full"></div>
-            <img src="/fpl_pitch.jpg" alt="Pitch Terminal" className="relative z-10 w-full border border-gray-300 dark:border-gray-700 rounded-lg shadow-2xl opacity-90 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" />
-          </div>
-        </motion.div>
-
-      </div>
-    </div>
-  );
-};
 
 function App() {
   const { address: userWallet, isConnected: authenticated } = useAccount();
@@ -483,7 +379,7 @@ function App() {
       { symbol: 'RH', name: 'Robinhood', price: '$22.50', change: '+5.1%' }
     ]);
   }, []);
-  const [currentView, setCurrentView] = useState('team');
+  const [currentView, setCurrentView] = useState('overview');
   const [activeGameweek, setActiveGameweek] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
@@ -2878,13 +2774,17 @@ Current app data:
       {/* Modern Top Header */}
       <header className="flex justify-between items-center px-4 md:px-8 py-3.5 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
         {/* Brand & Subtitle */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-emerald-glow">
+        <div 
+          onClick={() => setCurrentView('overview')}
+          className="flex items-center gap-3 cursor-pointer select-none group"
+          title="Go to Overview"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-emerald-glow group-hover:scale-105 transition-transform">
             <Trophy className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base md:text-lg tracking-tight text-slate-900 dark:text-white">
+              <span className="font-extrabold text-base md:text-lg tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
                 FPL<span className="text-emerald-600 dark:text-emerald-400">.STOCK</span>
               </span>
               <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
@@ -2983,6 +2883,19 @@ Current app data:
 
       {/* Main Content Areas */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col">
+        {/* VIEW 0: OVERVIEW / LANDING */}
+        {currentView === 'overview' && (
+          <LandingPage 
+            setCurrentView={setCurrentView}
+            activeGameweek={activeGameweek}
+            players={players}
+            fplTeams={fplTeams}
+            onSelectPlayer={(player) => {
+              addPlayerToTeam(player);
+            }}
+          />
+        )}
+
         {/* VIEW 1: TEAM BUILDER */}
         {currentView === 'team' && (
           <div className="w-full flex flex-col items-center space-y-6">

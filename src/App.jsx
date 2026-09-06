@@ -6,6 +6,8 @@ import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import * as firebaseService from './firebaseService';
+import { VectorKit } from './components/VectorKit';
+import { TeamShield } from './components/TeamShield';
 // Removed old injected font and style elements
 const AnimatedTitle = ({
   title = "FPL.STOCKS",
@@ -2598,11 +2600,6 @@ Current app data:
   const getPlayersByPosition = position => {
     return selectedTeam.filter(player => player.element_type === position);
   };
-  const getTeamLogo = teamId => {
-    const team = teams.find(t => t.id === teamId);
-    if (!team) return null;
-    return `https://resources.premierleague.com/premierleague/badges/50/t${team.code}.png`;
-  };
   const formatKickoffTime = kickoffTime => {
     if (!kickoffTime) return 'TBD';
     const date = new Date(kickoffTime);
@@ -2702,9 +2699,7 @@ Current app data:
               return <SpotlightCard key={fixture.fixtureId} className="bg-transparent/30 backdrop-blur-sm rounded-lg p-4 border border-green-700/20" glowColor="blue" size="sm" intensity={0.8}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <img src={getTeamLogo(fixture.homeTeam)} alt={homeTeam?.name || 'Home Team'} className="w-8 h-8 object-contain" onError={e => {
-                      e.target.style.display = 'none';
-                    }} />
+                    <TeamShield teamId={fixture.homeTeam} shortName={homeTeam?.short_name} className="w-8 h-8" />
                     <span className="text-white font-semibold text-sm">{homeTeam?.short_name || 'HOME'}</span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -2719,9 +2714,7 @@ Current app data:
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-white font-semibold text-sm">{awayTeam?.short_name || 'AWAY'}</span>
-                    <img src={getTeamLogo(fixture.awayTeam)} alt={awayTeam?.name || 'Away Team'} className="w-8 h-8 object-contain" onError={e => {
-                      e.target.style.display = 'none';
-                    }} />
+                    <TeamShield teamId={fixture.awayTeam} shortName={awayTeam?.short_name} className="w-8 h-8" />
                   </div>
                 </div>
                 <div className="text-center">
@@ -2759,12 +2752,10 @@ Current app data:
                 C
               </div>
             )}
-            <div className="mb-1 rounded-lg overflow-hidden bg-slate-800/90 border border-slate-700/60">
-              <img 
-                src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
-                alt={`${player.first_name} ${player.second_name}`} 
-                onError={(e) => { e.target.src = "/pixel_footballer.jpg"; }}
-                className="w-10 h-12 md:w-12 md:h-14 mx-auto object-cover" 
+            <div className="mb-1 py-0.5 flex justify-center items-center">
+              <VectorKit 
+                player={player} 
+                className="w-10 h-12 md:w-12 md:h-14 mx-auto" 
               />
             </div>
             <div className="text-[10px] font-bold truncate text-slate-100 leading-tight">
@@ -3459,13 +3450,11 @@ Current app data:
                         <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 text-right">
                           {fplTeams[fixture.team_h]?.name || `Team ${fixture.team_h}`}
                         </span>
-                        {fplTeams[fixture.team_h]?.code && (
-                          <img 
-                            src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_h]?.code}.png`} 
-                            className="w-6 h-6 object-contain" 
-                            alt="home" 
-                          />
-                        )}
+                        <TeamShield 
+                          teamId={fixture.team_h} 
+                          shortName={fplTeams[fixture.team_h]?.short_name} 
+                          className="w-6 h-7" 
+                        />
                       </div>
 
                       {/* Score / Status Pill */}
@@ -3488,13 +3477,11 @@ Current app data:
 
                       {/* Away Team */}
                       <div className="flex items-center gap-3 w-full sm:w-2/5 justify-start">
-                        {fplTeams[fixture.team_a]?.code && (
-                          <img 
-                            src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_a]?.code}.png`} 
-                            className="w-6 h-6 object-contain" 
-                            alt="away" 
-                          />
-                        )}
+                        <TeamShield 
+                          teamId={fixture.team_a} 
+                          shortName={fplTeams[fixture.team_a]?.short_name} 
+                          className="w-6 h-7" 
+                        />
                         <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 text-left">
                           {fplTeams[fixture.team_a]?.name || `Team ${fixture.team_a}`}
                         </span>
@@ -3868,11 +3855,9 @@ Current app data:
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
-                        alt={player.second_name}
-                        onError={e => { e.target.src = "/pixel_footballer.jpg"; }}
-                        className="w-10 h-12 object-cover rounded-lg bg-slate-100 dark:bg-slate-800"
+                      <VectorKit 
+                        player={player} 
+                        className="w-10 h-12 flex-shrink-0" 
                       />
                       <div>
                         <div className="font-semibold text-sm text-slate-900 dark:text-white">

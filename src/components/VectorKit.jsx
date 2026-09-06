@@ -245,7 +245,7 @@ export const VectorKit = ({
         {/* Jersey Main Body */}
         <path 
           d="M 28 16 L 52 16 L 56 36 L 56 82 L 24 82 L 24 36 Z" 
-          fill={kit.striped ? `url(#stripes-${actualTeamId})` : kit.primary} 
+          fill={kit.striped ? `url(#stripes-${kitKey})` : kit.primary} 
           stroke="#000000" 
           strokeWidth="1.2" 
           strokeLinejoin="round"
@@ -254,7 +254,7 @@ export const VectorKit = ({
         {/* Fold Overlay for realism */}
         <path 
           d="M 28 16 L 52 16 L 56 36 L 56 82 L 24 82 L 24 36 Z" 
-          fill={`url(#fold-${actualTeamId}-${isGK})`} 
+          fill={`url(#fold-${kitKey})`} 
         />
 
         {/* Collar */}

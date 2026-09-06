@@ -554,7 +554,7 @@ function App() {
         
         const teamsMap = {};
         bootstrapData.teams.forEach(t => {
-          teamsMap[t.id] = { name: t.short_name, code: t.code };
+          teamsMap[t.id] = { id: t.id, name: t.name, short_name: t.short_name, code: t.code };
         });
         setFplTeams(teamsMap);
 
@@ -2699,7 +2699,7 @@ Current app data:
               return <SpotlightCard key={fixture.fixtureId} className="bg-transparent/30 backdrop-blur-sm rounded-lg p-4 border border-green-700/20" glowColor="blue" size="sm" intensity={0.8}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-3">
-                    <TeamShield teamId={fixture.homeTeam} shortName={homeTeam?.short_name} className="w-8 h-8" />
+                    <TeamShield teamId={fixture.homeTeam} shortName={homeTeam?.short_name} teamCode={homeTeam?.code} className="w-8 h-8" />
                     <span className="text-white font-semibold text-sm">{homeTeam?.short_name || 'HOME'}</span>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -2714,7 +2714,7 @@ Current app data:
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-white font-semibold text-sm">{awayTeam?.short_name || 'AWAY'}</span>
-                    <TeamShield teamId={fixture.awayTeam} shortName={awayTeam?.short_name} className="w-8 h-8" />
+                    <TeamShield teamId={fixture.awayTeam} shortName={awayTeam?.short_name} teamCode={awayTeam?.code} className="w-8 h-8" />
                   </div>
                 </div>
                 <div className="text-center">
@@ -2755,6 +2755,7 @@ Current app data:
             <div className="mb-1 py-0.5 flex justify-center items-center">
               <VectorKit 
                 player={player} 
+                shortName={fplTeams[player.team]?.short_name}
                 className="w-10 h-12 md:w-12 md:h-14 mx-auto" 
               />
             </div>
@@ -3453,6 +3454,8 @@ Current app data:
                         <TeamShield 
                           teamId={fixture.team_h} 
                           shortName={fplTeams[fixture.team_h]?.short_name} 
+                          teamCode={fplTeams[fixture.team_h]?.code}
+                          teamName={fplTeams[fixture.team_h]?.name}
                           className="w-6 h-7" 
                         />
                       </div>
@@ -3480,6 +3483,8 @@ Current app data:
                         <TeamShield 
                           teamId={fixture.team_a} 
                           shortName={fplTeams[fixture.team_a]?.short_name} 
+                          teamCode={fplTeams[fixture.team_a]?.code}
+                          teamName={fplTeams[fixture.team_a]?.name}
                           className="w-6 h-7" 
                         />
                         <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 text-left">
@@ -3857,6 +3862,7 @@ Current app data:
                     <div className="flex items-center gap-3">
                       <VectorKit 
                         player={player} 
+                        shortName={fplTeams[player.team]?.short_name}
                         className="w-10 h-12 flex-shrink-0" 
                       />
                       <div>

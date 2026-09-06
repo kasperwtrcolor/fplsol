@@ -538,6 +538,8 @@ function App() {
   const [isAfterDeadline, setIsAfterDeadline] = useState(false);
   const [gw1Countdown, setGw1Countdown] = useState('Loading...');
   const [liveFixtures, setLiveFixtures] = useState([]);
+  const [allFplFixtures, setAllFplFixtures] = useState([]);
+  const [browsingFixtureGw, setBrowsingFixtureGw] = useState(3);
   const [fplTeams, setFplTeams] = useState({});
   const [targetDate, setTargetDate] = useState(null);
   const [livePoints, setLivePoints] = useState({});
@@ -560,7 +562,11 @@ function App() {
           
           const fixturesRes = await fetch('/api/fpl?path=fixtures/');
           const fixturesData = await fixturesRes.json();
-          const nextGwFixtures = fixturesData.filter(f => f.event === nextGw.id).slice(0, 3);
+          if (Array.isArray(fixturesData)) {
+            setAllFplFixtures(fixturesData);
+            setBrowsingFixtureGw(nextGw ? nextGw.id : 3);
+          }
+          const nextGwFixtures = Array.isArray(fixturesData) ? fixturesData.filter(f => f.event === nextGw.id).slice(0, 3) : [];
           setLiveFixtures(nextGwFixtures);
         }
 
@@ -609,6 +615,32 @@ function App() {
   const [selectedShareTopic, setSelectedShareTopic] = useState('gameweek');
   const [generatedShareMessage, setGeneratedShareMessage] = useState('');
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
+  
+  // Calculate active gameweek submission window & deadline
+  const activeGwNumber = activeGameweek?.gameweek || 3;
+  const currentGwFixtures = allFplFixtures.filter(f => f.event === activeGwNumber);
+
+  let firstKickoff = null;
+  let lastKickoff = null;
+  let activeGwDeadline = null;
+  let estimatedReopenTime = null;
+  let isSubmissionOpen = true;
+
+  if (currentGwFixtures.length > 0) {
+    const validKickoffs = currentGwFixtures
+      .filter(f => f.kickoff_time)
+      .map(f => new Date(f.kickoff_time).getTime())
+      .sort((a, b) => a - b);
+
+    if (validKickoffs.length > 0) {
+      firstKickoff = new Date(validKickoffs[0]);
+      lastKickoff = new Date(validKickoffs[validKickoffs.length - 1]);
+      activeGwDeadline = new Date(firstKickoff.getTime() - 60 * 60 * 1000); // 1 hour before first kickoff
+      estimatedReopenTime = new Date(lastKickoff.getTime() + 115 * 60 * 1000); // ~2 hours after last kickoff
+      isSubmissionOpen = new Date() < activeGwDeadline;
+    }
+  }
+
   const currentUserEntry = activeGameweek ? userEntries.find(e => e.gameId === activeGameweek.id) : null;
   const isTeamSubmitted = !!currentUserEntry;
   useEffect(() => {
@@ -2357,8 +2389,8 @@ Current app data:
 
   const submitTeam = async () => {
     if (!activeGameweek || !isFormationValid() || !userWallet || !captain) return;
-    if (isAfterDeadline && !isAdmin) {
-      alert('Team submission deadline has passed! You cannot submit teams after the deadline.');
+    if (!isSubmissionOpen && !isAdmin) {
+      alert(`Team submission deadline has passed! Submissions closed 1 hour before the first match kick-off. Submissions for Gameweek ${activeGwNumber + 1} will open when current gameweek matches finish.`);
       return;
     }
     setIsLoading(true);
@@ -2962,6 +2994,48 @@ Current app data:
         {/* VIEW 1: TEAM BUILDER */}
         {currentView === 'team' && (
           <div className="w-full flex flex-col items-center space-y-6">
+            {/* Submission Status Alert Banner */}
+            <div className={`w-full max-w-4xl card-modern p-4 border flex flex-col sm:flex-row items-center justify-between gap-3 ${
+              isSubmissionOpen
+                ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
+                : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'
+            }`}>
+              <div className="flex items-center gap-3 text-left">
+                <div className={`w-3.5 h-3.5 rounded-full flex-shrink-0 ${isSubmissionOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
+                <div>
+                  <div className="font-bold text-sm flex items-center gap-2">
+                    <span>{isSubmissionOpen ? '🟢 SQUAD SUBMISSIONS OPEN' : '🔒 SQUAD SUBMISSIONS CLOSED'}</span>
+                    <span className="text-xs font-mono font-normal opacity-80">
+                      • Gameweek {activeGwNumber}
+                    </span>
+                  </div>
+                  <div className="text-xs opacity-80 mt-0.5">
+                    {isSubmissionOpen ? (
+                      <span>
+                        Deadline: {activeGwDeadline ? activeGwDeadline.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '1 hour before kickoff'} (Strict 1hr cutoff before first game)
+                      </span>
+                    ) : (
+                      <span>
+                        Locked for active matches. Reopens for Gameweek {activeGwNumber + 1} when current gameweek finishes{estimatedReopenTime ? ` (estimated: ${estimatedReopenTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}.
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right whitespace-nowrap">
+                {isSubmissionOpen ? (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm font-mono">
+                    OPEN
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-slate-950 shadow-sm font-mono">
+                    LOCKED
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* Top Control Bar */}
             <div className="w-full max-w-4xl card-modern p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
@@ -3063,7 +3137,15 @@ Current app data:
                     >
                       🔍 Browse All Players
                     </button>
-                    {selectedTeam.length === 11 ? (
+                    {!isSubmissionOpen ? (
+                      <button 
+                        disabled 
+                        className="btn-secondary w-full py-3.5 opacity-60 cursor-not-allowed text-xs font-mono"
+                        title="Submissions closed while gameweek matches are active"
+                      >
+                        🔒 SUBMISSIONS CLOSED (Reopens when GW {activeGwNumber} finishes)
+                      </button>
+                    ) : selectedTeam.length === 11 ? (
                       <button 
                         onClick={submitTeam} 
                         className="btn-primary w-full py-3.5 text-base"
@@ -3277,82 +3359,169 @@ Current app data:
           </div>
         )}
 
-        {currentView === 'fixtures' && (
-          <div className="w-full max-w-5xl mx-auto space-y-6">
-            {/* Countdown Banner */}
-            <div className="card-modern p-6 text-center">
-              <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
-                Gameweek Countdown
-              </div>
-              <div className="text-3xl md:text-4xl font-mono font-black text-slate-900 dark:text-white mt-2">
-                {gw1Countdown}
-              </div>
-            </div>
+        {currentView === 'fixtures' && (() => {
+          const displayedFixtures = allFplFixtures.filter(f => f.event === browsingFixtureGw);
+          const allGwFinished = displayedFixtures.length > 0 && displayedFixtures.every(f => f.finished);
+          const hasLiveMatch = displayedFixtures.some(f => f.started && !f.finished);
 
-            {/* Live EPL Fixtures */}
-            <div className="card-modern p-6 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="font-bold text-base md:text-lg text-slate-900 dark:text-white">Premier League Match Schedule</h3>
-                <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Live EPL Sync</span>
-              </div>
+          return (
+            <div className="w-full max-w-5xl mx-auto space-y-6">
+              {/* Gameweek Browser Header */}
+              <div className="card-modern p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      Premier League Fixtures
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        hasLiveMatch
+                          ? 'bg-rose-100 text-rose-600 dark:bg-rose-950/80 dark:text-rose-400 animate-pulse'
+                          : allGwFinished
+                          ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'
+                      }`}>
+                        {hasLiveMatch ? '● LIVE' : allGwFinished ? 'FINISHED' : 'SCHEDULED'}
+                      </span>
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Browse official match results, live scores, and upcoming schedules across all 38 gameweeks
+                    </p>
+                  </div>
+                </div>
 
-              <div className="space-y-3">
-                {liveFixtures.length > 0 ? liveFixtures.map((fixture) => (
-                  <div 
-                    key={fixture.id} 
-                    className="flex flex-col sm:flex-row justify-between items-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 gap-3"
+                {/* Gameweek Selector & Controls */}
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    disabled={browsingFixtureGw <= 1}
+                    onClick={() => setBrowsingFixtureGw(prev => Math.max(1, prev - 1))}
+                    className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Previous Gameweek"
                   >
-                    <div className="flex items-center gap-3 w-full sm:w-2/5 justify-end">
-                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
-                        {fplTeams[fixture.team_h]?.name || `Team ${fixture.team_h}`}
-                      </span>
-                      {fplTeams[fixture.team_h]?.code && (
-                        <img 
-                          src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_h]?.code}.png`} 
-                          className="w-6 h-6 object-contain" 
-                          alt="home" 
-                        />
-                      )}
-                    </div>
+                    ←
+                  </button>
 
-                    <div className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
-                      {fixture.finished ? `${fixture.team_h_score} - ${fixture.team_a_score}` : 'VS'}
-                    </div>
+                  <select
+                    value={browsingFixtureGw}
+                    onChange={(e) => setBrowsingFixtureGw(Number(e.target.value))}
+                    className="bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-mono text-xs font-semibold px-3 py-2 rounded-xl cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  >
+                    {Array.from({ length: 38 }, (_, i) => i + 1).map(gw => (
+                      <option key={gw} value={gw}>
+                        Gameweek {gw} {gw === activeGwNumber ? '(Current)' : ''}
+                      </option>
+                    ))}
+                  </select>
 
-                    <div className="flex items-center gap-3 w-full sm:w-2/5 justify-start">
-                      {fplTeams[fixture.team_a]?.code && (
-                        <img 
-                          src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_a]?.code}.png`} 
-                          className="w-6 h-6 object-contain" 
-                          alt="away" 
-                        />
-                      )}
-                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
-                        {fplTeams[fixture.team_a]?.name || `Team ${fixture.team_a}`}
-                      </span>
-                    </div>
+                  <button
+                    disabled={browsingFixtureGw >= 38}
+                    onClick={() => setBrowsingFixtureGw(prev => Math.min(38, prev + 1))}
+                    className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                    title="Next Gameweek"
+                  >
+                    →
+                  </button>
+                </div>
+              </div>
 
-                    <div className="text-xs text-slate-500 dark:text-slate-400 font-mono text-center sm:text-right">
-                      {new Date(fixture.kickoff_time).toLocaleDateString('en-GB', { 
-                        weekday: 'short', 
-                        month: 'short', 
-                        day: 'numeric', 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
+              {/* Countdown Banner if viewing current gameweek and not started */}
+              {browsingFixtureGw === activeGwNumber && gw1Countdown !== 'GAMEWEEK STARTED' && (
+                <div className="card-modern p-5 text-center">
+                  <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                    Gameweek {activeGwNumber} Deadline Countdown (1hr before kickoff)
                   </div>
-                )) : (
-                  <div className="text-center py-8 text-slate-400 text-sm">
-                    Loading real-time Premier League fixtures...
+                  <div className="text-3xl font-mono font-black text-slate-900 dark:text-white mt-1.5">
+                    {gw1Countdown}
                   </div>
-                )}
+                </div>
+              )}
+
+              {/* Match Fixtures List */}
+              <div className="card-modern p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    Gameweek {browsingFixtureGw} Fixtures ({displayedFixtures.length} Matches)
+                  </h3>
+                  <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                    Official EPL Feed
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {displayedFixtures.length > 0 ? displayedFixtures.map((fixture) => (
+                    <div 
+                      key={fixture.id} 
+                      className="flex flex-col sm:flex-row justify-between items-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 gap-3"
+                    >
+                      {/* Home Team */}
+                      <div className="flex items-center gap-3 w-full sm:w-2/5 justify-end">
+                        <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 text-right">
+                          {fplTeams[fixture.team_h]?.name || `Team ${fixture.team_h}`}
+                        </span>
+                        {fplTeams[fixture.team_h]?.code && (
+                          <img 
+                            src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_h]?.code}.png`} 
+                            className="w-6 h-6 object-contain" 
+                            alt="home" 
+                          />
+                        )}
+                      </div>
+
+                      {/* Score / Status Pill */}
+                      <div className="flex items-center gap-2 px-3 py-1 rounded-xl bg-slate-200 dark:bg-slate-700 text-xs font-mono font-bold text-slate-800 dark:text-slate-200">
+                        {fixture.started ? (
+                          <div className="flex items-center gap-1.5">
+                            <span>{fixture.team_h_score ?? 0} - {fixture.team_a_score ?? 0}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                              fixture.finished 
+                                ? 'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200' 
+                                : 'bg-rose-500 text-white animate-pulse'
+                            }`}>
+                              {fixture.finished ? 'FT' : 'LIVE'}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 dark:text-slate-400">VS</span>
+                        )}
+                      </div>
+
+                      {/* Away Team */}
+                      <div className="flex items-center gap-3 w-full sm:w-2/5 justify-start">
+                        {fplTeams[fixture.team_a]?.code && (
+                          <img 
+                            src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_a]?.code}.png`} 
+                            className="w-6 h-6 object-contain" 
+                            alt="away" 
+                          />
+                        )}
+                        <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 text-left">
+                          {fplTeams[fixture.team_a]?.name || `Team ${fixture.team_a}`}
+                        </span>
+                      </div>
+
+                      {/* Kickoff Time */}
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-mono text-center sm:text-right min-w-[130px]">
+                        {fixture.kickoff_time ? new Date(fixture.kickoff_time).toLocaleDateString('en-GB', { 
+                          weekday: 'short', 
+                          month: 'short', 
+                          day: 'numeric', 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        }) : 'TBD'}
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="text-center py-10 text-slate-400 text-sm">
+                      No fixtures found for Gameweek {browsingFixtureGw}.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
-        {/* VIEW 4: MANAGER PROFILE */}
         {currentView === 'profile' && (
           <div className="w-full max-w-4xl mx-auto space-y-6">
             {/* Profile Overview Card */}
@@ -3431,14 +3600,15 @@ Current app data:
 
         {/* VIEW 5: HOW IT WORKS */}
         {currentView === 'rules' && (
-          <div className="w-full max-w-4xl mx-auto space-y-8 py-4">
+          <div className="w-full max-w-5xl mx-auto space-y-8 py-4">
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">How Fantasy Premier League Stock Works</h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
-                Real Premier League match performance meets decentralized prize pool tokenomics.
+                Official Premier League performance data meets decentralized on-chain prize pool tokenomics.
               </p>
             </div>
 
+            {/* 3 Core Pillars */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="card-modern p-6 space-y-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
@@ -3446,7 +3616,7 @@ Current app data:
                 </div>
                 <h3 className="font-bold text-base text-slate-900 dark:text-white">Stake to Enter</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Pay the 100,000 $FPLS entry fee to submit your team for the gameweek. 90% enters the Winner-Takes-All Prize Pool, and 10% is burned permanently.
+                  Pay the 100,000 $FPLS entry fee to submit your team for the gameweek. 90% enters the Winner-Takes-All Prize Pool, and 10% is burned permanently on-chain.
                 </p>
               </div>
 
@@ -3454,9 +3624,9 @@ Current app data:
                 <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
                   02
                 </div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white">Manage £70.0M</h3>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Manage £70.0M Cap</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Select 11 real Premier League players matching official market values. Balance heavy hitters like Haaland with budget gems to stay under the budget ceiling.
+                  Select 11 real Premier League players matching official market valuations. Balance heavy hitters with value picks to build the optimal squad under £70.0M.
                 </p>
               </div>
 
@@ -3464,15 +3634,123 @@ Current app data:
                 <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
                   03
                 </div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white">Tactics & Captain</h3>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Tactics & 2x Captain</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Pick your formation and designate a Captain for 2x points. When the gameweek matches finish, the winner claims the smart contract prize pool on-chain!
+                  Choose from 6 dynamic formations and designate your Captain for double points. At the end of the gameweek, the highest point scorer claims the prize pool!
                 </p>
               </div>
             </div>
 
+            {/* Strict 1-Hour Submission Deadline Banner */}
+            <div className="card-modern p-6 bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent border-amber-300 dark:border-amber-800 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md">
+                  ⏰
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    Strict Submission Deadline: 1 Hour Before First Kick-Off
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Squads must be submitted and confirmed at least 60 minutes before the first fixture starts.
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                To guarantee fairness and eliminate any unfair advantage from early lineup leaks, squad submissions lock automatically exactly 1 hour prior to the earliest kickoff in the gameweek. Once locked, submissions stay closed while matches are in progress, and automatically re-open for the next gameweek as soon as the current gameweek concludes.
+              </p>
+            </div>
+
+            {/* How Points are Calculated - Points Matrix */}
+            <div className="card-modern p-6 space-y-6">
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>📊</span> How Points are Calculated
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Points are synced directly in real-time from official Premier League match events.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Playing Time */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    ⏱️ Playing Time
+                  </div>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
+                    <li className="flex justify-between"><span>Playing up to 59 mins:</span> <strong className="text-emerald-600">+1 pt</strong></li>
+                    <li className="flex justify-between"><span>Playing 60+ mins:</span> <strong className="text-emerald-600">+2 pts</strong></li>
+                  </ul>
+                </div>
+
+                {/* Goals Scored */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    ⚽ Goals Scored
+                  </div>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
+                    <li className="flex justify-between"><span>Goalkeeper / Defender:</span> <strong className="text-emerald-600">+6 pts</strong></li>
+                    <li className="flex justify-between"><span>Midfielder:</span> <strong className="text-emerald-600">+5 pts</strong></li>
+                    <li className="flex justify-between"><span>Forward:</span> <strong className="text-emerald-600">+4 pts</strong></li>
+                  </ul>
+                </div>
+
+                {/* Assists */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    🎯 Assists & Saves
+                  </div>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
+                    <li className="flex justify-between"><span>Goal Assist (Any pos):</span> <strong className="text-emerald-600">+3 pts</strong></li>
+                    <li className="flex justify-between"><span>Penalty Saved (GK):</span> <strong className="text-emerald-600">+5 pts</strong></li>
+                    <li className="flex justify-between"><span>Every 3 Saves (GK):</span> <strong className="text-emerald-600">+1 pt</strong></li>
+                  </ul>
+                </div>
+
+                {/* Clean Sheets */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    🛡️ Clean Sheets
+                  </div>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
+                    <li className="flex justify-between"><span>GK / Defender (60+ mins):</span> <strong className="text-emerald-600">+4 pts</strong></li>
+                    <li className="flex justify-between"><span>Midfielder (60+ mins):</span> <strong className="text-emerald-600">+1 pt</strong></li>
+                  </ul>
+                </div>
+
+                {/* Deductions */}
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider text-rose-500">
+                    ⚠️ Deductions
+                  </div>
+                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
+                    <li className="flex justify-between"><span>Yellow Card:</span> <strong className="text-rose-500">-1 pt</strong></li>
+                    <li className="flex justify-between"><span>Red Card:</span> <strong className="text-rose-500">-3 pts</strong></li>
+                    <li className="flex justify-between"><span>Own Goal:</span> <strong className="text-rose-500">-2 pts</strong></li>
+                    <li className="flex justify-between"><span>Penalty Miss:</span> <strong className="text-rose-500">-2 pts</strong></li>
+                    <li className="flex justify-between"><span>Every 2 Goals Conceded:</span> <strong className="text-rose-500">-1 pt</strong></li>
+                  </ul>
+                </div>
+
+                {/* Captain Multiplier */}
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                    👑 Captain Multiplier
+                  </div>
+                  <div className="text-xs text-slate-600 dark:text-slate-300">
+                    Your selected Captain scores <strong>2x Double Points</strong> for the entire gameweek!
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-2 font-mono">
+                    Plus match Bonus Points (BPS: 1 to 3 pts) for top performers.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Call to Action */}
             <div className="card-modern p-6 text-center space-y-4">
-              <h4 className="font-bold text-base text-slate-900 dark:text-white">Ready to take the pitch?</h4>
+              <h4 className="font-bold text-base text-slate-900 dark:text-white">Ready to pick your squad?</h4>
               <button 
                 onClick={() => setCurrentView('team')} 
                 className="btn-primary text-base px-8 py-3"
@@ -3481,10 +3759,7 @@ Current app data:
               </button>
             </div>
           </div>
-        )}
-
-        {/* VIEW 6: ADMIN CONTROL (Protected) */}
-        {currentView === 'admin' && isAdmin && (
+        )}{currentView === 'admin' && isAdmin && (
           <div className="w-full max-w-4xl mx-auto space-y-6">
             <div className="card-modern p-6 space-y-4">
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Admin Protocol Dashboard</h2>

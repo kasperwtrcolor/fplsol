@@ -197,24 +197,31 @@ const LoadingWave = ({
 };
 const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
   const navItems = [
-    { id: 'home', label: 'HOME' },
-    { id: 'dashboard', label: 'DASHBOARD' },
-    { id: 'team', label: 'TEAM BUILDER' },
-    { id: 'profile', label: 'PROFILE' },
-    ...(isAdmin ? [{ id: 'admin', label: 'ADMIN' }] : [])
+    { id: 'team', label: 'Team Builder', icon: TeamIcon },
+    { id: 'leaderboard', label: 'Leaderboard & Rewards', icon: Trophy },
+    { id: 'fixtures', label: 'Fixtures & Live', icon: Calendar },
+    { id: 'profile', label: 'Manager Profile', icon: User },
+    { id: 'rules', label: 'How It Works', icon: Info },
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Zap }] : [])
   ];
 
   return (
-    <nav className="flex items-center space-x-6 md:space-x-12 px-4 py-6 text-xs md:text-sm font-mono font-bold tracking-widest text-gray-500 overflow-x-auto w-full justify-center">
+    <nav className="flex items-center gap-1.5 md:gap-2 px-4 py-2.5 overflow-x-auto w-full justify-start md:justify-center border-b border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md sticky top-0 z-30">
       {navItems.map(item => {
+        const Icon = item.icon;
         const isActive = currentView === item.id;
         return (
           <button 
             key={item.id} 
             onClick={() => setCurrentView(item.id)}
-            className={`transition-colors whitespace-nowrap pb-1 border-b-2 font-bold ${isActive ? 'text-black dark:text-white border-black dark:border-white' : 'text-gray-500 hover:text-black dark:hover:text-white border-transparent'}`}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold transition-all duration-150 whitespace-nowrap cursor-pointer ${
+              isActive 
+                ? 'bg-emerald-600 text-white shadow-emerald-glow' 
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
           >
-            {item.label}
+            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+            <span>{item.label}</span>
           </button>
         );
       })}
@@ -235,7 +242,7 @@ const AnimatedButton = ({
   const colorClasses = {
     blue: "bg-blue-600 hover:bg-blue-700",
     green: "bg-green-600 hover:bg-green-700",
-    yellow: "bg-yellow-500 hover:bg-yellow-600 text-gray-500lack",
+    yellow: "bg-yellow-500 hover:bg-yellow-600 text-black",
     red: "bg-red-600 hover:bg-red-700",
     purple: "bg-purple-600 hover:bg-purple-700",
     gray: "bg-gray-600 hover:bg-gray-700"
@@ -261,11 +268,11 @@ const AnimatedButton = ({
     { }
     {!disabled && <div className={`absolute top-1/2 left-1/2 w-2 h-2 ${dotColors[color]} rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-500 group-hover:scale-[30] opacity-20 group-hover:opacity-30`} />}
     { }
-    <span className={`relative z-10 transition-all duration-300 group-hover:transform group-hover:translate-x-8 group-hover:opacity-0 ${color === 'yellow' ? 'text-gray-500lack' : 'text-white'}`}>
+    <span className={`relative z-10 transition-all duration-300 group-hover:transform group-hover:translate-x-8 group-hover:opacity-0 ${color === 'yellow' ? 'text-black' : 'text-white'}`}>
       {children}
     </span>
     { }
-    {!disabled && <span className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 transform translate-x-8 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 ${color === 'yellow' ? 'text-gray-500lack' : 'text-white'}`}>
+    {!disabled && <span className={`absolute inset-0 z-10 flex items-center justify-center transition-all duration-300 transform translate-x-8 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 ${color === 'yellow' ? 'text-black' : 'text-white'}`}>
       {buttonText}
       <ArrowRight className="w-4 h-4 ml-2" style={{
         filter: 'drop-shadow(1px 1px 0px #000)'
@@ -296,50 +303,36 @@ const ThemeToggle = ({
     </div>
   </button>;
 };
-const FormationDock = ({
-  selectedFormation,
-  setSelectedFormation
-}) => {
-  const formations = [{
-    value: '4-4-2',
-    label: 'Balanced'
-  }, {
-    value: '4-3-3',
-    label: 'Attacking'
-  }, {
-    value: '3-5-2',
-    label: 'Midfield Heavy'
-  }, {
-    value: '3-4-3',
-    label: 'Ultra Attack'
-  }, {
-    value: '5-3-2',
-    label: 'Defensive'
-  }, {
-    value: '5-4-1',
-    label: 'Ultra Defensive'
-  }];
-  return <div className="flex justify-center items-center gap-2 flex-wrap">
-    {formations.map(formation => {
-      const isActive = selectedFormation === formation.value;
-      return <button key={formation.value} onClick={() => setSelectedFormation(formation.value)} className={`relative px-3 py-1 md:px-4 md:py-1 border transition-colors duration-300 font-mono text-[9px] md:text-[10px] tracking-widest ${isActive ? 'bg-transparent text-white dark:bg-white dark:text-gray-500lack border-black dark:border-white shadow-brutal dark:shadow-brutal-dark rounded' : 'bg-transparent text-gray-500 border-gray-300 dark:border-gray-700 hover:border-[#333] hover:text-white'}`}>
-        <span className="font-bold">
-          {formation.value}
-        </span>
-        <motion.div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-transparent/90 text-white text-xs px-2 py-1 rounded border border-green-700/50 pointer-events-none"  initial={{
-          opacity: 0,
-          y: 10
-        }} whileHover={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.2
-        }}>
-          {formation.label}
-        </motion.div>
-      </button>;
-    })}
-  </div>;
+const FormationDock = ({ selectedFormation, setSelectedFormation }) => {
+  const formations = [
+    { value: '4-4-2', label: 'Balanced' },
+    { value: '4-3-3', label: 'Attacking' },
+    { value: '3-5-2', label: 'Midfield Heavy' },
+    { value: '3-4-3', label: 'Ultra Attack' },
+    { value: '5-3-2', label: 'Defensive' },
+    { value: '5-4-1', label: 'Ultra Defensive' }
+  ];
+  return (
+    <div className="flex items-center justify-center gap-1.5 md:gap-2 flex-wrap">
+      {formations.map(f => {
+        const isActive = selectedFormation === f.value;
+        return (
+          <button
+            key={f.value}
+            onClick={() => setSelectedFormation(f.value)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all duration-150 cursor-pointer ${
+              isActive 
+                ? 'bg-emerald-600 text-white shadow-emerald-glow' 
+                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 shadow-subtle'
+            }`}
+          >
+            <span>{f.value}</span>
+            <span className="ml-1 text-[10px] opacity-70 hidden sm:inline font-sans font-normal">{f.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
 };
 const LandingHero = ({ setCurrentView, activeGameweek }) => {
   return (
@@ -392,7 +385,7 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
             <h2 className="text-black dark:text-white font-bold font-mono text-xs tracking-[0.2em] uppercase">01 / The Entry</h2>
             <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Stake to Play</h3>
             <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              Pay the 100,000 $test entry fee to join the gameweek. 90% goes to the winner-takes-all Prize Pool, and 10% is burned forever to create a deflationary ecosystem.
+              Pay the 100,000 $FPLS entry fee to join the gameweek. 90% goes to the winner-takes-all Prize Pool, and 10% is burned forever to create a deflationary ecosystem.
             </p>
           </div>
           <div className="flex-1 w-full relative">
@@ -488,7 +481,7 @@ function App() {
       { symbol: 'RH', name: 'Robinhood', price: '$22.50', change: '+5.1%' }
     ]);
   }, []);
-  const [currentView, setCurrentView] = useState('home');
+  const [currentView, setCurrentView] = useState('team');
   const [activeGameweek, setActiveGameweek] = useState(null);
   const [userStats, setUserStats] = useState(null);
   const [hasEnteredApp, setHasEnteredApp] = useState(false);
@@ -2322,13 +2315,13 @@ Current app data:
       console.log('Active Gameweek ID:', activeGameweek.id);
       console.log('Entry Fee:', activeGameweek.entryFee);
       
-      setLoadingMessage('Sending 100,000 $test to Prize Pool...');
+      setLoadingMessage('Sending 100,000 $FPLS to Prize Pool...');
       const playerIds = selectedTeam.map(p => p.id);
       const enterTx = await writeContractAsync({
         address: FPLS_ADDRESS,
         abi: FPLS_ABI,
         functionName: 'transfer',
-        args: [TREASURY_ADDRESS, BigInt('100000000000000000000000')], // 100,000 $test to treasury
+        args: [TREASURY_ADDRESS, BigInt('100000000000000000000000')], // 100,000 $FPLS to treasury
       });
       console.log('Transfer Tx Hash:', enterTx);
       refetchBalance(); // Update user's balance after transfer
@@ -2660,842 +2653,892 @@ Current app data:
       })}
     </div>;
   };
-  const FormationDisplay = ({
-    isTeamSubmitted
-  }) => {
+  const FormationDisplay = ({ isTeamSubmitted }) => {
     const goalkeepers = getPlayersByPosition(1);
     const defenders = getPlayersByPosition(2);
     const midfielders = getPlayersByPosition(3);
     const forwards = getPlayersByPosition(4);
     const requirements = getFormationRequirements(selectedFormation);
-    const PlayerCard = ({
-      player,
-      position
-    }) => {
+
+    const PlayerCard = ({ player, position }) => {
       const isCaptain = captain && captain.id === player.id;
-      return <div 
-          className={`relative group p-[1px] rounded-xl ${!isTeamSubmitted ? "cursor-pointer" : ""}`} onClick={() => !isTeamSubmitted && setCaptain(player)}
+      return (
+        <div 
+          className="relative group p-0.5" 
+          onClick={() => !isTeamSubmitted && setCaptain(player)}
         >
-        <div className="bg-transparent/40 backdrop-blur-md text-white rounded-xl p-1 md:p-2 text-center min-w-[70px] md:min-w-[90px] h-full" style={{
-          background: 'linear-gradient(145deg, var(--carbon-surface) 0%, var(--carbon-base) 100%)',
-          border: '1px solid var(--border-light)'
-        }}>
-          {isCaptain && <div className="absolute -top-2 -left-2 bg-[#00FF00] text-gray-500lack text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center font-mono z-10">C</div>}
-          <div className="mb-1 md:mb-2 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 bg-white/5">
-            <img 
-              src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
-              alt={`${player.first_name} ${player.second_name}`} 
-              onError={(e) => { e.target.src = "/pixel_footballer.jpg"; }}
-              className="w-8 h-10 md:w-12 md:h-14 mx-auto object-cover" 
-            />
+          <div className="bg-slate-900/90 text-white rounded-xl p-1.5 md:p-2 text-center min-w-[76px] md:min-w-[96px] border border-emerald-500/40 shadow-lg hover:border-emerald-400 transition-all">
+            {isCaptain && (
+              <div className="absolute -top-2 -left-1 bg-amber-400 text-slate-950 text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center font-mono shadow-md border border-amber-200 z-10">
+                C
+              </div>
+            )}
+            <div className="mb-1 rounded-lg overflow-hidden bg-slate-800/90 border border-slate-700/60">
+              <img 
+                src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
+                alt={`${player.first_name} ${player.second_name}`} 
+                onError={(e) => { e.target.src = "/pixel_footballer.jpg"; }}
+                className="w-10 h-12 md:w-12 md:h-14 mx-auto object-cover" 
+              />
+            </div>
+            <div className="text-[10px] font-bold truncate text-slate-100 leading-tight">
+              {player.second_name || player.first_name}
+            </div>
+            <div className="flex justify-between items-center text-[9px] mt-1 px-0.5 font-mono text-slate-400">
+              <span>{formatPrice(player.now_cost)}</span>
+              {isTeamSubmitted && (
+                <span className="text-emerald-400 font-bold text-[10px]">
+                  {isGameweekStarted ? player.event_points || 0 : 0} PTS
+                </span>
+              )}
+            </div>
           </div>
-          <div className="text-[9px] font-bold truncate text-white/90 uppercase tracking-widest leading-tight">{player.first_name}</div>
-          <div className="text-[10px] font-bold truncate text-white uppercase tracking-widest leading-tight">{player.second_name}</div>
-          <div className="flex justify-between items-center text-[9px] mt-1 px-1 font-mono">
-            <span className="text-[#8b9a90]">{formatPrice(player.now_cost)}</span>
-            {isTeamSubmitted && <span className="text-[#00FF00] font-bold text-[11px] drop-shadow-md">
-              {isGameweekStarted ? player.event_points || 0 : 0} PTS
-            </span>}
-          </div>
-          {isCaptain && <div className="text-[8px] text-[#00FF00] font-bold mt-1 uppercase tracking-widest">Captain</div>}
+          {!isTeamSubmitted && (
+            <>
+              <button 
+                onClick={(e) => { e.stopPropagation(); removePlayerFromTeam(player); }} 
+                className="absolute -top-1.5 -right-1.5 bg-rose-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow-md hover:bg-rose-500 transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer z-10"
+                title="Remove player"
+              >
+                ×
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setCaptain(player); }} 
+                className={`absolute -bottom-1.5 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300 border border-slate-600'} rounded-full px-2 py-0.5 text-[9px] font-mono shadow-md hover:bg-amber-400 hover:text-slate-950 transition-all cursor-pointer z-10`}
+                title="Make Captain (2x PTS)"
+              >
+                {isCaptain ? 'Captain' : 'Make C'}
+              </button>
+            </>
+          )}
         </div>
-        {!isTeamSubmitted && <>
-          <button onClick={() => removePlayerFromTeam(player)} className="absolute -top-2 -right-2 bg-transparent border border-gray-300 dark:border-gray-700 text-white rounded-full w-5 h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-red-900/50 hover:text-white z-10 flex items-center justify-center">
-            ×
-          </button>
-          <button onClick={() => setCaptain(player)} className={`absolute -bottom-2 left-1/2 transform -translate-x-1/2 ${isCaptain ? 'bg-[#00FF00] text-gray-500lack' : 'bg-transparent border border-gray-300 dark:border-gray-700 text-white'} rounded-full w-5 h-5 text-xs md:opacity-0 md:group-hover:opacity-100 transition-all font-mono font-bold z-10 flex items-center justify-center`}>
-            {isCaptain ? '✓' : 'C'}
-          </button>
-        </>}
-      </div>;
+      );
     };
-    const EmptySlot = ({
-      position,
-      count
-    }) => <div className="bg-[#050505] text-[#333] rounded-xl p-1 md:p-2 text-center min-w-[70px] md:min-w-[90px] border border-gray-300 dark:border-gray-700 border-dashed opacity-70 flex flex-col items-center justify-center h-24 md:h-28">
-        <div className="text-[9px] uppercase tracking-widest font-mono">Empty</div>
-        <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 font-bold">{position}</div>
-      </div>;
-    return <div className="border border-gray-300 dark:border-gray-700 p-2 relative overflow-hidden bg-transparent mt-4">
-      {/* Pitch Lines */}
-      <div className="absolute inset-4 border border-[#333] opacity-50">
-        <div className="absolute inset-x-0 top-1/2 h-0 border-t border-[#333]"></div>
-        <div className="absolute left-1/2 top-0 bottom-0 w-0 border-l border-[#333]"></div>
-        <div className="absolute left-1/2 top-1/2 w-32 h-32 border border-[#333] rounded-full transform -translate-x-1/2 -translate-y-1/2 "></div>
+
+    const EmptySlot = ({ position, posId }) => (
+      <button 
+        type="button"
+        onClick={() => {
+          if (!isTeamSubmitted) {
+            setFilters(prev => ({ ...prev, position: posId || '' }));
+            setShowRosterModal(true);
+          }
+        }}
+        className="group bg-slate-900/50 hover:bg-emerald-950/60 text-slate-400 hover:text-emerald-300 rounded-xl p-2 text-center min-w-[76px] md:min-w-[96px] border-2 border-dashed border-emerald-500/30 hover:border-emerald-400 transition-all flex flex-col items-center justify-center h-24 md:h-28 cursor-pointer"
+      >
+        <span className="text-xl font-light group-hover:scale-125 transition-transform">+</span>
+        <span className="text-[10px] font-mono uppercase tracking-wider font-bold mt-0.5">{position}</span>
+        <span className="text-[8px] text-slate-500 group-hover:text-emerald-400">Add</span>
+      </button>
+    );
+
+    return (
+      <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-800/60 dark:border-emerald-500/30 bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-950 shadow-2xl p-6 md:p-10 w-full max-w-4xl mx-auto">
+        {/* Pitch Tactical Markings */}
+        <div className="absolute inset-4 rounded-2xl border border-white/20 pointer-events-none">
+          <div className="absolute inset-x-0 top-1/2 h-0 border-t border-white/20"></div>
+          <div className="absolute left-1/2 top-1/2 w-32 h-32 border border-white/20 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute left-1/2 top-1/2 w-2 h-2 bg-white/40 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-20 border-b border-x border-white/20"></div>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-20 border-t border-x border-white/20"></div>
+        </div>
+
+        {/* Squad Tactical Lines */}
+        <div className="relative z-10 space-y-6 md:space-y-10">
+          {/* Forwards */}
+          <div className="flex justify-center items-center gap-3 md:gap-6 flex-wrap">
+            {forwards.map(player => <PlayerCard key={player.id} player={player} position="FWD" />)}
+            {!isTeamSubmitted && Array(Math.max(0, requirements[4] - forwards.length)).fill(0).map((_, i) => (
+              <EmptySlot key={`fwd-empty-${i}`} position="FWD" posId={positions.find(p => p.singular_name_short === 'FWD')?.id} />
+            ))}
+          </div>
+
+          {/* Midfielders */}
+          <div className="flex justify-center items-center gap-2 md:gap-4 flex-wrap">
+            {midfielders.map(player => <PlayerCard key={player.id} player={player} position="MID" />)}
+            {!isTeamSubmitted && Array(Math.max(0, requirements[3] - midfielders.length)).fill(0).map((_, i) => (
+              <EmptySlot key={`mid-empty-${i}`} position="MID" posId={positions.find(p => p.singular_name_short === 'MID')?.id} />
+            ))}
+          </div>
+
+          {/* Defenders */}
+          <div className="flex justify-center items-center gap-2 md:gap-4 flex-wrap">
+            {defenders.map(player => <PlayerCard key={player.id} player={player} position="DEF" />)}
+            {!isTeamSubmitted && Array(Math.max(0, requirements[2] - defenders.length)).fill(0).map((_, i) => (
+              <EmptySlot key={`def-empty-${i}`} position="DEF" posId={positions.find(p => p.singular_name_short === 'DEF')?.id} />
+            ))}
+          </div>
+
+          {/* Goalkeeper */}
+          <div className="flex justify-center items-center">
+            {goalkeepers.map(player => <PlayerCard key={player.id} player={player} position="GK" />)}
+            {!isTeamSubmitted && goalkeepers.length === 0 && (
+              <EmptySlot position="GK" posId={positions.find(p => p.singular_name_short === 'GKP')?.id} />
+            )}
+          </div>
+        </div>
       </div>
-      <div className="relative z-10 space-y-4 md:space-y-8">
-        { }
-        <div className="flex justify-center items-center space-x-2 md:space-x-4 flex-wrap">
-          {forwards.map((player, index) => <PlayerCard key={player.id} player={player} position="FWD" />)}
-          {!isTeamSubmitted && Array(Math.max(0, requirements[4] - forwards.length)).fill(0).map((_, index) => <EmptySlot key={`fwd-empty-${index}`} position="FWD" count={index} />)}
-        </div>
-        { }
-        <div className="flex justify-center items-center space-x-1 md:space-x-4 flex-wrap">
-          {midfielders.map((player, index) => <PlayerCard key={player.id} player={player} position="MID" />)}
-          {!isTeamSubmitted && Array(Math.max(0, requirements[3] - midfielders.length)).fill(0).map((_, index) => <EmptySlot key={`mid-empty-${index}`} position="MID" count={index} />)}
-        </div>
-        { }
-        <div className="flex justify-center items-center space-x-1 md:space-x-4 flex-wrap">
-          {defenders.map((player, index) => <PlayerCard key={player.id} player={player} position="DEF" />)}
-          {!isTeamSubmitted && Array(Math.max(0, requirements[2] - defenders.length)).fill(0).map((_, index) => <EmptySlot key={`def-empty-${index}`} position="DEF" count={index} />)}
-        </div>
-        { }
-        <div className="flex justify-center items-center">
-          {goalkeepers.map((player, index) => <PlayerCard key={player.id} player={player} position="GK" />)}
-          {!isTeamSubmitted && goalkeepers.length === 0 && <EmptySlot position="GK" count={0} />}
-        </div>
-      </div>
-    </div>;
+    );
   };
-  // The main layout
+
+  // Main UI Render
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] dark:bg-[#090D16] text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-4 right-4 z-[100] bg-transparent/90 backdrop-blur-xl border border-green-500/50 p-4 rounded-xl shadow-[0_0_20px_rgba(74,222,128,0.2)] animate-fade-in-up flex items-center space-x-3">
-          <div className="bg-green-500/20 p-2 rounded-full">
-            <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900/95 text-white border border-emerald-500/50 p-4 rounded-2xl shadow-xl flex items-center space-x-3 max-w-md animate-in slide-in-from-bottom-5">
+          <div className="bg-emerald-500/20 p-2 rounded-xl">
+            <Zap className="w-5 h-5 text-emerald-400" />
           </div>
           <div>
-            <h4 className="text-green-400 font-bold text-xs tracking-widest uppercase">{toast.title}</h4>
-            <p className="text-gray-200 text-sm mt-0.5">{toast.message}</p>
+            <h4 className="text-emerald-400 font-bold text-xs uppercase tracking-wider">{toast.title}</h4>
+            <p className="text-slate-200 text-xs mt-0.5">{toast.message}</p>
           </div>
         </div>
       )}
 
-      
-      {/* Neo-Brutalist Header */}
-      <header className="flex justify-between items-center px-6 py-5 border-b-2 border-black w-full relative z-10 bg-white dark:bg-zinc-900 dark:border-white transition-colors duration-300">
-        <div className="flex items-center space-x-4">
-          <div className="font-hand font-bold text-3xl tracking-tight text-gray-500lack dark:text-white flex items-center space-x-3">
-             <div className="w-8 h-8 bg-transparent dark:bg-white rounded flex items-center justify-center">
-                <span className="text-white dark:text-gray-500lack font-sans text-sm font-black">F</span>
-             </div>
-             <div className="flex flex-col"><span>Fantasy Premier League Stock</span><span className="text-xs text-gray-500 font-sans tracking-widest uppercase">Powered by $FPLS</span></div>
+      {/* Modern Top Header */}
+      <header className="flex justify-between items-center px-4 md:px-8 py-3.5 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+        {/* Brand & Subtitle */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-emerald-glow">
+            <Trophy className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-base md:text-lg tracking-tight text-slate-900 dark:text-white">
+                FPL<span className="text-emerald-600 dark:text-emerald-400">.STOCK</span>
+              </span>
+              <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                Robinhood Chain
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider uppercase">
+              Powered by $FPLS
+            </p>
           </div>
         </div>
-        
-        <div className="flex items-center space-x-6 md:space-x-10">
-          <div className="hidden md:flex flex-col items-end font-mono">
-            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Prize Pool</span>
-            <span className="text-sm font-black text-gray-500lack dark:text-white">{(entriesCount * 100000).toLocaleString()} $FPLS</span>
+
+        {/* Status Pill & Wallet Controls */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Live Gameweek Pill */}
+          {activeGameweek && (
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200">GW {activeGameweek.gameweek}</span>
+              <span className="text-slate-400 text-[10px]">•</span>
+              <span className="text-slate-500 dark:text-slate-400 capitalize">{activeGameweek.status}</span>
+            </div>
+          )}
+
+          {/* Prize Pool Ticker */}
+          <div className="hidden sm:flex flex-col items-end px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-right">
+            <span className="text-[9px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Prize Pool</span>
+            <span className="text-xs md:text-sm font-mono font-bold text-emerald-900 dark:text-emerald-200">
+              {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
+            </span>
           </div>
-          
-          <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="p-2 border-2 border-black dark:border-white rounded-lg hover:shadow-brutal hover:-translate-y-0.5 active:translate-y-1 transition-all bg-white dark:bg-zinc-800">
-             {theme === 'light' ? '🌙' : '☀️'}
+
+          {/* Theme Toggle */}
+          <button 
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            title="Toggle theme"
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </button>
 
+          {/* Web3 Connect */}
           {authenticated ? (
-            <button onClick={logout} className="btn-brutal text-sm">
-              <span className="font-mono text-xs font-bold">{userWallet.slice(0,6)}...{userWallet.slice(-4)}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex flex-col items-end px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-right font-mono">
+                <span className="text-[9px] text-slate-500 uppercase">Balance</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  {fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toLocaleString(undefined, {maximumFractionDigits: 0}) : '0'} $FPLS
+                </span>
+              </div>
+              <button 
+                onClick={logout} 
+                className="btn-secondary text-xs font-mono py-2"
+                title="Click to disconnect"
+              >
+                <span>{userWallet.slice(0, 6)}...{userWallet.slice(-4)}</span>
+                <LogOut className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+            </div>
           ) : (
-            <button onClick={login} className="btn-brutal text-sm">
-              Connect Wallet
+            <button onClick={login} className="btn-primary py-2 text-xs">
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Connect Wallet</span>
             </button>
           )}
         </div>
       </header>
 
+      {/* Primary Navigation Tabs */}
+      <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
 
-      {/* Navigation */}
-      <div className="w-full border-b border-gray-900/50 bg-transparent relative z-10">
-        <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
-      </div>
+      {/* Global Winner Claim Banner */}
       {claimableWinnings.length > 0 && (
-        <div className="w-full flex flex-col items-center bg-yellow-600/20 border-b border-yellow-600 p-2 z-20">
-          {claimableWinnings.map(game => (
-            <div key={game.id} className="w-full max-w-4xl flex justify-between items-center py-2 px-4">
-              <div className="font-mono text-xs text-yellow-500 font-bold uppercase tracking-widest drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]">
-                🏆 YOU WON GAMEWEEK {game.gameweek}!
-              </div>
-              <button onClick={() => claimSpecificPrize(game.id)} className="bg-yellow-500 text-gray-500lack px-4 py-2 text-[10px] font-mono tracking-widest hover:bg-white transition-colors uppercase font-bold shadow-[0_0_15px_rgba(234,179,8,0.3)]">
-                CLAIM {(game.prizePool * 0.9).toLocaleString()} $FPLS
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    <main className="flex-1 w-full flex flex-col">
-      {currentView === 'home' && <LandingHero setCurrentView={setCurrentView} activeGameweek={activeGameweek} />}
-      {currentView === 'dashboard' && <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 w-full">
-        { }
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Countdown, Stats, & Fixtures */}
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-yellow-900/50' : 'border-yellow-300/50'}`} glowColor="yellow" size="sm" intensity={0.5}>
-                <div className="text-center">
-                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">FPLS BURNED 🔥</h3>
-                  <div className="text-lg md:text-xl font-mono font-black text-red-500 cinematic-text drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
-                    {(entriesCount * 100000).toLocaleString()}
-                  </div>
-                </div>
-              </SpotlightCard>
-              <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-green-900/50' : 'border-green-300/50'}`} glowColor="green" size="sm" intensity={0.5}>
-                <div className="text-center">
-                  <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 font-mono">TREASURY REWARDS</h3>
-                  <div className="text-lg md:text-xl font-mono font-black text-green-400 cinematic-text drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]">
-                    {(entriesCount * 100000).toFixed(2)} $GME
-                  </div>
-                </div>
-              </SpotlightCard>
-            </div>
-            <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="blue" size="lg" intensity={0.8}>
-              <div className="text-center">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 font-mono">Gameweek 1 Kicks Off In</h3>
-                <div className="text-2xl md:text-3xl font-mono font-black text-white bg-transparent/50 p-4 rounded-xl cinematic-text border border-gray-800 tracking-wider">
-                  {gw1Countdown}
-                </div>
-              </div>
-            </SpotlightCard>
-            
-            <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={0.5}>
-              <h2 className="text-sm font-mono font-black text-gray-500lack bg-white px-3 py-1 rounded-lg mb-4 cinematic-text inline-block">OPENING FIXTURES</h2>
-              <div className="space-y-3 font-mono text-xs">
-                {liveFixtures.length > 0 ? liveFixtures.map((fixture) => (
-                  <div key={fixture.id} className="flex justify-between items-center bg-transparent/40 p-3 rounded-lg border border-gray-800">
-                    <div className="flex items-center space-x-2 w-1/3 justify-end">
-                      <span className="text-gray-300 font-bold text-right">{fplTeams[fixture.team_h]?.name || fixture.team_h}</span>
-                      <img src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_h]?.code}.png`} className="w-5 h-5 object-contain" alt="home team" />
-                    </div>
-                    <span className="text-yellow-500 font-bold px-1 text-[9px] w-auto text-center">VS</span>
-                    <div className="flex items-center space-x-2 w-1/3 justify-start">
-                      <img src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_a]?.code}.png`} className="w-5 h-5 object-contain" alt="away team" />
-                      <span className="text-gray-300 font-bold text-left">{fplTeams[fixture.team_a]?.name || fixture.team_a}</span>
-                    </div>
-                    <span className="text-gray-500 text-xs ml-auto">
-                      {new Date(fixture.kickoff_time).toLocaleString('en-GB', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                )) : (
-                  <div className="text-gray-500 text-center py-4">Loading real-time fixtures...</div>
-                )}
-              </div>
-            </SpotlightCard>
-          </div>
-
-          {/* Right Column: RWAs on Robinhood Chain */}
-          <div className="space-y-6">
-            <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-6 border ${theme === 'dark' ? 'border-green-700/30' : 'border-green-300/50'} h-full`} glowColor="green" size="lg" intensity={0.7}>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="bg-green-500/20 p-2 rounded-lg">
-                  <svg className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h2 className="text-sm font-mono font-black text-green-400 cinematic-text">RWAs ON ROBINHOOD CHAIN</h2>
-              </div>
-              <div className="space-y-4">
-                <div className="bg-transparent/40 p-4 rounded-xl border border-green-900/50">
-                  <h3 className="text-[10px] font-mono text-green-500 uppercase tracking-widest mb-2">The Engine</h3>
-                  <p className="text-[var(--text-secondary)] text-xs font-mono leading-relaxed">
-                    fpl.stock bridges Fantasy Premier League data with DeFi tokenomics. 
-                    The protocol operates on a deflationary cycle synced with the official English Premier League schedule.
-                  </p>
-                </div>
-                
-                <div className="bg-transparent/40 p-4 rounded-xl border border-green-900/50">
-                  <h3 className="text-[10px] font-mono text-green-500 uppercase tracking-widest mb-2">The Defi Loop</h3>
-                  <ul className="text-[var(--text-secondary)] text-xs font-mono space-y-2">
-                    <li className="flex items-start">
-                      <span className="text-green-500 mr-2">›</span>
-                      3% tax on $FPLS transfers buys real-world Robinhood Stocks (e.g. AAPL, GME).
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-red-500 mr-2">›</span>
-                      100,000 $test per gameweek entry (90,000 to Prize Pool, 10,000 Burned to reduce supply).
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-500 mr-2">›</span>
-                      90% of creator rewards distributed to ALL players. 10% to treasury.
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </SpotlightCard>
-          </div>
-        </div>
-        {activeGameweek ? <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-8 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="yellow" size="md" intensity={1}>
-          <h2 className="text-lg md:text-lg font-black text-gray-500lack bg-white px-6 py-4 rounded-2xl mb-4 cinematic-text text-center" >
-            GAMEWEEK {activeGameweek.gameweek}
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Status</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text capitalize`}>{activeGameweek.status}</p>
-            </div>
-            <div>
-              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entry Fee</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>100,000 $test</p>
-            </div>
-            <div>
-              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Entries</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} cinematic-text`}>{entriesCount}</p>
-            </div>
-            <div>
-              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm body-text`}>Prize Pool</p>
-              <p className={`text-lg font-semibold ${theme === 'dark' ? 'text-yellow-600 gold-glow' : 'text-yellow-700'} cinematic-text`}>{activeGameweek.prizePool} $FPLS</p>
-            </div>
-          </div>
-          { }
-          {gameweekDeadline && activeGameweek.status === 'active' && (
-            <CountdownTimer deadlineTime={gameweekDeadline} />
-          )}
-          {activeGameweek.status === 'finished' && activeGameweek.winnerId && <div className="mt-6 p-4 bg-yellow-600/20 rounded-lg border border-yellow-600/50">
-            <h3 className="text-yellow-600 font-bold mb-2 cinematic-text gold-glow" >🏆 GAMEWEEK WINNER</h3>
-            <p className="text-gray-300 body-text">
-              Winner: {activeGameweek.winnerId.slice(0, 8)}...{activeGameweek.winnerId.slice(-4)}
-            </p>
-            <p className="text-gray-300 body-text">Prize: {(activeGameweek.prizePool * 0.95).toFixed(3)} $FPLS</p>
-            {activeGameweek.winnerId === userWallet && <AnimatedButton onClick={claimPrize} className="mt-4" color="yellow" hoverText="Claim Now!">
-              🎉 CLAIM YOUR PRIZE! 🎉
-            </AnimatedButton>}
-          </div>}
-          {activeGameweek.status === 'active' && <>
-            {userEntries.find(e => e.gameId === activeGameweek.id) ? <div className="mt-6 p-4 bg-yellow-600/20 rounded-lg">
-              <p className="text-gray-100 body-text">✅ You have entered this gameweek!</p>
-            </div> : isAfterDeadline && !isAdmin ? <div className="mt-6 p-4 bg-red-700/30 rounded-lg border border-red-500/50">
-              <p className="text-red-200 font-bold cinematic-text">🚫 TEAM SUBMISSION DEADLINE HAS PASSED</p>
-              <p className="text-red-100 text-sm mt-1 body-text">You can no longer submit teams for this gameweek.</p>
-            </div> : <AnimatedButton onClick={() => setCurrentView('team')} className="mt-6" color="yellow" hoverText="Let's Go!">
-              BUILD TEAM & ENTER
-            </AnimatedButton>}
-            {isAdmin && <div className="mt-4 space-y-2">
-              
-              <AnimatedButton onClick={finalizeGameweek} className="w-full" color="red" hoverText="Finalize Now">
-                🔒 Finalize Gameweek (Admin Only)
-              </AnimatedButton>
-              
-              <AnimatedButton onClick={clearAndRepopulateFixtures} className="w-full" color="purple" hoverText="Clear & Reload">
-                🔄 Clear & Repopulate Fixtures (Admin Only)
-              </AnimatedButton>
-            </div>}
-          </>}
-        </SpotlightCard> : <SpotlightCard className="bg-transparent/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700/30 text-center" glowColor="yellow" size="md" intensity={0.7}>
-          <Clock className="w-10 h-10 text-gray-500 mx-auto mb-4" />
-          <h2 className="text-lg font-bold text-gray-100 mb-2 cinematic-text">NO ACTIVE GAMEWEEK</h2>
-          <p className="text-gray-300 mb-4 body-text">Waiting for the next gameweek to begin...</p>
-          
-        </SpotlightCard>}
-        {activeGameweek && players.length > 0 && isGameweekStarted && <SpotlightCard className={`${theme === 'dark' ? 'bg-transparent/30' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700/30' : 'border-gray-300/50'}`} glowColor="green" size="lg" intensity={0.9}>
-          <h2 className={`text-lg font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'} mb-4 text-center cinematic-text ${theme === 'dark' ? 'gold-glow' : ''}`} >
-            🔥 TOP PERFORMERS - GAMEWEEK {activeGameweek.gameweek}
-          </h2>
-          <div className="relative overflow-hidden">
-            <motion.div className="flex space-x-4" animate={{
-              x: [0, -1600]
-            }} transition={{
-              duration: 30,
-              repeat: Infinity,
-              ease: "linear"
-            }} style={{
-              width: 'max-content'
-            }}>
-              {[...players].filter(player => (player.event_points || 0) > 0).sort((a, b) => (b.event_points || 0) - (a.event_points || 0)).slice(0, 20).concat([...players].filter(player => (player.event_points || 0) > 0).sort((a, b) => (b.event_points || 0) - (a.event_points || 0)).slice(0, 20)).map((player, index) => {
-                const playerTeam = teams.find(t => t.id === player.team);
-                const playerPosition = positions.find(p => p.id === player.element_type);
-                return <div key={`${player.id}-${index}`} className={`flex-shrink-0 w-40 ${theme === 'dark' ? 'bg-transparent/40' : 'bg-white/60'} backdrop-blur-sm rounded-lg p-4 border ${theme === 'dark' ? 'border-green-700/30' : 'border-green-400/50'}`} >
-                  <div className="text-center">
-                    <img src="/pixel_footballer.jpg" alt={`${player.first_name} ${player.second_name}`} className="w-10 h-10 rounded-none mx-auto mb-2 object-cover border-4 border-black"  onError={e => {
-                      e.target.style.display = 'none';
-                    }} />
-                    <h3 className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} truncate pixel-text`}>
-                      {player.first_name}
-                    </h3>
-                    <h4 className={`text-sm font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'} truncate cinematic-text`}>
-                      {player.second_name}
-                    </h4>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} body-text`}>
-                      {playerTeam?.short_name} • {playerPosition?.singular_name_short}
-                    </p>
-                    <div className="mt-2 bg-green-600/20 rounded-lg p-2 border border-green-500/30">
-                      <p className="text-green-400 font-bold text-lg cinematic-text gold-glow" >
-                        {player.event_points || 0} PTS
-                      </p>
-                    </div>
-                  </div>
-                </div>;
-              })}
-            </motion.div>
-          </div>
-          <div className="text-center mt-4">
-            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} body-text`}>
-              Live gameweek points • Updates automatically during matches
-            </p>
-          </div>
-        </SpotlightCard>}
-        {fixtures.length > 0 && <SpotlightCard className="bg-transparent/30 backdrop-blur-sm rounded-xl p-8 border border-gray-700/30" glowColor="yellow" size="lg" intensity={0.9}>
-          <div className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-700/10 transition-colors rounded p-4" onClick={() => setShowFixtures(!showFixtures)}>
-            <div className="flex items-center space-x-3">
-              <Calendar className="w-8 h-8 text-yellow-600" />
-              <h2 className="text-lg font-bold text-gray-100 cinematic-text">
-                PREMIER LEAGUE FIXTURES
-              </h2>
-            </div>
-            <span className="text-yellow-600 hover:text-yellow-500 transition-colors text-lg font-bold cinematic-text gold-glow" >
-              {showFixtures ? '↑' : '↓'}
-            </span>
-          </div>
-          {showFixtures && <div className="space-y-6">
-            <div className="flex items-center justify-between bg-transparent/60 rounded-lg p-4 border border-gray-700/30">
-              <button onClick={() => {
-                const availableGameweeks = getAvailableGameweeks();
-                const currentIndex = availableGameweeks.indexOf(selectedFixtureGameweek);
-                if (currentIndex > 0) {
-                  setSelectedFixtureGameweek(availableGameweeks[currentIndex - 1]);
-                }
-              }} disabled={selectedFixtureGameweek <= Math.min(...getAvailableGameweeks())} className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-500lack p-2 rounded-lg transition-colors cinematic-text" >
-                ← PREVIOUS
-              </button>
-              <div className="text-center">
-                <h3 className="text-lg font-bold text-gray-100 mb-2 cinematic-text gold-glow" >
-                  GAMEWEEK {selectedFixtureGameweek}
-                </h3>
-                <p className="text-gray-400 text-sm body-text">
-                  {selectedGameweekFixtures.length} fixtures
-                </p>
-              </div>
-              <button onClick={() => {
-                const availableGameweeks = getAvailableGameweeks();
-                const currentIndex = availableGameweeks.indexOf(selectedFixtureGameweek);
-                if (currentIndex < availableGameweeks.length - 1) {
-                  setSelectedFixtureGameweek(availableGameweeks[currentIndex + 1]);
-                }
-              }} disabled={selectedFixtureGameweek >= Math.max(...getAvailableGameweeks())} className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-500lack p-2 rounded-lg transition-colors cinematic-text" >
-                NEXT →
-              </button>
-            </div>
-            <FixturesDisplay gameweekFixtures={selectedGameweekFixtures} gameweek={selectedFixtureGameweek} />
-          </div>}
-        </SpotlightCard>}
-      </div>}
-            {currentView === 'profile' && <div className="space-y-6 max-w-4xl mx-auto px-4 py-8 pb-24 w-full">
-        <div className="flex items-center space-x-3 mb-6">
-          <User className="w-8 h-8 text-white" />
-          <h2 className="text-2xl font-bold text-white font-mono tracking-widest uppercase">MANAGER PROFILE</h2>
-        </div>
-
-        {/* Top Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-4 text-center">
-            <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">Total Entries</p>
-            <p className="text-white font-mono text-xl">{userEntries.length}</p>
-          </div>
-          <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-4 text-center">
-            <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">$test Contributed</p>
-            <p className="text-yellow-500 font-mono text-xl">{(userEntries.length * 100000).toLocaleString()}</p>
-          </div>
-          <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-4 text-center">
-            <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">Current Balance</p>
-            <p className="text-green-500 font-mono text-xl">{fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toLocaleString(undefined, {maximumFractionDigits: 0}) : '0'}</p>
-          </div>
-          <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-4 text-center">
-            <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">All-Time Wins</p>
-            <p className="text-yellow-500 font-mono text-xl">{userStats?.wins || 0}</p>
-          </div>
-        </div>
-
-        {/* Current Gameweek Status */}
-        <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-6">
-          <h3 className="text-white font-mono text-sm tracking-widest uppercase mb-4 border-b border-gray-300 dark:border-gray-700 pb-2">Current Gameweek Status</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">Gameweek</p>
-              <p className="text-white font-mono">{activeGameweek ? activeGameweek.gameweek : 'None Active'}</p>
-            </div>
-            <div>
-              <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">Status</p>
-              <p className={`font-mono ${isTeamSubmitted ? 'text-green-500' : 'text-red-500'}`}>
-                {isTeamSubmitted ? 'SQUAD SUBMITTED' : 'NOT SUBMITTED'}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">Current Rank</p>
-              <p className="text-yellow-500 font-mono font-bold">
-                {(() => {
-                  if (!activeGameweek || !userWallet || leaderboard.length === 0) return '-';
-                  const userIndex = leaderboard.findIndex(entry => entry.walletAddress === userWallet);
-                  return userIndex !== -1 ? `#${userIndex + 1}` : '-';
-                })()}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Achievements */}
-        <div className="bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-6">
-          <h3 className="text-white font-mono text-sm tracking-widest uppercase mb-4 border-b border-gray-300 dark:border-gray-700 pb-2">Achievements</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className={`p-4 border ${userEntries.length > 0 ? 'border-green-500/50 bg-green-900/10' : 'border-gray-300 dark:border-gray-700 opacity-50'}`}>
-              <div className="flex items-center space-x-2 mb-2">
-                <Trophy className={`w-4 h-4 ${userEntries.length > 0 ? 'text-yellow-500' : 'text-gray-500'}`} />
-                <span className="text-white font-mono text-xs uppercase">First Entry</span>
-              </div>
-              <p className="text-gray-500 text-[10px] font-mono">Submit your first team</p>
-            </div>
-            <div className={`p-4 border ${(userStats?.wins || 0) > 0 ? 'border-green-500/50 bg-green-900/10' : 'border-gray-300 dark:border-gray-700 opacity-50'}`}>
-              <div className="flex items-center space-x-2 mb-2">
-                <Medal className={`w-4 h-4 ${(userStats?.wins || 0) > 0 ? 'text-yellow-500' : 'text-gray-500'}`} />
-                <span className="text-white font-mono text-xs uppercase">First Victory</span>
-              </div>
-              <p className="text-gray-500 text-[10px] font-mono">Win your first gameweek</p>
-            </div>
-            <div className={`p-4 border ${userEntries.length >= 5 ? 'border-green-500/50 bg-green-900/10' : 'border-gray-300 dark:border-gray-700 opacity-50'}`}>
-              <div className="flex items-center space-x-2 mb-2">
-                <Target className={`w-4 h-4 ${userEntries.length >= 5 ? 'text-yellow-500' : 'text-gray-500'}`} />
-                <span className="text-white font-mono text-xs uppercase">Veteran Manager</span>
-              </div>
-              <p className="text-gray-500 text-[10px] font-mono">Enter 5 gameweeks</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Share Button */}
-        <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just contributed ${(userEntries.length * 100000).toLocaleString()} $test playing @fplstocks 📈\n\nCurrent GW Rank: ${(() => {
-            if (!activeGameweek || !userWallet || leaderboard.length === 0) return 'N/A';
-            const userIndex = leaderboard.findIndex(entry => entry.walletAddress === userWallet);
-            return userIndex !== -1 ? `#${userIndex + 1}` : 'N/A';
-          })()}\nTotal Wins: ${userStats?.wins || 0}\n\nJoin the game and build your squad! ⚽️\n\n#FPL #FPLStocks`)}`} target="_blank" rel="noopener noreferrer" className="w-full bg-[#1DA1F2] hover:bg-[#1a8cd8] text-white py-4 font-mono text-sm tracking-widest transition-colors flex items-center justify-center space-x-2 mt-8">
-          <span>SHARE STATS ON 𝕏</span>
-        </a>
-
-      </div>}
-{currentView === 'team' && <div className="flex flex-col xl:flex-row min-h-screen w-full bg-transparent text-gray-500lack dark:text-white pb-20">
-        {/* Left Column: SQUAD SELECTION & PITCH */}
-        <div className="w-full flex flex-col p-6 xl:p-10 overflow-y-auto items-center">
-          <div className="flex justify-between items-end mb-6">
-            <div>
-              <h2 className="text-gray-500 font-bold font-mono tracking-widest uppercase mb-1">SQUAD SELECTION ({selectedTeam.length}/11)</h2>
-            </div>
-            <div className="text-right flex items-center space-x-4">
-              {teamBudget < 100 && selectedTeam.length < 11 && (
-                <div className="text-red-500 text-[10px] font-mono uppercase border border-red-500 px-2 py-0.5 animate-pulse">Low Budget!</div>
-              )}
+        <div className="w-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 border-b border-amber-500/40 px-4 py-3 z-30 animate-in fade-in">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div className="flex items-center gap-3 text-center sm:text-left">
+              <span className="text-2xl">🏆</span>
               <div>
-                <h2 className="text-gray-500lack dark:text-white text-3xl font-hand font-bold">£{(teamBudget / 10).toFixed(1)}<span className="text-[#8b9a90] text-sm">M</span></h2>
-                <p className="text-gray-500 font-bold font-mono text-[10px] tracking-widest uppercase">Budget</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Captain Reminder */}
-          {!isTeamSubmitted && <div className="bg-yellow-100 dark:bg-yellow-900 border-2 border-black dark:border-white p-3 mb-6 text-center rounded-xl shadow-brutal">
-            <span className="text-gray-500lack dark:text-white text-xs font-hand font-bold tracking-wide">Tip: Click the C button on a player to make them Captain (2x Pts)</span>
-          </div>}
-
-          <div className="flex-1 flex flex-col justify-start relative">
-            <div id="squad-pitch-container" className={`transform transition-all duration-500 relative  ${isTeamSubmitted ? "scale-[0.85] sm:scale-100 origin-top mx-auto mt-4" : "scale-[0.9] sm:scale-100 xl:scale-125 origin-top mx-auto"}`}>
-              <FormationDisplay isTeamSubmitted={isTeamSubmitted} />
-            </div>
-          </div>
-          
-          {/* Formation Dock and Auto-Complete */}
-          <div className="mt-2 space-y-4">
-            <FormationDock selectedFormation={selectedFormation} setSelectedFormation={setSelectedFormation} />
-            
-            <div className="grid grid-cols-3 gap-2">
-              <button onClick={resetTeam} className="border border-gray-300 dark:border-gray-700 text-gray-500 py-2 font-mono text-[9px] tracking-widest hover:border-[#333] hover:text-white transition-colors">RESET</button>
-              <button onClick={autoCompleteTeam} className="border border-gray-300 dark:border-gray-700 text-gray-500 py-2 font-mono text-[9px] tracking-widest hover:border-yellow-900 hover:text-yellow-500 transition-colors">AUTO FILL</button>
-              <button onClick={intelligentAutoComplete} className="border border-green-900/50 text-green-500 py-2 font-mono text-[9px] tracking-widest hover:border-green-500 hover:bg-green-900/20 transition-colors">AI OPTIMIZE</button>
-            </div>
-          </div>
-          
-          {/* Submit button at bottom */}
-          <div className="mt-20 xl:mt-32 pt-4 border-t border-gray-300 dark:border-gray-700 w-full max-w-2xl text-center">
-    {!isTeamSubmitted && (
-      <button onClick={() => setShowRosterModal(true)} className="btn-brutal w-full mb-4 bg-yellow-300 hover:bg-yellow-400 dark:bg-yellow-600 dark:text-white">
-        🔍 BROWSE PLAYERS
-      </button>
-    )}
-             {isTeamSubmitted ? (
-                <div className="space-y-4">
-                  <div className="text-center bg-gray-100 dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 p-6 rounded-lg shadow-[0_0_15px_rgba(0,255,0,0.1)]">
-                    <p className="text-gray-500 text-[10px] font-mono tracking-widest uppercase mb-1">Total Gameweek Points</p>
-                    <p className="text-5xl text-[#00FF00] font-mono drop-shadow-[0_0_10px_rgba(0,255,0,0.3)]">{currentUserEntry?.points || 0}</p>
-                  </div>
-                  <div className="text-center text-green-500 text-[10px] font-mono tracking-widest uppercase mb-2 mt-4">✓ SQUAD SUBMITTED</div>
-                  <div className="flex flex-col space-y-2">
-                    <button onClick={downloadSocialCard} className="w-full bg-[#1A1A1A] text-white border border-[#333] py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-gray-500lack transition-colors flex items-center justify-center space-x-2">
-                      <span>DOWNLOAD SQUAD IMAGE</span>
-                    </button>
-                    <a href={getShareSquadUrl()} target="_blank" rel="noopener noreferrer" className="w-full border border-[#1DA1F2] text-[#1DA1F2] py-3 font-mono text-xs tracking-widest hover:bg-[#1DA1F2] hover:text-gray-500lack transition-colors flex items-center justify-center space-x-2">
-                      <span>SHARE SQUAD ON 𝕏</span>
-                    </a>
-                  </div>
+                <div className="font-bold text-sm text-amber-700 dark:text-amber-300">
+                  Congratulations! You won Gameweek {claimableWinnings[0].gameweek}!
                 </div>
-             ) : selectedTeam.length === 11 ? (
-                <button onClick={submitTeam} className="w-full border border-white text-white py-3 font-mono text-xs tracking-widest hover:bg-white hover:text-gray-500lack transition-colors">SUBMIT TEAM (100,000 $test)</button>
-             ) : (
-                <button className="w-full border border-[#333] text-[#333] py-3 font-mono text-[10px] tracking-widest cursor-not-allowed">SELECT {11 - selectedTeam.length} MORE PLAYERS</button>
-             )}
-          </div>
-        </div>
-
-        {/* Right Column: PLAYER ROSTER */}
-        {isTeamSubmitted ? (
-  <div className="w-full xl:w-[40%] flex flex-col h-[600px] xl:h-[80vh] card-brutal mt-8 xl:mt-0 xl:ml-6 p-4 md:p-8 overflow-y-auto">
-    <h2 className="text-xl font-mono text-white mb-6 uppercase tracking-widest border-b border-[#333] pb-4">Live Leaderboard</h2>
-    <div className="space-y-2">
-      {leaderboard.map((entry, index) => (
-        <div key={entry.walletAddress} className={"flex justify-between items-center p-4 border border-gray-300 dark:border-gray-700 " + (entry.walletAddress === userWallet ? "bg-[#1A1A1A] border-white" : "bg-gray-100 dark:bg-zinc-800")}>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-500 font-mono w-6 text-right">#{index + 1}</span>
-            <span className="font-mono text-white">{entry.walletAddress.slice(0,6)}...{entry.walletAddress.slice(-4)}</span>
-            {entry.walletAddress === userWallet && <span className="text-[9px] bg-white text-gray-500lack px-2 py-0.5 ml-2 font-mono uppercase tracking-widest">YOU</span>}
-          </div>
-          <div className="flex items-center space-x-6">
-            <div className="text-right">
-              <div className="text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-1">Points</div>
-              <div className="text-[#00FF00] font-mono">{entry.points || 0}</div>
-            </div>
-            <div className="text-right">
-              <div className="text-[10px] text-gray-500 font-mono uppercase tracking-widest mb-1">Stock Rewards</div>
-              <div className="text-[#FFD700] font-mono">{index === 0 ? "WINNER (90% $FPLS)" : "-"}</div>
-            </div>
-          </div>
-        </div>
-      ))}
-      {leaderboard.length === 0 && (
-        <div className="text-center text-gray-500 font-mono py-8">No entries yet for this Gameweek.</div>
-      )}
-    </div>
-  </div>
-) : (
-  <>
-
-        {/* Roster Modal */}
-        {showRosterModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm">
-            <div className="w-full max-w-2xl flex flex-col h-[85vh] card-brutal overflow-hidden relative">
-              <button 
-                onClick={() => setShowRosterModal(false)}
-                className="absolute top-4 right-4 z-10 bg-white dark:bg-zinc-800 border-2 border-black dark:border-white shadow-brutal w-8 h-8 rounded-full flex items-center justify-center font-bold text-black dark:text-white"
-              >
-                ✕
-              </button>
-              <div className="flex-1 flex flex-col pt-2 bg-white dark:bg-zinc-900">
-
-          {/* Filter Bar */}
-          <div className="flex border-b border-gray-300 dark:border-gray-700 p-4 justify-between items-center">
-            <div className="flex space-x-2 overflow-x-auto pb-1 lg:pb-0">
-              {['ALL', 'GK', 'DEF', 'MID', 'FWD'].map(pos => {
-                const posStr = pos === 'GK' ? 'GKP' : pos;
-                const posId = pos === 'ALL' ? '' : positions.find(p => p.singular_name_short === posStr)?.id;
-                const isActive = (pos === 'ALL' && !filters.position) || (pos !== 'ALL' && filters.position == posId);
-                return (
-                  <button 
-                    key={pos}
-                    onClick={() => setFilters({...filters, position: posId})}
-                    className={`px-3 py-1 border font-mono text-[10px] tracking-widest transition-colors ${
-                      isActive 
-                        ? 'bg-transparent text-white dark:bg-white dark:text-gray-500lack border-black dark:border-white shadow-brutal dark:shadow-brutal-dark rounded' 
-                        : 'border-black dark:border-white text-gray-500 hover:text-gray-500lack dark:hover:text-white rounded bg-white dark:bg-zinc-800'
-                    }`}
-                  >
-                    {pos}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="relative w-48 ml-4">
-              <input 
-                type="text" 
-                placeholder="Search..."
-                value={filters.search}
-                onChange={e => setFilters({...filters, search: e.target.value})}
-                className="w-full bg-white dark:bg-zinc-800 border-2 border-black dark:border-white rounded-lg py-1.5 px-3 text-xs text-gray-500lack dark:text-white placeholder-gray-400 focus:outline-none focus:shadow-brutal dark:focus:shadow-brutal-dark font-mono transition-all"
-              />
-            </div>
-          </div>
-          
-          {/* Table Headers */}
-          <div className="flex px-4 py-2 border-b-2 border-black dark:border-white font-mono text-[10px] font-bold tracking-widest text-gray-500lack dark:text-white bg-gray-100 dark:bg-zinc-800 mt-2">
-            <div className="w-[50%]">PLAYER</div>
-            <div className="w-[15%] text-center">POS</div>
-            <div className="w-[15%] text-center cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'total_points', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PTS {sortOption.field === 'total_points' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
-            <div className="w-[20%] text-right cursor-pointer hover:text-white transition-colors" onClick={() => setSortOption({ field: 'now_cost', direction: sortOption.direction === 'desc' ? 'asc' : 'desc' })}>PRICE {sortOption.field === 'now_cost' ? (sortOption.direction === 'desc' ? '↓' : '↑') : ''}</div>
-          </div>
-
-          {/* Player List */}
-          <div className="flex-1 overflow-y-auto px-2 lg:px-4 py-1 pb-20 lg:pb-0">
-            {getFilteredPlayers().slice(0, 100).map((player) => {
-              const playerPos = positions.find(p => p.id === player.element_type)?.singular_name_short;
-              const playerTeam = teams.find(t => t.id === player.team)?.short_name;
-              const isAdded = selectedTeam.some(p => p.id === player.id);
-              
-              return (
-                <div 
-                  key={player.id} 
-                  onClick={() => addPlayerToTeam(player)}
-                  className={`flex items-center py-3 px-2 border-b border-gray-300 dark:border-gray-700 transition-colors cursor-pointer group hover:bg-gray-50 dark:hover:bg-zinc-800/50 ${
-                    isAdded ? 'opacity-30 pointer-events-none' : 'hover:bg-gray-100 dark:bg-zinc-800'
-                  }`}
-                >
-                  <div className="w-[50%] flex flex-col">
-                    <span className="text-gray-500lack dark:text-white font-bold text-sm truncate transition-colors">{player.first_name} {player.second_name}</span>
-                    <span className="text-gray-500 text-[10px] uppercase tracking-wider mt-0.5">{playerTeam}</span>
-                  </div>
-                  <div className="w-[15%] text-center">
-                    <span className="text-[#00FF00] font-mono text-[10px]">{playerPos}</span>
-                  </div>
-                  <div className="w-[15%] text-center text-white font-mono text-xs">
-                    {player.total_points}
-                  </div>
-                  <div className="w-[20%] text-right">
-                    <span className="text-[#8b9a90] font-mono text-sm">{(player.now_cost / 10).toFixed(1)}M</span>
-                  </div>
+                <div className="text-xs text-slate-600 dark:text-slate-400">
+                  Your 90% share of the prize pool is ready for instant on-chain release.
                 </div>
-              );
-            })}
-          </div>
-          </div>
-        </div>
-        </div>
-      )}
-    </>
-  )}
-      </div>}
-      {currentView === 'admin' && isAdmin && <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-8">
-        <h1 className="text-white font-mono text-sm tracking-widest uppercase mb-8 border-b border-gray-300 dark:border-gray-700 pb-4">ADMIN CONTROL PANEL</h1>
-        
-        {/* Gameweek Management */}
-        <div className="space-y-6">
-          <div className="border border-gray-300 dark:border-gray-700 p-6 bg-[#050505]">
-            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">GAMEWEEK MANAGEMENT</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="border border-gray-300 dark:border-gray-700 p-4 bg-transparent">
-                <span className="text-gray-500 font-mono text-[9px] tracking-widest uppercase">Active Gameweek</span>
-                <div className="text-white font-mono text-lg mt-1">{activeGameweek ? `GW ${activeGameweek.gameweek}` : 'NONE'}</div>
-                <div className="text-gray-500 font-mono text-[9px] mt-1">{activeGameweek ? `Status: ${activeGameweek.status}` : 'No gameweek active'}</div>
-              </div>
-              <div className="border border-gray-300 dark:border-gray-700 p-4 bg-transparent">
-                <span className="text-gray-500 font-mono text-[9px] tracking-widest uppercase">Prize Pool</span>
-                <div className="text-green-500 font-mono text-lg mt-1">{activeGameweek ? `${activeGameweek.prizePool} $FPLS` : '0'}</div>
-                <div className="text-gray-500 font-mono text-[9px] mt-1">Entries: {activeGameweek?.entries?.length || entriesCount || 0}</div>
               </div>
             </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-              
-              
-              <button onClick={finalizeGameweek} className="border border-red-900 text-red-500 py-3 font-mono text-[9px] tracking-widest hover:bg-red-900/20 transition-colors">
-                FINALIZE GW
-              </button>
-              
-            </div>
-            <button onClick={clearAndRepopulateFixtures} className="w-full mt-3 border border-gray-300 dark:border-gray-700 text-gray-500 py-2 font-mono text-[9px] tracking-widest hover:border-[#333] hover:text-white transition-colors">
-              CLEAR & REPOPULATE FIXTURES
+            <button 
+              onClick={() => claimSpecificPrize(claimableWinnings[0].id)} 
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap"
+            >
+              CLAIM {(claimableWinnings[0].prizePool * 0.9).toLocaleString()} $FPLS
             </button>
           </div>
-          
-          {/* Smart Contract Info */}
-          <div className="border border-gray-300 dark:border-gray-700 p-6 bg-[#050505]">
-            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">SMART CONTRACTS</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
-                <span className="text-gray-500 font-mono text-[9px] uppercase">$FPLS Token</span>
-                <span className="text-white font-mono text-[9px]">{FPLS_ADDRESS.slice(0,10)}...{FPLS_ADDRESS.slice(-6)}</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-[#0a0a0a] pb-2">
-                <span className="text-gray-500 font-mono text-[9px] uppercase">Chain</span>
-                <span className="text-white font-mono text-[9px]">Robinhood Chain Mainnet (4663)</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-500 font-mono text-[9px] uppercase">Admin Wallet</span>
-                <span className="text-green-500 font-mono text-[9px]">{userWallet?.slice(0,10)}...{userWallet?.slice(-6)}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Test Run Checklist */}
-          <div className="border border-gray-300 dark:border-gray-700 p-6 bg-[#050505]">
-            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">TEST RUN CHECKLIST</h2>
-            <div className="space-y-2">
-              {[
-                { label: 'Gameweek activated', done: !!activeGameweek },
-                { label: 'Players loaded from FPL API', done: players.length > 0 },
-                { label: 'Wallet connected', done: !!userWallet },
-                { label: 'Admin verified', done: isAdmin },
-                { label: 'Fixtures populated', done: true },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center space-x-3">
-                  <span className={`font-mono text-xs ${item.done ? 'text-green-500' : 'text-red-500'}`}>{item.done ? '✓' : '✗'}</span>
-                  <span className="text-gray-500 font-mono text-[9px] tracking-widest uppercase">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Historical Games */}
-          {adminGames && adminGames.length > 0 && <div className="border border-gray-300 dark:border-gray-700 p-6 bg-[#050505]">
-            <h2 className="text-white font-mono text-[10px] tracking-widest uppercase mb-4">HISTORICAL GAMEWEEKS</h2>
-            <div className="space-y-2">
-              {adminGames.map((game, i) => (
-                <div key={i} className="flex justify-between items-center border-b border-[#0a0a0a] pb-2 text-[9px] font-mono">
-                  <span className="text-white">GW {game.gameweek}</span>
-                  <span className={`${game.status === 'active' ? 'text-green-500' : game.status === 'finished' ? 'text-yellow-500' : 'text-gray-500'}`}>{game.status?.toUpperCase()}</span>
-                  <span className="text-gray-500">{game.prizePool || 0} $FPLS</span>
-                </div>
-              ))}
-            </div>
-          </div>}
         </div>
-      </div>}
-    </main>
-    { }
-    <footer className={`${theme === 'dark' ? 'bg-transparent/80' : 'bg-gray-100/90'} backdrop-blur-md border-t ${theme === 'dark' ? 'border-green-900/50' : 'border-gray-300'} py-12 mt-12`}>
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          <div>
-            <h3 className="font-black text-green-500 mb-4 cinematic-text">FPL.STOCKS</h3>
-            <p className="text-sm text-gray-500 font-mono">
-              The premier fantasy football experience powered by Real World Assets on the Robinhood Chain.
-            </p>
+      )}
+
+      {/* Main Content Areas */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col">
+        {/* VIEW 1: TEAM BUILDER */}
+        {currentView === 'team' && (
+          <div className="w-full flex flex-col items-center space-y-6">
+            {/* Top Control Bar */}
+            <div className="w-full max-w-4xl card-modern p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white">
+                  Squad Builder <span className="text-sm font-normal text-slate-500">({selectedTeam.length}/11 Players)</span>
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Pick your formation, build within £70.0M, and select your Captain for 2x points.
+                </p>
+              </div>
+
+              {/* Budget Tracker Gauge */}
+              <div className="flex items-center gap-4">
+                <div className={`px-4 py-2 rounded-xl text-center border ${
+                  teamBudget < 100 && selectedTeam.length < 11
+                    ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900'
+                    : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900'
+                }`}>
+                  <div className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Remaining Budget</div>
+                  <div className={`text-lg font-mono font-bold ${
+                    teamBudget < 100 && selectedTeam.length < 11
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : 'text-emerald-700 dark:text-emerald-300'
+                  }`}>
+                    £{(teamBudget / 10).toFixed(1)}M
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Tactical Pitch (Center Stage) */}
+            <div className="w-full flex flex-col items-center">
+              {/* Formation Selector & Quick Actions */}
+              <div className="w-full max-w-4xl mb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <FormationDock selectedFormation={selectedFormation} setSelectedFormation={setSelectedFormation} />
+                
+                {!isTeamSubmitted && (
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={resetTeam} 
+                      className="btn-secondary text-xs px-3 py-1.5"
+                    >
+                      Reset
+                    </button>
+                    <button 
+                      onClick={autoCompleteTeam} 
+                      className="btn-secondary text-xs px-3 py-1.5 text-amber-600 dark:text-amber-400"
+                    >
+                      Auto-Fill
+                    </button>
+                    <button 
+                      onClick={intelligentAutoComplete} 
+                      className="btn-primary text-xs px-3.5 py-1.5"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>AI Optimize</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Pitch Component */}
+              <FormationDisplay isTeamSubmitted={isTeamSubmitted} />
+
+              {/* Captain Reminder */}
+              {!isTeamSubmitted && (
+                <div className="mt-4 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs text-center">
+                  💡 <strong>Captain Rule:</strong> Click the <strong>C</strong> button on any player to make them Captain (they score double points).
+                </div>
+              )}
+
+              {/* Action Buttons Below Pitch */}
+              <div className="w-full max-w-md mt-6">
+                {isTeamSubmitted ? (
+                  <div className="card-modern p-6 text-center space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+                      ✓ SQUAD LOCKED FOR GAMEWEEK {activeGameweek?.gameweek}
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500 uppercase font-mono">Live Gameweek Points</div>
+                      <div className="text-5xl font-mono font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                        {currentUserEntry?.points || 0}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2 pt-2">
+                      <button onClick={downloadSocialCard} className="btn-secondary w-full">
+                        Download Squad Image
+                      </button>
+                      <a href={getShareSquadUrl()} target="_blank" rel="noopener noreferrer" className="btn-primary w-full">
+                        Share Squad on 𝕏
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    <button 
+                      onClick={() => setShowRosterModal(true)} 
+                      className="btn-secondary w-full py-3"
+                    >
+                      🔍 Browse All Players
+                    </button>
+                    {selectedTeam.length === 11 ? (
+                      <button 
+                        onClick={submitTeam} 
+                        className="btn-primary w-full py-3.5 text-base"
+                      >
+                        ENTER GAMEWEEK (100,000 $FPLS)
+                      </button>
+                    ) : (
+                      <button 
+                        disabled 
+                        className="btn-secondary w-full py-3 opacity-50 cursor-not-allowed text-xs font-mono"
+                      >
+                        SELECT {11 - selectedTeam.length} MORE PLAYERS TO SUBMIT
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 className="font-bold text-gray-300 mb-4 font-mono">Legal</h4>
-            <ul className="space-y-2 text-sm text-gray-500 font-mono">
-              <li><a href="#" className="hover:text-green-400 transition-colors">Terms and Conditions</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-green-400 transition-colors">Risk Disclaimer</a></li>
-            </ul>
+        )}
+
+        {/* VIEW 2: LEADERBOARD & REWARDS */}
+        {currentView === 'leaderboard' && (
+          <div className="w-full max-w-5xl mx-auto space-y-6">
+            {/* Prize Metrics Header */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="card-modern p-5 text-center">
+                <div className="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">Total Gameweek Staked</div>
+                <div className="text-2xl font-mono font-black text-slate-900 dark:text-white mt-1">
+                  {((activeGameweek?.prizePool || entriesCount * 100000)).toLocaleString()} <span className="text-xs text-slate-400">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">{entriesCount} Total Entries</div>
+              </div>
+
+              <div className="card-modern p-5 text-center bg-gradient-to-b from-amber-500/10 to-transparent border-amber-300 dark:border-amber-800">
+                <div className="text-xs uppercase font-semibold text-amber-700 dark:text-amber-400">1st Place Winner Pool (90%)</div>
+                <div className="text-2xl font-mono font-black text-amber-600 dark:text-amber-300 mt-1">
+                  {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} <span className="text-xs">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Winner-Takes-All</div>
+              </div>
+
+              <div className="card-modern p-5 text-center">
+                <div className="text-xs uppercase font-semibold text-rose-500">Deflationary Burn (10%) 🔥</div>
+                <div className="text-2xl font-mono font-black text-rose-600 dark:text-rose-400 mt-1">
+                  {((activeGameweek?.prizePool || entriesCount * 100000) * 0.1).toLocaleString()} <span className="text-xs text-rose-400">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">Burned forever on-chain</div>
+              </div>
+            </div>
+
+            {/* Live Rankings Table */}
+            <div className="card-modern overflow-hidden">
+              <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-slate-900 dark:text-white">Gameweek {activeGameweek?.gameweek || 1} Standings</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ranked by real Premier League match points</p>
+                </div>
+                {activeGameweek && (
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    {activeGameweek.status?.toUpperCase()}
+                  </span>
+                )}
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-mono border-b border-slate-100 dark:border-slate-800">
+                    <tr>
+                      <th className="px-6 py-3.5">Rank</th>
+                      <th className="px-6 py-3.5">Manager</th>
+                      <th className="px-6 py-3.5 text-center">Points</th>
+                      <th className="px-6 py-3.5 text-right">Prize Share</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                    {leaderboard.map((entry, index) => {
+                      const isCurrentUser = entry.walletAddress?.toLowerCase() === userWallet?.toLowerCase();
+                      const isWinner = index === 0;
+                      return (
+                        <tr 
+                          key={entry.walletAddress || index} 
+                          className={`transition-colors ${isCurrentUser ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}
+                        >
+                          <td className="px-6 py-4">
+                            <span className={`font-bold ${index === 0 ? 'text-amber-500 text-base' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-amber-700' : 'text-slate-500'}`}>
+                              #{index + 1}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                                {entry.walletAddress?.slice(0, 6)}...{entry.walletAddress?.slice(-4)}
+                              </span>
+                              {isCurrentUser && (
+                                <span className="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold">
+                                  YOU
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-base text-slate-900 dark:text-white">
+                            {entry.points || 0}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {isWinner ? (
+                              <span className="font-bold text-amber-600 dark:text-amber-400">
+                                {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
+                              </span>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {leaderboard.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-12 text-center text-slate-400 font-sans">
+                          No squad entries registered yet for this gameweek. Be the first to build and enter!
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 className="font-bold text-gray-300 mb-4 font-mono">Community</h4>
-            <div className="flex items-center space-x-3">
-              <a href="https://x.com/kasperwtrcolor" target="_blank" rel="noopener noreferrer" className="bg-green-900/30 hover:bg-green-800/50 text-green-400 p-3 rounded-lg transition-all duration-200 border border-green-700/30">
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
+        )}
+
+        {/* VIEW 3: FIXTURES & LIVE */}
+        {currentView === 'fixtures' && (
+          <div className="w-full max-w-5xl mx-auto space-y-6">
+            {/* Countdown Banner */}
+            <div className="card-modern p-6 text-center">
+              <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+                Gameweek Countdown
+              </div>
+              <div className="text-3xl md:text-4xl font-mono font-black text-slate-900 dark:text-white mt-2">
+                {gw1Countdown}
+              </div>
+            </div>
+
+            {/* Live EPL Fixtures */}
+            <div className="card-modern p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-base md:text-lg text-slate-900 dark:text-white">Premier League Match Schedule</h3>
+                <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">Live EPL Sync</span>
+              </div>
+
+              <div className="space-y-3">
+                {liveFixtures.length > 0 ? liveFixtures.map((fixture) => (
+                  <div 
+                    key={fixture.id} 
+                    className="flex flex-col sm:flex-row justify-between items-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 gap-3"
+                  >
+                    <div className="flex items-center gap-3 w-full sm:w-2/5 justify-end">
+                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                        {fplTeams[fixture.team_h]?.name || `Team ${fixture.team_h}`}
+                      </span>
+                      {fplTeams[fixture.team_h]?.code && (
+                        <img 
+                          src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_h]?.code}.png`} 
+                          className="w-6 h-6 object-contain" 
+                          alt="home" 
+                        />
+                      )}
+                    </div>
+
+                    <div className="px-3 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+                      {fixture.finished ? `${fixture.team_h_score} - ${fixture.team_a_score}` : 'VS'}
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full sm:w-2/5 justify-start">
+                      {fplTeams[fixture.team_a]?.code && (
+                        <img 
+                          src={`https://resources.premierleague.com/premierleague/badges/t${fplTeams[fixture.team_a]?.code}.png`} 
+                          className="w-6 h-6 object-contain" 
+                          alt="away" 
+                        />
+                      )}
+                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-200">
+                        {fplTeams[fixture.team_a]?.name || `Team ${fixture.team_a}`}
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-slate-500 dark:text-slate-400 font-mono text-center sm:text-right">
+                      {new Date(fixture.kickoff_time).toLocaleDateString('en-GB', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
+                  </div>
+                )) : (
+                  <div className="text-center py-8 text-slate-400 text-sm">
+                    Loading real-time Premier League fixtures...
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 4: MANAGER PROFILE */}
+        {currentView === 'profile' && (
+          <div className="w-full max-w-4xl mx-auto space-y-6">
+            {/* Profile Overview Card */}
+            <div className="card-modern p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xl shadow-emerald-glow">
+                  ⚽
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Manager Profile</h2>
+                  <p className="text-xs font-mono text-slate-500 dark:text-slate-400 mt-0.5">
+                    {userWallet || 'Wallet Not Connected'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 4-Stat Career Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="card-modern p-4 text-center">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase">Gameweek Entries</div>
+                <div className="text-xl font-mono font-bold text-slate-900 dark:text-white mt-1">
+                  {userEntries.length}
+                </div>
+              </div>
+              <div className="card-modern p-4 text-center">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase">$FPLS Contributed</div>
+                <div className="text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                  {(userEntries.length * 100000).toLocaleString()}
+                </div>
+              </div>
+              <div className="card-modern p-4 text-center">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase">Current Balance</div>
+                <div className="text-xl font-mono font-bold text-slate-900 dark:text-white mt-1">
+                  {fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toLocaleString(undefined, {maximumFractionDigits: 0}) : '0'}
+                </div>
+              </div>
+              <div className="card-modern p-4 text-center">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase">All-Time Wins</div>
+                <div className="text-xl font-mono font-bold text-amber-500 mt-1">
+                  {userStats?.wins || 0}
+                </div>
+              </div>
+            </div>
+
+            {/* Achievements */}
+            <div className="card-modern p-6 space-y-4">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Manager Achievements</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className={`p-4 rounded-xl border ${userEntries.length > 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                  <div className="font-bold text-xs text-slate-800 dark:text-slate-200">First Entry</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Submit your first squad to enter</div>
+                </div>
+                <div className={`p-4 rounded-xl border ${(userStats?.wins || 0) > 0 ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                  <div className="font-bold text-xs text-slate-800 dark:text-slate-200">Gameweek Champion</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Finish #1 and win the prize pool</div>
+                </div>
+                <div className={`p-4 rounded-xl border ${userEntries.length >= 5 ? 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'}`}>
+                  <div className="font-bold text-xs text-slate-800 dark:text-slate-200">Veteran Tactician</div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Enter 5 different gameweeks</div>
+                </div>
+              </div>
+
+              {/* Share to X */}
+              <a 
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just entered Fantasy Premier League Stock on Robinhood Chain! ⚽️📈\n\nTotal Wins: ${userStats?.wins || 0}\n\nJoin and build your squad: https://fpl.stocks\n#FPL #FPLStocks #RobinhoodChain`)}`}
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn-primary w-full mt-4"
+              >
+                Share Stats on 𝕏
               </a>
             </div>
           </div>
-        </div>
-        <div className="border-t border-gray-800 pt-8 text-center">
-          <p className="text-xs text-gray-600 font-mono">&copy; {new Date().getFullYear()} FPL.STOCKS on Robinhood Chain. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-    { }
-    { }
-    {isLoading && <div className="fixed inset-0 bg-transparent/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <SpotlightCard className="bg-transparent/90 backdrop-blur-md rounded-xl border border-yellow-700/50 p-12 text-center" glowColor="yellow" size="lg" intensity={1.5}>
-        <div className="space-y-6">
-          <LoadingWave bars={8} message={loadingMessage || "Processing..."} messagePosition="bottom" size="lg" color="yellow" />
-          <div className="space-y-2">
-            <p className="text-yellow-100 text-sm" >
-              Please wait, this may take a moment...
-            </p>
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-yellow-400 border-t-transparent"></div>
+        )}
+
+        {/* VIEW 5: HOW IT WORKS */}
+        {currentView === 'rules' && (
+          <div className="w-full max-w-4xl mx-auto space-y-8 py-4">
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">How Fantasy Premier League Stock Works</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+                Real Premier League match performance meets decentralized prize pool tokenomics.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="card-modern p-6 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                  01
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Stake to Enter</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Pay the 100,000 $FPLS entry fee to submit your team for the gameweek. 90% enters the Winner-Takes-All Prize Pool, and 10% is burned permanently.
+                </p>
+              </div>
+
+              <div className="card-modern p-6 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+                  02
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Manage £70.0M</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Select 11 real Premier League players matching official market values. Balance heavy hitters like Haaland with budget gems to stay under the budget ceiling.
+                </p>
+              </div>
+
+              <div className="card-modern p-6 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+                  03
+                </div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Tactics & Captain</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Pick your formation and designate a Captain for 2x points. When the gameweek matches finish, the winner claims the smart contract prize pool on-chain!
+                </p>
+              </div>
+            </div>
+
+            <div className="card-modern p-6 text-center space-y-4">
+              <h4 className="font-bold text-base text-slate-900 dark:text-white">Ready to take the pitch?</h4>
+              <button 
+                onClick={() => setCurrentView('team')} 
+                className="btn-primary text-base px-8 py-3"
+              >
+                Go to Team Builder
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 6: ADMIN CONTROL (Protected) */}
+        {currentView === 'admin' && isAdmin && (
+          <div className="w-full max-w-4xl mx-auto space-y-6">
+            <div className="card-modern p-6 space-y-4">
+              <h2 className="font-bold text-lg text-slate-900 dark:text-white">Admin Protocol Dashboard</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <div className="text-slate-500 uppercase">Active Gameweek</div>
+                  <div className="text-lg font-bold text-slate-900 dark:text-white mt-1">
+                    GW {activeGameweek ? activeGameweek.gameweek : 'None'}
+                  </div>
+                  <div className="text-slate-400 mt-0.5">Status: {activeGameweek?.status || 'N/A'}</div>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                  <div className="text-slate-500 uppercase">Prize Pool / Entries</div>
+                  <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                    {activeGameweek ? activeGameweek.prizePool : 0} $FPLS
+                  </div>
+                  <div className="text-slate-400 mt-0.5">Entries: {activeGameweek?.entries?.length || entriesCount}</div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  onClick={finalizeGameweek} 
+                  className="btn-secondary text-rose-500 border-rose-200 dark:border-rose-900"
+                >
+                  Finalize Gameweek
+                </button>
+                <button 
+                  onClick={clearAndRepopulateFixtures} 
+                  className="btn-secondary"
+                >
+                  Sync & Reload Fixtures
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Modern Player Selection Drawer / Modal */}
+      {showRosterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-3xl rounded-3xl shadow-2xl flex flex-col max-h-[88vh] overflow-hidden">
+            {/* Drawer Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Player Roster</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Remaining Budget: <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">£{(teamBudget / 10).toFixed(1)}M</span> • Squad: {selectedTeam.length}/11
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowRosterModal(false)}
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+                {['ALL', 'GK', 'DEF', 'MID', 'FWD'].map(pos => {
+                  const posStr = pos === 'GK' ? 'GKP' : pos;
+                  const posId = pos === 'ALL' ? '' : positions.find(p => p.singular_name_short === posStr)?.id;
+                  const isActive = (pos === 'ALL' && !filters.position) || (pos !== 'ALL' && filters.position == posId);
+                  return (
+                    <button
+                      key={pos}
+                      onClick={() => setFilters(prev => ({ ...prev, position: posId }))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all cursor-pointer ${
+                        isActive 
+                          ? 'bg-emerald-600 text-white shadow-sm' 
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {pos}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="relative w-full sm:w-64">
+                <input 
+                  type="text"
+                  placeholder="Search player or team..."
+                  value={filters.search}
+                  onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+
+            {/* Player List */}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800 p-2">
+              {getFilteredPlayers().slice(0, 100).map(player => {
+                const playerPos = positions.find(p => p.id === player.element_type)?.singular_name_short;
+                const playerTeam = teams.find(t => t.id === player.team)?.short_name;
+                const isAdded = selectedTeam.some(p => p.id === player.id);
+                const canAfford = teamBudget >= player.now_cost;
+
+                return (
+                  <div 
+                    key={player.id}
+                    className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
+                      isAdded ? 'opacity-40 bg-slate-50 dark:bg-slate-800/40' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <img 
+                        src={`https://resources.premierleague.com/premierleague/photos/players/110x140/p${player.code}.png`} 
+                        alt={player.second_name}
+                        onError={e => { e.target.src = "/pixel_footballer.jpg"; }}
+                        className="w-10 h-12 object-cover rounded-lg bg-slate-100 dark:bg-slate-800"
+                      />
+                      <div>
+                        <div className="font-semibold text-sm text-slate-900 dark:text-white">
+                          {player.first_name} {player.second_name}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="font-mono font-medium">{playerTeam}</span>
+                          <span>•</span>
+                          <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px] font-mono">{playerPos}</span>
+                          <span>•</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">{player.total_points} pts</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right font-mono font-bold text-sm text-slate-900 dark:text-white">
+                        £{(player.now_cost / 10).toFixed(1)}M
+                      </div>
+                      <button
+                        disabled={isAdded || (!isAdded && !canAfford) || selectedTeam.length >= 11}
+                        onClick={() => {
+                          addPlayerToTeam(player);
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          isAdded 
+                            ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                            : !canAfford
+                            ? 'bg-rose-100 text-rose-500 cursor-not-allowed'
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                        }`}
+                      >
+                        {isAdded ? 'Added' : !canAfford ? 'No Budget' : '+ Add'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
-      </SpotlightCard>
-    </div>}
+      )}
 
-  </div>);
+      {/* Modern Footer */}
+      <footer className="border-t border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md py-8 mt-12">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800 dark:text-slate-200">FPL.STOCK</span>
+            <span>•</span>
+            <span>Robinhood Chain Mainnet</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="https://ponsfamily.com" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-500 transition-colors">
+              Pons Family Platform
+            </a>
+            <a href="https://x.com/kasperwtrcolor" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-500 transition-colors">
+              Follow on 𝕏
+            </a>
+          </div>
+          <div>
+            &copy; {new Date().getFullYear()} Fantasy Premier League Stock. All rights reserved.
+          </div>
+        </div>
+      </footer>
+
+      {/* Loading Modal */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center z-50 animate-in fade-in">
+          <div className="card-modern p-8 text-center max-w-sm w-full mx-4 shadow-2xl">
+            <div className="animate-spin rounded-full h-10 w-10 border-3 border-emerald-500 border-t-transparent mx-auto mb-4"></div>
+            <h4 className="font-bold text-sm text-slate-900 dark:text-white">{loadingMessage || 'Processing...'}</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Please wait a moment</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
+
 export default App;

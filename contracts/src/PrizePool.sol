@@ -12,9 +12,13 @@ contract FPLSPrizePool is Ownable {
     IERC20 public immutable fplsToken;
     address public oracle;
     
-    mapping(uint256 => bool) public isGameweekClaimed;
+    // gameweek => rank (1, 2, 3) => claimed
+    mapping(uint256 => mapping(uint256 => bool)) public isRankClaimed;
+    // gameweek => burn processed
+    mapping(uint256 => bool) public isGameweekBurned;
 
-    event PrizeClaimed(uint256 indexed gameweek, address indexed winner, uint256 amount, uint256 burnAmount);
+    event PrizeClaimed(uint256 indexed gameweek, uint256 indexed rank, address indexed winner, uint256 amount);
+    event DeflationaryBurned(uint256 indexed gameweek, uint256 burnAmount);
 
     constructor(address _fplsToken, address _oracle) Ownable(msg.sender) {
         fplsToken = IERC20(_fplsToken);
@@ -26,34 +30,52 @@ contract FPLSPrizePool is Ownable {
     }
 
     /**
-     * @dev Winner calls this with a signature from the backend oracle
-     * Message signed by oracle: keccak256(abi.encodePacked(gameweek, winner, totalPrizePool))
+     * @dev Podium winners (1st, 2nd, 3rd) call this with a signature from the backend oracle
+     * Message signed by oracle: keccak256(abi.encodePacked(gameweek, rank, winner, prizeAmount))
      */
     function claimPrize(
         uint256 gameweek,
-        uint256 totalPrizePool,
+        uint256 rank,
+        uint256 prizeAmount,
         bytes calldata signature
     ) external {
-        require(!isGameweekClaimed[gameweek], "Prize already claimed");
+        require(!isRankClaimed[gameweek][rank], "Prize already claimed for this rank");
+        require(prizeAmount > 0, "Invalid prize amount");
 
         // Verify oracle signature
-        bytes32 messageHash = keccak256(abi.encodePacked(gameweek, msg.sender, totalPrizePool));
+        bytes32 messageHash = keccak256(abi.encodePacked(gameweek, rank, msg.sender, prizeAmount));
         bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
         require(ethSignedMessageHash.recover(signature) == oracle, "Invalid signature");
 
-        isGameweekClaimed[gameweek] = true;
+        isRankClaimed[gameweek][rank] = true;
 
-        uint256 winnerAmount = (totalPrizePool * 90) / 100;
-        uint256 burnAmount = totalPrizePool - winnerAmount;
+        require(fplsToken.balanceOf(address(this)) >= prizeAmount, "Insufficient pool balance");
 
-        require(fplsToken.balanceOf(address(this)) >= totalPrizePool, "Insufficient pool balance");
+        // Transfer prize to winner
+        fplsToken.transfer(msg.sender, prizeAmount);
 
-        // Transfer 90% to winner
-        fplsToken.transfer(msg.sender, winnerAmount);
+        emit PrizeClaimed(gameweek, rank, msg.sender, prizeAmount);
+    }
+
+    /**
+     * @dev Process the 10% gameweek burn to 0x...dEaD
+     */
+    function processGameweekBurn(
+        uint256 gameweek,
+        uint256 burnAmount,
+        bytes calldata signature
+    ) external {
+        require(!isGameweekBurned[gameweek], "Burn already processed");
+        require(burnAmount > 0, "Invalid burn amount");
+
+        bytes32 messageHash = keccak256(abi.encodePacked(gameweek, uint256(0), address(0x000000000000000000000000000000000000dEaD), burnAmount));
+        bytes32 ethSignedMessageHash = MessageHashUtils.toEthSignedMessageHash(messageHash);
+        require(ethSignedMessageHash.recover(signature) == oracle, "Invalid signature");
+
+        isGameweekBurned[gameweek] = true;
+        require(fplsToken.balanceOf(address(this)) >= burnAmount, "Insufficient pool balance");
         
-        // Burn 10% (transfer to dead address)
         fplsToken.transfer(address(0x000000000000000000000000000000000000dEaD), burnAmount);
-
-        emit PrizeClaimed(gameweek, msg.sender, winnerAmount, burnAmount);
+        emit DeflationaryBurned(gameweek, burnAmount);
     }
 }

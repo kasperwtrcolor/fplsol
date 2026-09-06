@@ -897,28 +897,59 @@ function App() {
     if (!userWallet) return;
     try {
       const allGames = await firebaseService.listEntities('games');
-      const finishedWinnerGames = allGames.filter(game => game.status === 'finished' && game.winnerId && userWallet && game.winnerId.toLowerCase() === userWallet.toLowerCase());
-      const claimableGames = [];
-      for (const game of finishedWinnerGames) {
-        const existingPayout = await firebaseService.listEntities('payouts', {
-          gameId: game.id
-        });
-        if (existingPayout.length === 0) {
-          claimableGames.push(game);
+      const finishedGames = allGames.filter(game => game.status === 'finished');
+      const claimableList = [];
+
+      for (const game of finishedGames) {
+        // Check if user is among podium winners
+        let userWinner = null;
+        if (Array.isArray(game.winners) && game.winners.length > 0) {
+          userWinner = game.winners.find(w => w.walletAddress?.toLowerCase() === userWallet.toLowerCase());
+        } else if (game.winnerId && game.winnerId.toLowerCase() === userWallet.toLowerCase()) {
+          // Backward compatibility for legacy single winner games
+          userWinner = {
+            rank: 1,
+            walletAddress: game.winnerId,
+            prizeAmount: Math.floor((game.prizePool || 0) * 0.9),
+            sharePct: 90
+          };
+        }
+
+        if (userWinner && (userWinner.prizeAmount || 0) > 0) {
+          const existingPayouts = await firebaseService.listEntities('payouts', {
+            gameId: game.id
+          });
+          const hasClaimed = existingPayouts.some(p => 
+            (p.winnerId && p.winnerId.toLowerCase() === userWallet.toLowerCase()) ||
+            (p.walletAddress && p.walletAddress.toLowerCase() === userWallet.toLowerCase())
+          );
+
+          if (!hasClaimed) {
+            claimableList.push({
+              ...game,
+              userRank: userWinner.rank || 1,
+              userPrizeAmount: userWinner.prizeAmount,
+              userSharePct: userWinner.sharePct || (userWinner.rank === 1 ? 60 : userWinner.rank === 2 ? 20 : 10)
+            });
+          }
         }
       }
-      setClaimableWinnings(claimableGames);
+      setClaimableWinnings(claimableList);
     } catch (error) {
       console.error('Error loading claimable winnings:', error);
     }
   };
-    const claimSpecificPrize = async gameId => {
+
+  const claimSpecificPrize = async gameId => {
     if (!userWallet) return;
     setIsLoading(true);
     setLoadingMessage('Securing Oracle Signature...');
     try {
       const gameToClaim = claimableWinnings.find(g => g.id === gameId);
       if (!gameToClaim) throw new Error("Game not found in claimable winnings");
+
+      const rank = gameToClaim.userRank || 1;
+      const prizeAmount = gameToClaim.userPrizeAmount || Math.floor((gameToClaim.prizePool || 0) * 0.6);
 
       // 1. Fetch Signature from Oracle
       const response = await fetch('/api/oracle', {
@@ -927,7 +958,9 @@ function App() {
         body: JSON.stringify({
           gameweek: gameToClaim.gameweek,
           winner: userWallet,
-          totalPrizePool: gameToClaim.prizePool.toString()
+          rank: rank,
+          prizeAmount: prizeAmount.toString(),
+          totalPrizePool: (gameToClaim.prizePool || prizeAmount).toString()
         })
       });
       
@@ -939,15 +972,29 @@ function App() {
       // 2. Submit Transaction
       const { PRIZE_POOL_ADDRESS, PRIZE_POOL_ABI } = await import('./config/contracts.js');
       
+      // Detect if contract ABI supports 4-param claimPrize(gameweek, rank, prizeAmount, signature)
+      // or legacy 3-param claimPrize(gameweek, totalPrizePool, signature)
+      const claimFn = PRIZE_POOL_ABI.find(f => f.name === 'claimPrize');
+      const isPodiumContract = claimFn && claimFn.inputs && claimFn.inputs.length === 4;
+
+      const args = isPodiumContract
+        ? [
+            BigInt(gameToClaim.gameweek),
+            BigInt(rank),
+            BigInt(prizeAmount),
+            data.signature
+          ]
+        : [
+            BigInt(gameToClaim.gameweek),
+            BigInt(gameToClaim.prizePool || prizeAmount),
+            data.legacySignature || data.signature
+          ];
+
       const txHash = await writeContractAsync({
         address: PRIZE_POOL_ADDRESS,
         abi: PRIZE_POOL_ABI,
         functionName: 'claimPrize',
-        args: [
-           BigInt(gameToClaim.gameweek),
-           BigInt(gameToClaim.prizePool),
-           data.signature
-        ],
+        args: args,
       });
       
       console.log('Claim tx:', txHash);
@@ -957,10 +1004,13 @@ function App() {
       await firebaseService.createEntity('payouts', {
         gameId: gameId,
         winnerId: userWallet,
+        walletAddress: userWallet,
+        rank: rank,
+        amount: prizeAmount,
         txHash: txHash
       });
       
-      alert('Prize claimed successfully on-chain!');
+      alert(`Gameweek ${gameToClaim.gameweek} Podium Prize (#${rank}) claimed successfully on-chain!`);
       await loadClaimableWinnings();
       await loadUserData();
     } catch (error) {
@@ -1109,20 +1159,73 @@ function App() {
           if (existingEntries.length === 0) {
             return await firebaseService.updateEntity('games', gameDoc.id, { 
               status: 'finished',
-              prizePool: 0 
+              prizePool: 0,
+              winners: []
             });
           }
           
           // Sort by points (highest first)
           const sortedEntries = existingEntries.sort((a, b) => (b.points || 0) - (a.points || 0));
-          const winner = sortedEntries[0];
           const calculatedPool = existingEntries.length * (gameDoc.entryFee || 100000);
           
-          console.log(`Auto-finalizing GW ${gameDoc.gameweek}: Winner ${winner.walletAddress} with ${winner.points || 0} pts`);
+          // Dynamic Podium split:
+          // 3+ entries: 60% 1st, 20% 2nd, 10% 3rd (10% burn)
+          // 2 entries:  70% 1st, 20% 2nd (10% burn)
+          // 1 entry:    90% 1st (10% burn)
+          const winners = [];
+          if (sortedEntries.length >= 3) {
+            winners.push({
+              rank: 1,
+              walletAddress: sortedEntries[0].walletAddress,
+              points: sortedEntries[0].points || 0,
+              sharePct: 60,
+              prizeAmount: Math.floor(calculatedPool * 0.6)
+            });
+            winners.push({
+              rank: 2,
+              walletAddress: sortedEntries[1].walletAddress,
+              points: sortedEntries[1].points || 0,
+              sharePct: 20,
+              prizeAmount: Math.floor(calculatedPool * 0.2)
+            });
+            winners.push({
+              rank: 3,
+              walletAddress: sortedEntries[2].walletAddress,
+              points: sortedEntries[2].points || 0,
+              sharePct: 10,
+              prizeAmount: Math.floor(calculatedPool * 0.1)
+            });
+          } else if (sortedEntries.length === 2) {
+            winners.push({
+              rank: 1,
+              walletAddress: sortedEntries[0].walletAddress,
+              points: sortedEntries[0].points || 0,
+              sharePct: 70,
+              prizeAmount: Math.floor(calculatedPool * 0.7)
+            });
+            winners.push({
+              rank: 2,
+              walletAddress: sortedEntries[1].walletAddress,
+              points: sortedEntries[1].points || 0,
+              sharePct: 20,
+              prizeAmount: Math.floor(calculatedPool * 0.2)
+            });
+          } else {
+            winners.push({
+              rank: 1,
+              walletAddress: sortedEntries[0].walletAddress,
+              points: sortedEntries[0].points || 0,
+              sharePct: 90,
+              prizeAmount: Math.floor(calculatedPool * 0.9)
+            });
+          }
+
+          console.log(`Auto-finalizing GW ${gameDoc.gameweek}: ${winners.length} podium winners calculated. 1st: ${winners[0].walletAddress}`);
 
           return await firebaseService.updateEntity('games', gameDoc.id, {
             status: 'finished',
-            winnerId: winner.walletAddress,
+            winnerId: winners[0]?.walletAddress,
+            winners: winners,
             prizePool: calculatedPool
           });
         } catch (e) {
@@ -2876,7 +2979,7 @@ Current app data:
 
           {/* Prize Pool Ticker */}
           <div className="hidden sm:flex flex-col items-end px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-right">
-            <span className="text-[9px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Prize Pool</span>
+            <span className="text-[9px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Podium Pool</span>
             <span className="text-xs md:text-sm font-mono font-bold text-emerald-900 dark:text-emerald-200">
               {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
             </span>
@@ -2922,29 +3025,38 @@ Current app data:
       <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
 
       {/* Global Winner Claim Banner */}
-      {claimableWinnings.length > 0 && (
-        <div className="w-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 border-b border-amber-500/40 px-4 py-3 z-30 animate-in fade-in">
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div className="flex items-center gap-3 text-center sm:text-left">
-              <span className="text-2xl">🏆</span>
-              <div>
-                <div className="font-bold text-sm text-amber-700 dark:text-amber-300">
-                  Congratulations! You won Gameweek {claimableWinnings[0].gameweek}!
-                </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400">
-                  Your 90% share of the prize pool is ready for instant on-chain release.
+      {claimableWinnings.length > 0 && (() => {
+        const topClaim = claimableWinnings[0];
+        const rank = topClaim.userRank || 1;
+        const prizeAmount = topClaim.userPrizeAmount || Math.floor((topClaim.prizePool || 0) * (rank === 1 ? 0.6 : rank === 2 ? 0.2 : 0.1));
+        const sharePct = topClaim.userSharePct || (rank === 1 ? 60 : rank === 2 ? 20 : 10);
+        const rankLabel = rank === 1 ? '1st Place Champion' : rank === 2 ? '2nd Place Runner-Up' : '3rd Place Finisher';
+        const rankIcon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+
+        return (
+          <div className="w-full bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 border-b border-amber-500/40 px-4 py-3 z-30 animate-in fade-in">
+            <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div className="flex items-center gap-3 text-center sm:text-left">
+                <span className="text-2xl">{rankIcon}</span>
+                <div>
+                  <div className="font-bold text-sm text-amber-700 dark:text-amber-300">
+                    Congratulations! You finished #{rank} ({rankLabel}) in Gameweek {topClaim.gameweek}!
+                  </div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">
+                    Your {sharePct}% podium prize share is ready for instant on-chain release.
+                  </div>
                 </div>
               </div>
+              <button 
+                onClick={() => claimSpecificPrize(topClaim.id)} 
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap"
+              >
+                CLAIM {prizeAmount.toLocaleString()} $FPLS ({sharePct}%)
+              </button>
             </div>
-            <button 
-              onClick={() => claimSpecificPrize(claimableWinnings[0].id)} 
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap"
-            >
-              CLAIM {(claimableWinnings[0].prizePool * 0.9).toLocaleString()} $FPLS
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Main Content Areas */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col">
@@ -3195,29 +3307,54 @@ Current app data:
             </div>
 
             {/* Prize Metrics Header for Selected Gameweek */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="card-modern p-5 text-center">
-                <div className="text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">Total Gameweek Staked</div>
-                <div className="text-2xl font-mono font-black text-slate-900 dark:text-white mt-1">
-                  {(leaderboard.length * 100000).toLocaleString()} <span className="text-xs text-slate-400">$FPLS</span>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="card-modern p-4 text-center">
+                <div className="text-[11px] uppercase font-semibold text-slate-500 dark:text-slate-400">Total Staked</div>
+                <div className="text-xl font-mono font-black text-slate-900 dark:text-white mt-1">
+                  {(leaderboard.length * 100000).toLocaleString()} <span className="text-[10px] text-slate-400">$FPLS</span>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-1">{leaderboard.length} Total Entries</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{leaderboard.length} Entries</div>
               </div>
 
-              <div className="card-modern p-5 text-center bg-gradient-to-b from-amber-500/10 to-transparent border-amber-300 dark:border-amber-800">
-                <div className="text-xs uppercase font-semibold text-amber-700 dark:text-amber-400">1st Place Winner Pool (90%)</div>
-                <div className="text-2xl font-mono font-black text-amber-600 dark:text-amber-300 mt-1">
-                  {(leaderboard.length * 100000 * 0.9).toLocaleString()} <span className="text-xs">$FPLS</span>
+              <div className="card-modern p-4 text-center bg-gradient-to-b from-amber-500/10 to-transparent border-amber-300 dark:border-amber-800">
+                <div className="text-[11px] uppercase font-semibold text-amber-700 dark:text-amber-400 flex items-center justify-center gap-1">
+                  <span>🥇 1st Place</span>
+                  <span className="text-[9px] px-1 rounded bg-amber-500/20">{leaderboard.length === 1 ? '90%' : leaderboard.length === 2 ? '70%' : '60%'}</span>
                 </div>
-                <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Winner-Takes-All</div>
+                <div className="text-xl font-mono font-black text-amber-600 dark:text-amber-300 mt-1">
+                  {(leaderboard.length * 100000 * (leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6)).toLocaleString()} <span className="text-[10px]">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">Gold Champion</div>
               </div>
 
-              <div className="card-modern p-5 text-center">
-                <div className="text-xs uppercase font-semibold text-rose-500">Deflationary Burn (10%) 🔥</div>
-                <div className="text-2xl font-mono font-black text-rose-600 dark:text-rose-400 mt-1">
-                  {(leaderboard.length * 100000 * 0.1).toLocaleString()} <span className="text-xs text-rose-400">$FPLS</span>
+              <div className="card-modern p-4 text-center bg-gradient-to-b from-slate-400/10 to-transparent border-slate-300 dark:border-slate-700">
+                <div className="text-[11px] uppercase font-semibold text-slate-600 dark:text-slate-300 flex items-center justify-center gap-1">
+                  <span>🥈 2nd Place</span>
+                  <span className="text-[9px] px-1 rounded bg-slate-500/20">20%</span>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-1">Burned forever on-chain</div>
+                <div className="text-xl font-mono font-black text-slate-700 dark:text-slate-200 mt-1">
+                  {(leaderboard.length >= 2 ? leaderboard.length * 100000 * 0.2 : 0).toLocaleString()} <span className="text-[10px]">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Silver Runner-Up</div>
+              </div>
+
+              <div className="card-modern p-4 text-center bg-gradient-to-b from-amber-700/10 to-transparent border-amber-600/30 dark:border-amber-900">
+                <div className="text-[11px] uppercase font-semibold text-amber-800 dark:text-amber-500 flex items-center justify-center gap-1">
+                  <span>🥉 3rd Place</span>
+                  <span className="text-[9px] px-1 rounded bg-amber-700/20">{leaderboard.length >= 3 ? '10%' : '0%'}</span>
+                </div>
+                <div className="text-xl font-mono font-black text-amber-800 dark:text-amber-400 mt-1">
+                  {(leaderboard.length >= 3 ? leaderboard.length * 100000 * 0.1 : 0).toLocaleString()} <span className="text-[10px]">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-amber-700/80 dark:text-amber-500 mt-0.5">Bronze Finisher</div>
+              </div>
+
+              <div className="card-modern p-4 text-center col-span-2 md:col-span-1">
+                <div className="text-[11px] uppercase font-semibold text-rose-500">Burn (10%) 🔥</div>
+                <div className="text-xl font-mono font-black text-rose-600 dark:text-rose-400 mt-1">
+                  {(leaderboard.length * 100000 * 0.1).toLocaleString()} <span className="text-[10px] text-rose-400">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5">Sent to 0x...dEaD</div>
               </div>
             </div>
 
@@ -3226,7 +3363,7 @@ Current app data:
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <div>
                   <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                    Standings • Gameweek {selectedLeaderboardGw || activeGameweek?.gameweek || 3}
+                    Standings • Gameweek {selectedLeaderboardGw || activeGameweek?.gameweek || 4}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {leaderboard.length} {leaderboard.length === 1 ? 'manager' : 'managers'} competing
@@ -3252,14 +3389,32 @@ Current app data:
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
                     {leaderboard.map((entry, index) => {
                       const isCurrentUser = entry.walletAddress?.toLowerCase() === userWallet?.toLowerCase();
-                      const isWinner = index === 0;
+                      const is1st = index === 0;
+                      const is2nd = index === 1;
+                      const is3rd = index === 2;
+
+                      // Prize calculation per entry
+                      let prizeShare = 0;
+                      let sharePctLabel = '';
+                      if (is1st) {
+                        const pct = leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6;
+                        prizeShare = leaderboard.length * 100000 * pct;
+                        sharePctLabel = `${Math.round(pct * 100)}%`;
+                      } else if (is2nd && leaderboard.length >= 2) {
+                        prizeShare = leaderboard.length * 100000 * 0.2;
+                        sharePctLabel = '20%';
+                      } else if (is3rd && leaderboard.length >= 3) {
+                        prizeShare = leaderboard.length * 100000 * 0.1;
+                        sharePctLabel = '10%';
+                      }
+
                       return (
                         <tr 
                           key={entry.id || entry.walletAddress || index} 
                           className={`transition-colors ${isCurrentUser ? 'bg-emerald-50/60 dark:bg-emerald-950/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}
                         >
                           <td className="px-6 py-4">
-                            <span className={`font-bold ${index === 0 ? 'text-amber-500 text-base' : index === 1 ? 'text-slate-400' : index === 2 ? 'text-amber-700' : 'text-slate-500'}`}>
+                            <span className={`font-bold ${is1st ? 'text-amber-500 text-base' : is2nd ? 'text-slate-400' : is3rd ? 'text-amber-700' : 'text-slate-500'}`}>
                               #{index + 1}
                             </span>
                           </td>
@@ -3273,9 +3428,19 @@ Current app data:
                                   YOU
                                 </span>
                               )}
-                              {isWinner && (
+                              {is1st && (
                                 <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold font-sans">
-                                  🏆 1ST PLACE
+                                  🥇 1ST PLACE
+                                </span>
+                              )}
+                              {is2nd && (
+                                <span className="px-2 py-0.5 rounded bg-slate-500/20 text-slate-600 dark:text-slate-300 text-[10px] font-bold font-sans">
+                                  🥈 2ND PLACE
+                                </span>
+                              )}
+                              {is3rd && leaderboard.length >= 3 && (
+                                <span className="px-2 py-0.5 rounded bg-amber-700/20 text-amber-800 dark:text-amber-500 text-[10px] font-bold font-sans">
+                                  🥉 3RD PLACE
                                 </span>
                               )}
                             </div>
@@ -3284,10 +3449,13 @@ Current app data:
                             {entry.points || 0}
                           </td>
                           <td className="px-6 py-4 text-right">
-                            {isWinner ? (
-                              <span className="font-bold text-amber-600 dark:text-amber-400">
-                                {(leaderboard.length * 100000 * 0.9).toLocaleString()} $FPLS
-                              </span>
+                            {prizeShare > 0 ? (
+                              <div className="flex flex-col items-end">
+                                <span className={`font-bold ${is1st ? 'text-amber-600 dark:text-amber-400' : is2nd ? 'text-slate-700 dark:text-slate-300' : 'text-amber-800 dark:text-amber-500'}`}>
+                                  {prizeShare.toLocaleString()} $FPLS
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-sans">{sharePctLabel} Share</span>
+                              </div>
                             ) : (
                               <span className="text-slate-400">-</span>
                             )}
@@ -3588,7 +3756,7 @@ Current app data:
                 </div>
                 <h3 className="font-bold text-base text-slate-900 dark:text-white">Stake to Enter</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Pay the 100,000 $FPLS entry fee to submit your team for the gameweek. 90% enters the Winner-Takes-All Prize Pool, and 10% is burned permanently on-chain.
+                  Pay the 100,000 $FPLS entry fee to submit your team for the gameweek. 90% enters the Podium Prize Pool (60% to 1st, 20% to 2nd, 10% to 3rd), and 10% is burned permanently on-chain.
                 </p>
               </div>
 
@@ -3608,7 +3776,7 @@ Current app data:
                 </div>
                 <h3 className="font-bold text-base text-slate-900 dark:text-white">Tactics & 2x Captain</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Choose from 6 dynamic formations and designate your Captain for double points. At the end of the gameweek, the highest point scorer claims the prize pool!
+                  Choose from 6 dynamic formations and designate your Captain for double points. At the end of the gameweek, the top 3 highest scoring managers claim their respective podium prize shares!
                 </p>
               </div>
             </div>

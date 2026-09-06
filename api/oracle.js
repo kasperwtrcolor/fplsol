@@ -5,10 +5,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { gameweek, winner, totalPrizePool } = req.body;
+  const { gameweek, winner, rank, prizeAmount, totalPrizePool } = req.body;
+  const amount = prizeAmount || totalPrizePool;
+  const rankNum = rank !== undefined ? Number(rank) : 1;
 
-  if (!gameweek || !winner || !totalPrizePool) {
-    return res.status(400).json({ error: 'Missing parameters' });
+  if (!gameweek || !winner || !amount) {
+    return res.status(400).json({ error: 'Missing parameters (gameweek, winner, and prizeAmount are required)' });
   }
 
   const ORACLE_PRIVATE_KEY = process.env.ORACLE_PRIVATE_KEY;
@@ -19,20 +21,30 @@ export default async function handler(req, res) {
   try {
     const wallet = new ethers.Wallet(ORACLE_PRIVATE_KEY);
 
-    // Pack the data exactly as the Solidity contract expects:
-    // abi.encodePacked(uint256, address, uint256)
-    const payload = ethers.utils.solidityPack(
-      ['uint256', 'address', 'uint256'],
-      [gameweek, winner, totalPrizePool]
+    // 1. Multi-winner Podium payload: abi.encodePacked(uint256 gameweek, uint256 rank, address winner, uint256 prizeAmount)
+    const podiumPayload = ethers.utils.solidityPack(
+      ['uint256', 'uint256', 'address', 'uint256'],
+      [gameweek, rankNum, winner, amount]
     );
+    const podiumHash = ethers.utils.keccak256(podiumPayload);
+    const signature = await wallet.signMessage(ethers.utils.arrayify(podiumHash));
 
-    // Hash the payload
-    const messageHash = ethers.utils.keccak256(payload);
+    // 2. Legacy payload for backward compatibility: abi.encodePacked(uint256 gameweek, address winner, uint256 totalPrizePool)
+    const legacyPayload = ethers.utils.solidityPack(
+      ['uint256', 'address', 'uint256'],
+      [gameweek, winner, amount]
+    );
+    const legacyHash = ethers.utils.keccak256(legacyPayload);
+    const legacySignature = await wallet.signMessage(ethers.utils.arrayify(legacyHash));
 
-    // Sign the hash (ethers handles the \x19Ethereum Signed Message prefix automatically)
-    const signature = await wallet.signMessage(ethers.utils.arrayify(messageHash));
-
-    res.status(200).json({ signature });
+    res.status(200).json({ 
+      signature, 
+      legacySignature,
+      gameweek,
+      rank: rankNum,
+      winner,
+      amount
+    });
   } catch (error) {
     console.error('Error signing payload:', error);
     res.status(500).json({ error: 'Failed to generate signature' });

@@ -198,7 +198,7 @@ export const LandingPage = ({
           {/* Status Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold mb-6 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>ROBINHOOD CHAIN • GAMEWEEK {activeGameweek?.gameweek || 3} ACTIVE</span>
+            <span>ROBINHOOD CHAIN • GAMEWEEK {activeGameweek?.gameweek || 4} ACTIVE</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]">

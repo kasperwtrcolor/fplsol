@@ -9,6 +9,67 @@ import * as firebaseService from './firebaseService';
 import { VectorKit } from './components/VectorKit';
 import { TeamShield } from './components/TeamShield';
 import { LandingPage } from './components/LandingPage';
+
+export const isFixtureFinished = (fixture) => {
+  if (!fixture) return false;
+  if (fixture.finished === true) return true;
+  if (fixture.finished_provisional === true) return true;
+  if (fixture.started && fixture.minutes >= 90) return true;
+  if (fixture.started && fixture.kickoff_time) {
+    const kickoffMs = new Date(fixture.kickoff_time).getTime();
+    if (Date.now() - kickoffMs > 130 * 60 * 1000) return true;
+  }
+  return false;
+};
+
+const GameweekCountdownBanner = ({ gameweek, deadlineTime }) => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    if (!deadlineTime) return null;
+    return new Date(deadlineTime).getTime() - Date.now();
+  });
+
+  useEffect(() => {
+    if (!deadlineTime) return;
+    const update = () => {
+      setTimeLeft(new Date(deadlineTime).getTime() - Date.now());
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [deadlineTime]);
+
+  if (!deadlineTime || timeLeft === null) return null;
+
+  if (timeLeft <= 0) {
+    return (
+      <div className="card-modern p-5 text-center">
+        <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+          Gameweek {gameweek} Deadline
+        </div>
+        <div className="text-2xl font-mono font-bold text-rose-500 mt-1.5">
+          DEADLINE PASSED (SUBMISSIONS CLOSED)
+        </div>
+      </div>
+    );
+  }
+
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+  return (
+    <div className="card-modern p-5 text-center">
+      <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
+        Gameweek {gameweek} Deadline Countdown (1hr before kickoff)
+      </div>
+      <div className="text-3xl font-mono font-black text-slate-900 dark:text-white mt-1.5">
+        {days}d {hours}h {minutes}m {seconds}s
+      </div>
+    </div>
+  );
+};
+
 // Removed old injected font and style elements
 const AnimatedTitle = ({
   title = "FPL.STOCKS",
@@ -437,7 +498,7 @@ function App() {
   const [gw1Countdown, setGw1Countdown] = useState('Loading...');
   const [liveFixtures, setLiveFixtures] = useState([]);
   const [allFplFixtures, setAllFplFixtures] = useState([]);
-  const [browsingFixtureGw, setBrowsingFixtureGw] = useState(3);
+  const [browsingFixtureGw, setBrowsingFixtureGw] = useState(4);
   const [fplTeams, setFplTeams] = useState({});
   const [targetDate, setTargetDate] = useState(null);
   const [livePoints, setLivePoints] = useState({});
@@ -462,7 +523,7 @@ function App() {
           const fixturesData = await fixturesRes.json();
           if (Array.isArray(fixturesData)) {
             setAllFplFixtures(fixturesData);
-            setBrowsingFixtureGw(nextGw ? nextGw.id : 3);
+            setBrowsingFixtureGw(nextGw ? nextGw.id : 4);
           }
           const nextGwFixtures = Array.isArray(fixturesData) ? fixturesData.filter(f => f.event === nextGw.id).slice(0, 3) : [];
           setLiveFixtures(nextGwFixtures);
@@ -486,6 +547,12 @@ function App() {
     };
     fetchFplData();
   }, []);
+
+  useEffect(() => {
+    if (activeGameweek?.gameweek) {
+      setBrowsingFixtureGw(activeGameweek.gameweek);
+    }
+  }, [activeGameweek?.gameweek]);
 
   useEffect(() => {
     if (!targetDate) return;
@@ -515,7 +582,7 @@ function App() {
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
   
   // Calculate active gameweek submission window & deadline
-  const activeGwNumber = activeGameweek?.gameweek || 3;
+  const activeGwNumber = activeGameweek?.gameweek || 4;
   const currentGwFixtures = allFplFixtures.filter(f => f.event === activeGwNumber);
 
   let firstKickoff = null;
@@ -1020,21 +1087,19 @@ function App() {
       let currentGameweekNumber = currentFplEvent.id;
       let isFplFinished = currentFplEvent.finished && currentFplEvent.data_checked;
 
-      // Smart progression: If the current gameweek's fixtures are all finished, move to the next one
-      const gameweekFixtures = fixturesData.filter(fixture => fixture.event === currentGameweekNumber && fixture.kickoff_time !== null);
-      if (gameweekFixtures.length > 0) {
-        const allFixturesFinished = gameweekFixtures.every(fixture => fixture.finished === true);
-        if (allFixturesFinished && !isFplFinished) {
-           isFplFinished = true;
-        }
-        
-        if (allFixturesFinished) {
+      // Smart progression: Advance to next gameweek while all fixtures of the current one are finished
+      while (true) {
+        const gwFixtures = fixturesData.filter(fixture => fixture.event === currentGameweekNumber && fixture.kickoff_time !== null);
+        if (gwFixtures.length > 0 && gwFixtures.every(isFixtureFinished)) {
           const nextEvent = data.events.find(event => event.id === currentGameweekNumber + 1);
           if (nextEvent) {
-             currentGameweekNumber = nextEvent.id;
-             isFplFinished = false; // Next one hasn't finished yet
+            console.log(`Gameweek ${currentGameweekNumber} fixtures all finished. Advancing to Gameweek ${nextEvent.id}`);
+            currentGameweekNumber = nextEvent.id;
+            isFplFinished = false; // Next one hasn't finished yet
+            continue;
           }
         }
+        break;
       }
 
       // Reusable Auto-Finalize Logic
@@ -1573,7 +1638,7 @@ function App() {
           console.log(`No fixtures found for gameweek ${gwNumber}, skipping`);
           continue;
         }
-        const allFixturesFinished = gameweekFixtures.every(fixture => fixture.finished === true);
+        const allFixturesFinished = gameweekFixtures.every(isFixtureFinished);
         console.log(`Gameweek ${gwNumber}: ${gameweekFixtures.length} fixtures, all finished: ${allFixturesFinished}`);
         if (!allFixturesFinished) {
           actualCurrentGameweek = gwNumber;
@@ -3266,8 +3331,14 @@ Current app data:
 
         {currentView === 'fixtures' && (() => {
           const displayedFixtures = allFplFixtures.filter(f => f.event === browsingFixtureGw);
-          const allGwFinished = displayedFixtures.length > 0 && displayedFixtures.every(f => f.finished);
-          const hasLiveMatch = displayedFixtures.some(f => f.started && !f.finished);
+          const allGwFinished = displayedFixtures.length > 0 && displayedFixtures.every(isFixtureFinished);
+          const hasLiveMatch = displayedFixtures.some(f => f.started && !isFixtureFinished(f));
+
+          const validKickoffs = displayedFixtures
+            .filter(f => f.kickoff_time)
+            .map(f => new Date(f.kickoff_time).getTime())
+            .sort((a, b) => a - b);
+          const gwDeadline = validKickoffs.length > 0 ? new Date(validKickoffs[0] - 60 * 60 * 1000) : null;
 
           return (
             <div className="w-full max-w-5xl mx-auto space-y-6">
@@ -3330,16 +3401,12 @@ Current app data:
                 </div>
               </div>
 
-              {/* Countdown Banner if viewing current gameweek and not started */}
-              {browsingFixtureGw === activeGwNumber && gw1Countdown !== 'GAMEWEEK STARTED' && (
-                <div className="card-modern p-5 text-center">
-                  <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
-                    Gameweek {activeGwNumber} Deadline Countdown (1hr before kickoff)
-                  </div>
-                  <div className="text-3xl font-mono font-black text-slate-900 dark:text-white mt-1.5">
-                    {gw1Countdown}
-                  </div>
-                </div>
+              {/* Dynamic Gameweek Deadline Countdown Banner (1hr before kickoff) */}
+              {!allGwFinished && !hasLiveMatch && gwDeadline && (
+                <GameweekCountdownBanner 
+                  gameweek={browsingFixtureGw} 
+                  deadlineTime={gwDeadline} 
+                />
               )}
 
               {/* Match Fixtures List */}
@@ -3379,11 +3446,11 @@ Current app data:
                           <div className="flex items-center gap-1.5">
                             <span>{fixture.team_h_score ?? 0} - {fixture.team_a_score ?? 0}</span>
                             <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                              fixture.finished 
+                              isFixtureFinished(fixture) 
                                 ? 'bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200' 
                                 : 'bg-rose-500 text-white animate-pulse'
                             }`}>
-                              {fixture.finished ? 'FT' : 'LIVE'}
+                              {isFixtureFinished(fixture) ? 'FT' : 'LIVE'}
                             </span>
                           </div>
                         ) : (

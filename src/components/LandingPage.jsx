@@ -1,66 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, 
-  Flame, 
-  Coins, 
   ChevronRight, 
-  TrendingUp, 
-  Shield, 
-  Sparkles, 
   Newspaper, 
   ExternalLink, 
   RefreshCw, 
-  CheckCircle2, 
-  Zap,
-  ArrowRight,
-  UserCheck,
-  Award
+  ArrowRight
 } from 'lucide-react';
 import { VectorKit } from './VectorKit';
-import { TeamShield } from './TeamShield';
 
-// Pre-defined star lineup for formation preview
-const STAR_PLAYERS = [
-  { id: 350, web_name: "Haaland", second_name: "Haaland", element_type: 4, team: 15, team_code: 43, squad_number: 9, now_cost: 152, isCaptain: true },
-  { id: 19,  web_name: "Saka", second_name: "Saka", element_type: 3, team: 1, team_code: 3, squad_number: 7, now_cost: 101 },
-  { id: 328, web_name: "Salah", second_name: "Salah", element_type: 3, team: 14, team_code: 14, squad_number: 11, now_cost: 126 },
-  { id: 211, web_name: "Palmer", second_name: "Palmer", element_type: 3, team: 6, team_code: 8, squad_number: 20, now_cost: 106 },
-  { id: 355, web_name: "De Bruyne", second_name: "De Bruyne", element_type: 3, team: 15, team_code: 43, squad_number: 17, now_cost: 95 },
-  { id: 377, web_name: "Isak", second_name: "Isak", element_type: 4, team: 17, team_code: 4, squad_number: 14, now_cost: 85 },
-  { id: 18,  web_name: "Saliba", second_name: "Saliba", element_type: 2, team: 1, team_code: 3, squad_number: 2, now_cost: 60 },
-  { id: 311, web_name: "Alexander-Arnold", second_name: "Trent", element_type: 2, team: 14, team_code: 14, squad_number: 66, now_cost: 71 },
-  { id: 356, web_name: "Gvardiol", second_name: "Gvardiol", element_type: 2, team: 15, team_code: 43, squad_number: 24, now_cost: 60 },
-  { id: 450, web_name: "Porro", second_name: "Porro", element_type: 2, team: 19, team_code: 6, squad_number: 23, now_cost: 55 },
-  { id: 1,   web_name: "Raya", second_name: "Raya", element_type: 1, team: 1, team_code: 3, squad_number: 22, now_cost: 55 },
+// Fallback star lineup if players data is loading
+const FALLBACK_STAR_11 = [
+  { id: 350, web_name: "Haaland", second_name: "Haaland", element_type: 4, team: 15, team_code: 43, squad_number: 9, now_cost: 152, event_points: 17, total_points: 35, isCaptain: true },
+  { id: 377, web_name: "Isak", second_name: "Isak", element_type: 4, team: 17, team_code: 4, squad_number: 14, now_cost: 85, event_points: 12, total_points: 24 },
+  { id: 19,  web_name: "Saka", second_name: "Saka", element_type: 3, team: 1, team_code: 3, squad_number: 7, now_cost: 101, event_points: 13, total_points: 28 },
+  { id: 328, web_name: "Salah", second_name: "Salah", element_type: 3, team: 14, team_code: 14, squad_number: 11, now_cost: 126, event_points: 15, total_points: 32 },
+  { id: 211, web_name: "Palmer", second_name: "Palmer", element_type: 3, team: 6, team_code: 8, squad_number: 20, now_cost: 106, event_points: 14, total_points: 29 },
+  { id: 355, web_name: "De Bruyne", second_name: "De Bruyne", element_type: 3, team: 15, team_code: 43, squad_number: 17, now_cost: 95, event_points: 11, total_points: 22 },
+  { id: 18,  web_name: "Saliba", second_name: "Saliba", element_type: 2, team: 1, team_code: 3, squad_number: 2, now_cost: 60, event_points: 9, total_points: 18 },
+  { id: 311, web_name: "Alexander-Arnold", second_name: "Trent", element_type: 2, team: 14, team_code: 14, squad_number: 66, now_cost: 71, event_points: 10, total_points: 20 },
+  { id: 356, web_name: "Gvardiol", second_name: "Gvardiol", element_type: 2, team: 15, team_code: 43, squad_number: 24, now_cost: 60, event_points: 8, total_points: 16 },
+  { id: 450, web_name: "Porro", second_name: "Porro", element_type: 2, team: 19, team_code: 6, squad_number: 23, now_cost: 55, event_points: 9, total_points: 17 },
+  { id: 1,   web_name: "Raya", second_name: "Raya", element_type: 1, team: 1, team_code: 3, squad_number: 22, now_cost: 55, event_points: 11, total_points: 21 },
 ];
 
-// Formation coordinate maps (percentage top/left on pitch)
-const FORMATION_COORDS = {
-  '4-3-3': {
-    gk:  [{ top: '84%', left: '50%' }],
-    def: [{ top: '64%', left: '16%' }, { top: '64%', left: '38%' }, { top: '64%', left: '62%' }, { top: '64%', left: '84%' }],
-    mid: [{ top: '40%', left: '22%' }, { top: '42%', left: '50%' }, { top: '40%', left: '78%' }],
-    fwd: [{ top: '16%', left: '20%' }, { top: '14%', left: '50%' }, { top: '16%', left: '80%' }],
-  },
-  '3-5-2': {
-    gk:  [{ top: '84%', left: '50%' }],
-    def: [{ top: '64%', left: '22%' }, { top: '64%', left: '50%' }, { top: '64%', left: '78%' }],
-    mid: [{ top: '40%', left: '14%' }, { top: '43%', left: '32%' }, { top: '38%', left: '50%' }, { top: '43%', left: '68%' }, { top: '40%', left: '86%' }],
-    fwd: [{ top: '15%', left: '35%' }, { top: '15%', left: '65%' }],
-  },
-  '4-4-2': {
-    gk:  [{ top: '84%', left: '50%' }],
-    def: [{ top: '64%', left: '16%' }, { top: '64%', left: '38%' }, { top: '64%', left: '62%' }, { top: '64%', left: '84%' }],
-    mid: [{ top: '40%', left: '16%' }, { top: '40%', left: '38%' }, { top: '40%', left: '62%' }, { top: '40%', left: '84%' }],
-    fwd: [{ top: '15%', left: '35%' }, { top: '15%', left: '65%' }],
-  },
-  '3-4-3': {
-    gk:  [{ top: '84%', left: '50%' }],
-    def: [{ top: '64%', left: '22%' }, { top: '64%', left: '50%' }, { top: '64%', left: '78%' }],
-    mid: [{ top: '40%', left: '16%' }, { top: '40%', left: '38%' }, { top: '40%', left: '62%' }, { top: '40%', left: '84%' }],
-    fwd: [{ top: '16%', left: '20%' }, { top: '14%', left: '50%' }, { top: '16%', left: '80%' }],
-  }
+// Fixed 4-4-2 pitch coordinates
+const COORDS_442 = {
+  gk:  [{ top: '85%', left: '50%' }],
+  def: [
+    { top: '65%', left: '16%' },
+    { top: '65%', left: '38%' },
+    { top: '65%', left: '62%' },
+    { top: '65%', left: '84%' }
+  ],
+  mid: [
+    { top: '42%', left: '16%' },
+    { top: '42%', left: '38%' },
+    { top: '42%', left: '62%' },
+    { top: '42%', left: '84%' }
+  ],
+  fwd: [
+    { top: '18%', left: '35%' },
+    { top: '18%', left: '65%' }
+  ]
 };
 
 // Fallback Premier League news items in case API is unavailable or offline
@@ -106,25 +88,8 @@ export const LandingPage = ({
   fplTeams = {},
   onSelectPlayer
 }) => {
-  const [activeFormation, setActiveFormation] = useState('4-3-3');
-  const [autoCycle, setAutoCycle] = useState(false);
   const [news, setNews] = useState(FALLBACK_NEWS);
   const [newsLoading, setNewsLoading] = useState(false);
-
-  // Formations list
-  const formations = ['4-3-3', '3-5-2', '4-4-2', '3-4-3'];
-
-  // Auto-cycle formations demo
-  useEffect(() => {
-    if (!autoCycle) return;
-    const interval = setInterval(() => {
-      setActiveFormation(prev => {
-        const idx = formations.indexOf(prev);
-        return formations[(idx + 1) % formations.length];
-      });
-    }, 3800);
-    return () => clearInterval(interval);
-  }, [autoCycle]);
 
   // Fetch live sports news from /api/news
   const fetchNews = async () => {
@@ -148,60 +113,57 @@ export const LandingPage = ({
     fetchNews();
   }, []);
 
-  // Compute Gameweek Top Performers from real live FPL data
-  const topPerformers = React.useMemo(() => {
-    if (!players || players.length === 0) return [];
-    
-    // Check if current gameweek has live event points
+  // Compute Gameweek Star Performers in 4-4-2 from real live FPL data
+  const pitchPlayers = React.useMemo(() => {
+    if (!players || players.length === 0) {
+      // Map fallback players to 4-4-2 positions
+      const gks = FALLBACK_STAR_11.filter(p => p.element_type === 1);
+      const defs = FALLBACK_STAR_11.filter(p => p.element_type === 2);
+      const mids = FALLBACK_STAR_11.filter(p => p.element_type === 3);
+      const fwds = FALLBACK_STAR_11.filter(p => p.element_type === 4);
+      return [
+        { ...gks[0], coord: COORDS_442.gk[0] },
+        ...defs.slice(0, 4).map((p, i) => ({ ...p, coord: COORDS_442.def[i] })),
+        ...mids.slice(0, 4).map((p, i) => ({ ...p, coord: COORDS_442.mid[i] })),
+        ...fwds.slice(0, 2).map((p, i) => ({ ...p, coord: COORDS_442.fwd[i] })),
+      ];
+    }
+
     const hasLivePoints = players.some(p => (p.event_points || 0) > 0);
-    
-    const sorted = [...players].sort((a, b) => {
-      if (hasLivePoints) {
-        return (b.event_points || 0) - (a.event_points || 0);
+    const scoreOf = (p) => hasLivePoints 
+      ? (p.event_points || 0) 
+      : (parseFloat(p.form || 0) * 10 + (p.total_points || 0));
+
+    const gks = players.filter(p => p.element_type === 1).sort((a, b) => scoreOf(b) - scoreOf(a));
+    const defs = players.filter(p => p.element_type === 2).sort((a, b) => scoreOf(b) - scoreOf(a));
+    const mids = players.filter(p => p.element_type === 3).sort((a, b) => scoreOf(b) - scoreOf(a));
+    const fwds = players.filter(p => p.element_type === 4).sort((a, b) => scoreOf(b) - scoreOf(a));
+
+    const selectedGK = gks.slice(0, 1);
+    const selectedDEFs = defs.slice(0, 4);
+    const selectedMIDs = mids.slice(0, 4);
+    const selectedFWDs = fwds.slice(0, 2);
+
+    const all11 = [...selectedGK, ...selectedDEFs, ...selectedMIDs, ...selectedFWDs];
+
+    // Find highest point scorer for Captain armband
+    let topScorerId = all11.length > 0 ? all11[0].id : null;
+    let maxScore = -1;
+    all11.forEach(p => {
+      const s = scoreOf(p);
+      if (s > maxScore) {
+        maxScore = s;
+        topScorerId = p.id;
       }
-      // Fallback to form then total_points
-      const formA = parseFloat(a.form || 0);
-      const formB = parseFloat(b.form || 0);
-      if (formB !== formA) return formB - formA;
-      return (b.total_points || 0) - (a.total_points || 0);
     });
 
-    return sorted.slice(0, 6);
+    return [
+      { ...selectedGK[0], coord: COORDS_442.gk[0], isCaptain: selectedGK[0]?.id === topScorerId },
+      ...selectedDEFs.map((p, i) => ({ ...p, coord: COORDS_442.def[i], isCaptain: p.id === topScorerId })),
+      ...selectedMIDs.map((p, i) => ({ ...p, coord: COORDS_442.mid[i], isCaptain: p.id === topScorerId })),
+      ...selectedFWDs.map((p, i) => ({ ...p, coord: COORDS_442.fwd[i], isCaptain: p.id === topScorerId })),
+    ];
   }, [players]);
-
-  // Helper for position name
-  const getPosName = (type) => {
-    switch (type) {
-      case 1: return 'GK';
-      case 2: return 'DEF';
-      case 3: return 'MID';
-      case 4: return 'FWD';
-      default: return 'PL';
-    }
-  };
-
-  // Build formation preview players mapped to coordinates
-  const currentCoords = FORMATION_COORDS[activeFormation] || FORMATION_COORDS['4-3-3'];
-  
-  // Sort star players into GKs, DEFs, MIDs, FWDs
-  const gks = STAR_PLAYERS.filter(p => p.element_type === 1);
-  const defs = STAR_PLAYERS.filter(p => p.element_type === 2);
-  const mids = STAR_PLAYERS.filter(p => p.element_type === 3);
-  const fwds = STAR_PLAYERS.filter(p => p.element_type === 4);
-
-  // Position assignments based on active formation counts
-  const [defCount, midCount, fwdCount] = activeFormation.split('-').map(Number);
-  
-  const placedPlayers = [
-    // 1 GK
-    { ...gks[0], coord: currentCoords.gk[0] },
-    // DEFs
-    ...defs.slice(0, defCount).map((p, i) => ({ ...p, coord: currentCoords.def[i] })),
-    // MIDs
-    ...mids.slice(0, midCount).map((p, i) => ({ ...p, coord: currentCoords.mid[i] })),
-    // FWDs
-    ...fwds.slice(0, fwdCount).map((p, i) => ({ ...p, coord: currentCoords.fwd[i] })),
-  ];
 
   const formatRelativeTime = (isoString) => {
     try {
@@ -298,52 +260,31 @@ export const LandingPage = ({
         </div>
       </section>
 
-      {/* 2. ANIMATED FORMATION SHOWCASE (USING VECTOR KITS) */}
+      {/* 2. STAR PERFORMERS OF THE GAMEWEEK (4-4-2 TACTICAL FORMATION) */}
       <section className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
           <div>
             <div className="text-xs font-mono font-semibold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
-              Tactical Mastery
+              Gameweek {activeGameweek?.gameweek || 3} Selection
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Dynamic Formations & Vector Kits
+              Star Performers (4-4-2)
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
-              Switch tactics on the fly. Watch your custom vector jerseys fluidly glide into place across 6 supported Premier League formations.
+              The highest-performing Premier League stars for this gameweek arranged in a classic 4-4-2 lineup based on official match data.
             </p>
           </div>
 
-          {/* Formation Pills */}
-          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
-            {formations.map(f => (
-              <button
-                key={f}
-                onClick={() => { setActiveFormation(f); setAutoCycle(false); }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
-                  activeFormation === f
-                    ? 'bg-emerald-600 text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
-                }`}
-              >
-                {f}
-              </button>
-            ))}
-            <button
-              onClick={() => setAutoCycle(!autoCycle)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono flex items-center gap-1 transition-all cursor-pointer ${
-                autoCycle 
-                  ? 'bg-amber-500/20 text-amber-500 font-bold border border-amber-500/30'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
-              title="Auto-cycle formations"
-            >
-              <RefreshCw className={`w-3 h-3 ${autoCycle ? 'animate-spin' : ''}`} />
-              <span>Auto</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setCurrentView('team')}
+            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>Build Your Own 11</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Realistic Emerald Pitch with Floating Vectors */}
+        {/* Tactical Emerald Pitch with Star Performers */}
         <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] max-h-[520px] rounded-3xl overflow-hidden border-2 border-emerald-800/80 shadow-2xl bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-950 p-4 select-none">
           {/* Tactical Pitch Markings */}
           <div className="absolute inset-4 border-2 border-white/20 rounded-2xl pointer-events-none">
@@ -359,33 +300,33 @@ export const LandingPage = ({
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-52 sm:w-64 h-20 sm:h-24 border-t-2 border-l-2 border-r-2 border-white/20" />
           </div>
 
-          {/* Animated Player Tokens */}
-          {placedPlayers.map((player) => {
+          {/* Star Performer Player Tokens */}
+          {pitchPlayers.map((player) => {
             const team = fplTeams[player.team];
+            const points = player.event_points || player.total_points || 0;
+
             return (
-              <motion.div
+              <div
                 key={player.id}
-                layout
-                initial={false}
-                animate={{
+                style={{
                   top: player.coord.top,
                   left: player.coord.left,
                 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 120,
-                  damping: 18
-                }}
                 className="absolute -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center group cursor-pointer"
+                onClick={() => {
+                  if (onSelectPlayer) onSelectPlayer(player);
+                  setCurrentView('team');
+                }}
+                title={`Click to add ${player.second_name || player.web_name} to your squad`}
               >
-                {/* Captain Badge */}
+                {/* Captain Armband on Top Performer */}
                 {player.isCaptain && (
                   <div className="absolute -top-3 -right-2 bg-amber-400 text-slate-950 text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center font-mono shadow-md border border-amber-200 z-20">
                     C
                   </div>
                 )}
 
-                {/* Vector Kit */}
+                {/* Jersey Kit */}
                 <div className="transform transition-transform group-hover:scale-110">
                   <VectorKit 
                     player={player} 
@@ -394,18 +335,20 @@ export const LandingPage = ({
                   />
                 </div>
 
-                {/* Player Tag */}
-                <div className="mt-0.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-emerald-500/30 text-white text-[9px] sm:text-[10px] font-bold tracking-tight shadow-md text-center whitespace-nowrap">
+                {/* Player Tag with Points & Price */}
+                <div className="mt-0.5 px-2 py-0.5 rounded-md bg-slate-900/90 border border-emerald-500/40 text-white text-[9px] sm:text-[10px] font-bold tracking-tight shadow-md text-center whitespace-nowrap">
                   <span>{player.second_name || player.web_name}</span>
-                  <span className="ml-1 text-[8px] text-emerald-400 font-mono">£{(player.now_cost / 10).toFixed(1)}M</span>
+                  <span className="ml-1 text-[8px] text-emerald-400 font-mono">
+                    {points > 0 ? `${points} PTS` : `£${(player.now_cost / 10).toFixed(1)}M`}
+                  </span>
                 </div>
-              </motion.div>
+              </div>
             );
           })}
 
-          {/* Formation Label Overlay */}
-          <div className="absolute bottom-3 left-4 text-xs font-mono font-bold text-white/50 bg-black/40 px-3 py-1 rounded-xl backdrop-blur-sm">
-            FORMATION: {activeFormation}
+          {/* Bottom Pitch Badges */}
+          <div className="absolute bottom-3 left-4 text-xs font-mono font-bold text-white/60 bg-black/40 px-3 py-1 rounded-xl backdrop-blur-sm">
+            FORMATION: 4-4-2
           </div>
 
           <div className="absolute bottom-3 right-4">
@@ -413,103 +356,14 @@ export const LandingPage = ({
               onClick={() => setCurrentView('team')}
               className="text-xs font-semibold text-emerald-300 hover:text-white bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 px-3 py-1.5 rounded-xl backdrop-blur-sm transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <span>Build this Formation</span>
+              <span>Build Your Squad</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </section>
 
-      {/* 3. GAMEWEEK TOP PERFORMERS SHOWCASE */}
-      <section className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
-          <div>
-            <div className="text-xs font-mono font-semibold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
-              Official Premier League Data
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
-              Gameweek Star Performers
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
-              Real-time match data synced from the official Premier League feed. High-performing value picks make all the difference under the £80.0M cap.
-            </p>
-          </div>
-
-          <button
-            onClick={() => setCurrentView('fixtures')}
-            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
-          >
-            <span>View All Fixtures</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* Players Card Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {topPerformers.map((player) => {
-            const team = fplTeams[player.team];
-            const pos = getPosName(player.element_type);
-            const points = player.event_points || player.total_points || 0;
-
-            return (
-              <div 
-                key={player.id}
-                className="card-modern p-4 flex items-center justify-between gap-4 hover:border-emerald-500/40 transition-all hover:shadow-card group"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex-shrink-0">
-                    <VectorKit 
-                      player={player} 
-                      shortName={team?.short_name}
-                      className="w-12 h-14"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <TeamShield 
-                        teamId={player.team} 
-                        shortName={team?.short_name}
-                        teamCode={team?.code}
-                        className="w-4 h-5" 
-                      />
-                      <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">
-                        {team?.short_name || 'PL'}
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
-                        {pos}
-                      </span>
-                    </div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white truncate mt-0.5">
-                      {player.first_name} {player.second_name}
-                    </div>
-                    <div className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
-                      £{(player.now_cost / 10).toFixed(1)}M
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <div className="px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-mono font-bold text-sm">
-                    {points} PTS
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (onSelectPlayer) onSelectPlayer(player);
-                      setCurrentView('team');
-                    }}
-                    className="text-[11px] font-semibold text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <span>Add to 11</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 4. FREE LIVE SPORTS NEWS FEED */}
+      {/* 3. FREE LIVE SPORTS NEWS FEED */}
       <section className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
           <div className="flex items-center gap-3">
@@ -572,7 +426,7 @@ export const LandingPage = ({
         </div>
       </section>
 
-      {/* 5. HOW IT WORKS 3-STEP TEASER */}
+      {/* 4. HOW IT WORKS 3-STEP TEASER */}
       <section className="card-modern p-8 sm:p-10 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 border border-slate-200 dark:border-slate-800">
         <div className="max-w-3xl mx-auto text-center space-y-3">
           <div className="text-xs font-mono font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">

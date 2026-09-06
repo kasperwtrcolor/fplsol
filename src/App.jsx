@@ -406,9 +406,9 @@ const LandingHero = ({ setCurrentView, activeGameweek }) => {
         >
           <div className="flex-1 space-y-6 md:pl-12">
             <h2 className="text-yellow-500 font-mono text-xs tracking-[0.2em] uppercase">02 / The Budget</h2>
-            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Manage £70M</h3>
+            <h3 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tighter uppercase leading-none font-hand">Manage £80M</h3>
             <p className="text-gray-600 dark:text-gray-400 font-mono text-xs leading-relaxed max-w-md">
-              You have exactly £70.0M to build your dream team of 11 players. Player prices match the official Fantasy Premier League data. Spend wisely to maximize your point potential.
+              You have exactly £80.0M to build your dream team of 11 players. Player prices match the official Fantasy Premier League data. Spend wisely to maximize your point potential.
             </p>
           </div>
           <div className="flex-1 w-full relative">
@@ -500,7 +500,7 @@ function App() {
   const [selectedFixtureGameweek, setSelectedFixtureGameweek] = useState(1);
   const [selectedGameweekFixtures, setSelectedGameweekFixtures] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState([]);
-  const [teamBudget, setTeamBudget] = useState(700);
+  const [teamBudget, setTeamBudget] = useState(800);
   const [captain, setCaptain] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [userEntries, setUserEntries] = useState([]);
@@ -656,7 +656,7 @@ function App() {
         if (cap) setCaptain(cap);
         
         const actualCost = submittedTeam.reduce((sum, p) => sum + p.now_cost, 0);
-        setTeamBudget(700 - actualCost);
+        setTeamBudget(800 - actualCost);
       } catch (error) {
         console.error('Error parsing user entry:', error);
       }
@@ -1860,7 +1860,7 @@ function App() {
   };
   const resetTeam = () => {
     setSelectedTeam([]);
-    setTeamBudget(700);
+    setTeamBudget(800);
     setCaptain(null);
   };
   const getFormationRequirements = formation => {
@@ -2420,7 +2420,7 @@ Current app data:
         gameId: activeGameweek.id,
         team: JSON.stringify(playerIds),
         captain: captain.id.toString(),
-        teamValue: 700 - teamBudget,
+        teamValue: 800 - teamBudget,
         points: 0,
         txHash: enterTx
       });
@@ -2509,7 +2509,7 @@ Current app data:
     if (!selectedTeam || selectedTeam.length === 0) return '#';
     const formationStr = selectedFormation;
     const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
-    const teamValue = ((700 - teamBudget) / 10).toFixed(1);
+    const teamValue = ((800 - teamBudget) / 10).toFixed(1);
     const playerLines = selectedTeam.map(p => {
       const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
       const isCap = captain && captain.id === p.id;
@@ -2523,7 +2523,7 @@ Current app data:
     if (!selectedTeam || selectedTeam.length === 0) return;
     const formationStr = selectedFormation;
     const captainName = captain ? `${captain.first_name} ${captain.second_name}` : 'None';
-    const teamValue = ((700 - teamBudget) / 10).toFixed(1);
+    const teamValue = ((800 - teamBudget) / 10).toFixed(1);
     const playerLines = selectedTeam.map(p => {
       const pos = positions.find(pt => pt.id === p.element_type)?.singular_name_short || '?';
       const isCap = captain && captain.id === p.id;
@@ -3035,20 +3035,20 @@ Current app data:
                   Squad Builder <span className="text-sm font-normal text-slate-500">({selectedTeam.length}/11 Players)</span>
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Pick your formation, build within £70.0M, and select your Captain for 2x points.
+                  Pick your formation, build within £80.0M, and select your Captain for 2x points.
                 </p>
               </div>
 
               {/* Budget Tracker Gauge */}
               <div className="flex items-center gap-4">
                 <div className={`px-4 py-2 rounded-xl text-center border ${
-                  teamBudget < 70 && selectedTeam.length < 11
+                  teamBudget < 80 && selectedTeam.length < 11
                     ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-900'
                     : 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900'
                 }`}>
                   <div className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Remaining Budget</div>
                   <div className={`text-lg font-mono font-bold ${
-                    teamBudget < 70 && selectedTeam.length < 11
+                    teamBudget < 80 && selectedTeam.length < 11
                       ? 'text-rose-600 dark:text-rose-400'
                       : 'text-emerald-700 dark:text-emerald-300'
                   }`}>
@@ -3616,9 +3616,9 @@ Current app data:
                 <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
                   02
                 </div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white">Manage £70.0M Cap</h3>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white">Manage £80.0M Cap</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Select 11 real Premier League players matching official market valuations. Balance heavy hitters with value picks to build the optimal squad under £70.0M.
+                  Select 11 real Premier League players matching official market valuations. Balance heavy hitters with value picks to build the optimal squad under £80.0M.
                 </p>
               </div>
 

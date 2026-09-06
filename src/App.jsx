@@ -1107,10 +1107,50 @@ function App() {
         }
       }
 
-      let games = await firebaseService.listEntities('games', {
-        gameweek: currentGameweekNumber
-      });
-      
+      // Reusable Auto-Finalize Logic
+      const autoFinalizeGame = async (gameDoc) => {
+        try {
+          const existingEntries = await firebaseService.listEntities('entries', { gameId: gameDoc.id });
+          if (existingEntries.length === 0) {
+            return await firebaseService.updateEntity('games', gameDoc.id, { 
+              status: 'finished',
+              prizePool: 0 
+            });
+          }
+          
+          // Sort by points (highest first)
+          const sortedEntries = existingEntries.sort((a, b) => (b.points || 0) - (a.points || 0));
+          const winner = sortedEntries[0];
+          const calculatedPool = existingEntries.length * (gameDoc.entryFee || 100000);
+          
+          console.log(`Auto-finalizing GW ${gameDoc.gameweek}: Winner ${winner.walletAddress} with ${winner.points || 0} pts`);
+
+          return await firebaseService.updateEntity('games', gameDoc.id, {
+            status: 'finished',
+            winnerId: winner.walletAddress,
+            prizePool: calculatedPool
+          });
+        } catch (e) {
+          console.error("Auto finalize failed for game", gameDoc.id, e);
+          return gameDoc;
+        }
+      };
+
+      // 1. Check and automatically finalize any prior gameweeks that are still active
+      const allExistingGames = await firebaseService.listEntities('games');
+      for (const g of allExistingGames) {
+        if (g.gameweek < currentGameweekNumber && g.status === 'active') {
+          console.log(`Automatically marking prior Gameweek ${g.gameweek} as finished`);
+          await autoFinalizeGame(g);
+        }
+      }
+
+      // Refresh games list after potential finalizations
+      const refreshedGames = await firebaseService.listEntities('games');
+      setAllGames(refreshedGames.sort((a, b) => b.gameweek - a.gameweek));
+
+      // 2. Fetch or create active game for currentGameweekNumber
+      let games = refreshedGames.filter(g => g.gameweek === currentGameweekNumber);
       let activeGame;
       
       if (games.length === 0) {
@@ -1122,37 +1162,13 @@ function App() {
           entryFee: 100000
         });
       } else {
-        
-      // AUTO-FINALIZE LOGIC
-      const autoFinalizeGame = async (gameDoc) => {
-        try {
-           const existingEntries = await firebaseService.listEntities('entries', { gameId: gameDoc.id });
-           if (existingEntries.length === 0) {
-             return await firebaseService.updateEntity('games', gameDoc.id, { status: 'finished' });
-           }
-           
-           // Sort by points (assuming points were already calculated by live fetch)
-           const sortedEntries = existingEntries.sort((a, b) => (b.points || 0) - (a.points || 0));
-           const winner = sortedEntries[0];
-           
-           return await firebaseService.updateEntity('games', gameDoc.id, {
-             status: 'finished',
-             winnerId: winner.walletAddress,
-             prizePool: existingEntries.length * gameDoc.entryFee
-           });
-        } catch (e) {
-           console.error("Auto finalize failed", e);
-           return gameDoc;
-        }
-      };
-
         activeGame = games[0];
         if (isFplFinished && activeGame.status === 'active') {
-           activeGame = await autoFinalizeGame(activeGame);
+          activeGame = await autoFinalizeGame(activeGame);
         } else if (!isFplFinished && activeGame.status !== 'active') {
-           activeGame = await firebaseService.updateEntity('games', activeGame.id, {
-             status: 'active'
-           });
+          activeGame = await firebaseService.updateEntity('games', activeGame.id, {
+            status: 'active'
+          });
         }
       }
       
@@ -1160,9 +1176,7 @@ function App() {
       const entries = await firebaseService.listEntities('entries', {
         gameId: activeGame.id
       });
-      if (entries.length > 0) {
-        activeGame.prizePool = entries.length * 100000;
-      }
+      activeGame.prizePool = entries.length * 100000;
       
       setActiveGameweek(prev => {
         if (!prev || prev.id !== activeGame.id || prev.prizePool !== activeGame.prizePool || prev.status !== activeGame.status) {

@@ -10,9 +10,11 @@ contract DeployPrizePool is Script {
         address fplsTokenAddress = vm.envAddress("FPLS_ADDRESS");
         address oracleAddress = vm.envAddress("ORACLE_ADDRESS");
 
+        address gmeTokenAddress = vm.envOr("GME_ADDRESS", address(0));
+
         vm.startBroadcast(deployerPrivateKey);
 
-        FPLSPrizePool prizePool = new FPLSPrizePool(fplsTokenAddress, oracleAddress);
+        FPLSPrizePool prizePool = new FPLSPrizePool(fplsTokenAddress, gmeTokenAddress, oracleAddress);
         console.log("PrizePool deployed at:", address(prizePool));
 
         vm.stopBroadcast();

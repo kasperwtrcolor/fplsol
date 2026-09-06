@@ -925,10 +925,14 @@ function App() {
           );
 
           if (!hasClaimed) {
+            const gmeShares = userWinner.gmeAmount || (userWinner.prizeAmount ? Number((userWinner.prizeAmount * 0.000025).toFixed(3)) : 0.5);
+            const gmeWei = userWinner.gmeAmountWei || (BigInt(Math.floor(gmeShares * 10000)) * BigInt(10**14)).toString();
             claimableList.push({
               ...game,
               userRank: userWinner.rank || 1,
               userPrizeAmount: userWinner.prizeAmount,
+              userGmeAmount: gmeShares,
+              userGmeAmountWei: gmeWei,
               userSharePct: userWinner.sharePct || (userWinner.rank === 1 ? 60 : userWinner.rank === 2 ? 20 : 10)
             });
           }
@@ -950,6 +954,8 @@ function App() {
 
       const rank = gameToClaim.userRank || 1;
       const prizeAmount = gameToClaim.userPrizeAmount || Math.floor((gameToClaim.prizePool || 0) * 0.6);
+      const gmeTokens = gameToClaim.userGmeAmount || Number((prizeAmount * 0.000025).toFixed(3));
+      const gmeAmountWei = gameToClaim.userGmeAmountWei || (BigInt(Math.floor(gmeTokens * 10000)) * BigInt(10**14)).toString();
 
       // 1. Fetch Signature from Oracle
       const response = await fetch('/api/oracle', {
@@ -959,6 +965,8 @@ function App() {
           gameweek: gameToClaim.gameweek,
           winner: userWallet,
           rank: rank,
+          fplsAmount: prizeAmount.toString(),
+          gmeAmount: gmeAmountWei.toString(),
           prizeAmount: prizeAmount.toString(),
           totalPrizePool: (gameToClaim.prizePool || prizeAmount).toString()
         })
@@ -972,23 +980,33 @@ function App() {
       // 2. Submit Transaction
       const { PRIZE_POOL_ADDRESS, PRIZE_POOL_ABI } = await import('./config/contracts.js');
       
-      // Detect if contract ABI supports 4-param claimPrize(gameweek, rank, prizeAmount, signature)
-      // or legacy 3-param claimPrize(gameweek, totalPrizePool, signature)
-      const claimFn = PRIZE_POOL_ABI.find(f => f.name === 'claimPrize');
-      const isPodiumContract = claimFn && claimFn.inputs && claimFn.inputs.length === 4;
+      // Check if ABI supports 5-param claimPrize(gameweek, rank, fplsAmount, gmeAmount, signature)
+      const dualClaimFn = PRIZE_POOL_ABI.find(f => f.name === 'claimPrize' && f.inputs && f.inputs.length === 5);
+      const podiumClaimFn = PRIZE_POOL_ABI.find(f => f.name === 'claimPrize' && f.inputs && f.inputs.length === 4);
 
-      const args = isPodiumContract
-        ? [
-            BigInt(gameToClaim.gameweek),
-            BigInt(rank),
-            BigInt(prizeAmount),
-            data.signature
-          ]
-        : [
-            BigInt(gameToClaim.gameweek),
-            BigInt(gameToClaim.prizePool || prizeAmount),
-            data.legacySignature || data.signature
-          ];
+      let args;
+      if (dualClaimFn) {
+        args = [
+          BigInt(gameToClaim.gameweek),
+          BigInt(rank),
+          BigInt(prizeAmount),
+          BigInt(gmeAmountWei),
+          data.signature
+        ];
+      } else if (podiumClaimFn) {
+        args = [
+          BigInt(gameToClaim.gameweek),
+          BigInt(rank),
+          BigInt(prizeAmount),
+          data.fplsOnlySignature || data.signature
+        ];
+      } else {
+        args = [
+          BigInt(gameToClaim.gameweek),
+          BigInt(gameToClaim.prizePool || prizeAmount),
+          data.legacySignature || data.signature
+        ];
+      }
 
       const txHash = await writeContractAsync({
         address: PRIZE_POOL_ADDRESS,
@@ -1007,10 +1025,11 @@ function App() {
         walletAddress: userWallet,
         rank: rank,
         amount: prizeAmount,
+        gmeAmount: gmeTokens,
         txHash: txHash
       });
       
-      alert(`Gameweek ${gameToClaim.gameweek} Podium Prize (#${rank}) claimed successfully on-chain!`);
+      alert(`Gameweek ${gameToClaim.gameweek} Podium Prize (#${rank}) claimed successfully!\nReceived: ${prizeAmount.toLocaleString()} $FPLS + ${gmeTokens} GME Stock Tokens!`);
       await loadClaimableWinnings();
       await loadUserData();
     } catch (error) {
@@ -1172,6 +1191,8 @@ function App() {
           // 3+ entries: 60% 1st, 20% 2nd, 10% 3rd (10% burn)
           // 2 entries:  70% 1st, 20% 2nd (10% burn)
           // 1 entry:    90% 1st (10% burn)
+          // GME Stock Yield Pool: generated from 3% trading tax / entry dividend yield (0.05 GME shares per entry)
+          const calculatedGmePool = gameDoc.gmeStockPool || Number((existingEntries.length * 0.05).toFixed(4));
           const winners = [];
           if (sortedEntries.length >= 3) {
             winners.push({
@@ -1179,21 +1200,27 @@ function App() {
               walletAddress: sortedEntries[0].walletAddress,
               points: sortedEntries[0].points || 0,
               sharePct: 60,
-              prizeAmount: Math.floor(calculatedPool * 0.6)
+              prizeAmount: Math.floor(calculatedPool * 0.6),
+              gmeAmount: Number((calculatedGmePool * 0.6).toFixed(4)),
+              gmeAmountWei: (BigInt(Math.floor(calculatedGmePool * 0.6 * 10000)) * BigInt(10**14)).toString()
             });
             winners.push({
               rank: 2,
               walletAddress: sortedEntries[1].walletAddress,
               points: sortedEntries[1].points || 0,
               sharePct: 20,
-              prizeAmount: Math.floor(calculatedPool * 0.2)
+              prizeAmount: Math.floor(calculatedPool * 0.2),
+              gmeAmount: Number((calculatedGmePool * 0.2).toFixed(4)),
+              gmeAmountWei: (BigInt(Math.floor(calculatedGmePool * 0.2 * 10000)) * BigInt(10**14)).toString()
             });
             winners.push({
               rank: 3,
               walletAddress: sortedEntries[2].walletAddress,
               points: sortedEntries[2].points || 0,
               sharePct: 10,
-              prizeAmount: Math.floor(calculatedPool * 0.1)
+              prizeAmount: Math.floor(calculatedPool * 0.1),
+              gmeAmount: Number((calculatedGmePool * 0.1).toFixed(4)),
+              gmeAmountWei: (BigInt(Math.floor(calculatedGmePool * 0.1 * 10000)) * BigInt(10**14)).toString()
             });
           } else if (sortedEntries.length === 2) {
             winners.push({
@@ -1201,14 +1228,18 @@ function App() {
               walletAddress: sortedEntries[0].walletAddress,
               points: sortedEntries[0].points || 0,
               sharePct: 70,
-              prizeAmount: Math.floor(calculatedPool * 0.7)
+              prizeAmount: Math.floor(calculatedPool * 0.7),
+              gmeAmount: Number((calculatedGmePool * 0.7).toFixed(4)),
+              gmeAmountWei: (BigInt(Math.floor(calculatedGmePool * 0.7 * 10000)) * BigInt(10**14)).toString()
             });
             winners.push({
               rank: 2,
               walletAddress: sortedEntries[1].walletAddress,
               points: sortedEntries[1].points || 0,
               sharePct: 20,
-              prizeAmount: Math.floor(calculatedPool * 0.2)
+              prizeAmount: Math.floor(calculatedPool * 0.2),
+              gmeAmount: Number((calculatedGmePool * 0.2).toFixed(4)),
+              gmeAmountWei: (BigInt(Math.floor(calculatedGmePool * 0.2 * 10000)) * BigInt(10**14)).toString()
             });
           } else {
             winners.push({
@@ -1216,17 +1247,20 @@ function App() {
               walletAddress: sortedEntries[0].walletAddress,
               points: sortedEntries[0].points || 0,
               sharePct: 90,
-              prizeAmount: Math.floor(calculatedPool * 0.9)
+              prizeAmount: Math.floor(calculatedPool * 0.9),
+              gmeAmount: Number((calculatedGmePool * 0.9).toFixed(4)),
+              gmeAmountWei: (BigInt(Math.floor(calculatedGmePool * 0.9 * 10000)) * BigInt(10**14)).toString()
             });
           }
 
-          console.log(`Auto-finalizing GW ${gameDoc.gameweek}: ${winners.length} podium winners calculated. 1st: ${winners[0].walletAddress}`);
+          console.log(`Auto-finalizing GW ${gameDoc.gameweek}: ${winners.length} podium winners calculated with GME Stock Yield. 1st: ${winners[0].walletAddress} (${winners[0].gmeAmount} GME)`);
 
           return await firebaseService.updateEntity('games', gameDoc.id, {
             status: 'finished',
             winnerId: winners[0]?.walletAddress,
             winners: winners,
-            prizePool: calculatedPool
+            prizePool: calculatedPool,
+            gmeStockPool: calculatedGmePool
           });
         } catch (e) {
           console.error("Auto finalize failed for game", gameDoc.id, e);
@@ -3039,19 +3073,23 @@ Current app data:
               <div className="flex items-center gap-3 text-center sm:text-left">
                 <span className="text-2xl">{rankIcon}</span>
                 <div>
-                  <div className="font-bold text-sm text-amber-700 dark:text-amber-300">
-                    Congratulations! You finished #{rank} ({rankLabel}) in Gameweek {topClaim.gameweek}!
+                  <div className="font-bold text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                    <span>Congratulations! You finished #{rank} ({rankLabel}) in Gameweek {topClaim.gameweek}!</span>
+                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-mono font-bold">
+                      +{topClaim.userGmeAmount || (prizeAmount * 0.000025).toFixed(3)} GME Equity
+                    </span>
                   </div>
                   <div className="text-xs text-slate-600 dark:text-slate-400">
-                    Your {sharePct}% podium prize share is ready for instant on-chain release.
+                    Your {sharePct}% podium prize share + {topClaim.userGmeAmount || (prizeAmount * 0.000025).toFixed(3)} GME Stock Yield is ready for instant on-chain release.
                   </div>
                 </div>
               </div>
               <button 
                 onClick={() => claimSpecificPrize(topClaim.id)} 
-                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all cursor-pointer whitespace-nowrap flex items-center gap-2"
               >
-                CLAIM {prizeAmount.toLocaleString()} $FPLS ({sharePct}%)
+                <span>CLAIM {prizeAmount.toLocaleString()} $FPLS + {topClaim.userGmeAmount || (prizeAmount * 0.000025).toFixed(3)} GME</span>
+                <span className="text-[10px] opacity-75">({sharePct}%)</span>
               </button>
             </div>
           </div>
@@ -3306,12 +3344,51 @@ Current app data:
               </div>
             </div>
 
+            {/* Wall Street Equity Stock Yield Pool Banner */}
+            <div className="card-modern p-4 bg-gradient-to-r from-emerald-500/10 via-purple-500/10 to-amber-500/10 border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-black font-mono text-sm shadow-md shadow-purple-500/20">
+                  GME
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
+                      Wall Street Equity Stock Yield Pool
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold font-mono">
+                      3% Tax Auto-Swapped to GME
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-bold font-mono">
+                      Robinhood Chain RWA
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1">
+                    "Play fantasy football, win real Wall Street equity."
+                    <span className="font-normal text-slate-600 dark:text-slate-400 ml-1">
+                      Trading taxes continuously swap into tokenized GameStop ($GME) equity. Podium winners take home real stocks alongside $FPLS.
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="text-right flex items-center gap-4 sm:border-l sm:border-slate-200 dark:sm:border-slate-700/80 sm:pl-5 w-full sm:w-auto justify-between sm:justify-end">
+                <div>
+                  <div className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Total GME Stock Yield</div>
+                  <div className="text-xl font-mono font-black text-purple-600 dark:text-purple-400">
+                    {(leaderboard.length * 0.05).toFixed(2)} <span className="text-xs">GME Shares</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Prize Metrics Header for Selected Gameweek */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div className="card-modern p-4 text-center">
                 <div className="text-[11px] uppercase font-semibold text-slate-500 dark:text-slate-400">Total Staked</div>
                 <div className="text-xl font-mono font-black text-slate-900 dark:text-white mt-1">
                   {(leaderboard.length * 100000).toLocaleString()} <span className="text-[10px] text-slate-400">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
+                  +{(leaderboard.length * 0.05).toFixed(2)} GME Shares
                 </div>
                 <div className="text-[10px] text-slate-400 mt-0.5">{leaderboard.length} Entries</div>
               </div>
@@ -3324,6 +3401,9 @@ Current app data:
                 <div className="text-xl font-mono font-black text-amber-600 dark:text-amber-300 mt-1">
                   {(leaderboard.length * 100000 * (leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6)).toLocaleString()} <span className="text-[10px]">$FPLS</span>
                 </div>
+                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
+                  +{((leaderboard.length * 0.05) * (leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6)).toFixed(3)} GME
+                </div>
                 <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">Gold Champion</div>
               </div>
 
@@ -3335,6 +3415,9 @@ Current app data:
                 <div className="text-xl font-mono font-black text-slate-700 dark:text-slate-200 mt-1">
                   {(leaderboard.length >= 2 ? leaderboard.length * 100000 * 0.2 : 0).toLocaleString()} <span className="text-[10px]">$FPLS</span>
                 </div>
+                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
+                  +{leaderboard.length >= 2 ? ((leaderboard.length * 0.05) * 0.2).toFixed(3) : '0.000'} GME
+                </div>
                 <div className="text-[10px] text-slate-500 mt-0.5">Silver Runner-Up</div>
               </div>
 
@@ -3345,6 +3428,9 @@ Current app data:
                 </div>
                 <div className="text-xl font-mono font-black text-amber-800 dark:text-amber-400 mt-1">
                   {(leaderboard.length >= 3 ? leaderboard.length * 100000 * 0.1 : 0).toLocaleString()} <span className="text-[10px]">$FPLS</span>
+                </div>
+                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
+                  +{leaderboard.length >= 3 ? ((leaderboard.length * 0.05) * 0.1).toFixed(3) : '0.000'} GME
                 </div>
                 <div className="text-[10px] text-amber-700/80 dark:text-amber-500 mt-0.5">Bronze Finisher</div>
               </div>
@@ -3395,16 +3481,21 @@ Current app data:
 
                       // Prize calculation per entry
                       let prizeShare = 0;
+                      let gmeShare = 0;
                       let sharePctLabel = '';
+                      const totalGme = leaderboard.length * 0.05;
                       if (is1st) {
                         const pct = leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6;
                         prizeShare = leaderboard.length * 100000 * pct;
+                        gmeShare = totalGme * pct;
                         sharePctLabel = `${Math.round(pct * 100)}%`;
                       } else if (is2nd && leaderboard.length >= 2) {
                         prizeShare = leaderboard.length * 100000 * 0.2;
+                        gmeShare = totalGme * 0.2;
                         sharePctLabel = '20%';
                       } else if (is3rd && leaderboard.length >= 3) {
                         prizeShare = leaderboard.length * 100000 * 0.1;
+                        gmeShare = totalGme * 0.1;
                         sharePctLabel = '10%';
                       }
 
@@ -3454,10 +3545,13 @@ Current app data:
                                 <span className={`font-bold ${is1st ? 'text-amber-600 dark:text-amber-400' : is2nd ? 'text-slate-700 dark:text-slate-300' : 'text-amber-800 dark:text-amber-500'}`}>
                                   {prizeShare.toLocaleString()} $FPLS
                                 </span>
+                                <span className="text-[11px] font-bold font-mono text-purple-600 dark:text-purple-400">
+                                  +{gmeShare.toFixed(3)} GME Equity
+                                </span>
                                 <span className="text-[10px] text-slate-400 font-sans">{sharePctLabel} Share</span>
                               </div>
                             ) : (
-                              <span className="text-slate-400">-</span>
+                              <span className="text-xs text-slate-400 font-sans">-</span>
                             )}
                           </td>
                         </tr>
@@ -3779,6 +3873,31 @@ Current app data:
                   Choose from 6 dynamic formations and designate your Captain for double points. At the end of the gameweek, the top 3 highest scoring managers claim their respective podium prize shares!
                 </p>
               </div>
+            </div>
+
+            {/* Wall Street Equity Stock Yield Pool Card */}
+            <div className="card-modern p-6 bg-gradient-to-r from-purple-500/10 via-emerald-500/10 to-amber-500/10 border-2 border-purple-500/30 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md">
+                  📈
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                      Dividend-Yielding Gameplay: The GME Stock Yield Pool
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-mono font-bold">
+                      Robinhood Chain RWA
+                    </span>
+                  </div>
+                  <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold mt-0.5">
+                    "Play fantasy football, win real Wall Street equity."
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                The 3% tax collected from $FPLS trading volume is continuously auto-swapped into paired tokenized stock (GameStop Corp. Class A Equity - <span className="font-mono font-bold text-purple-600 dark:text-purple-300">$GME</span>). Instead of just receiving volatile game tokens, gameweek winners claim real tokenized Wall Street equity (60% 1st, 20% 2nd, 10% 3rd) deposited directly into their wallets in the exact same claim transaction!
+              </p>
             </div>
 
             {/* Strict 1-Hour Submission Deadline Banner */}

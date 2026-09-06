@@ -196,9 +196,11 @@ export const LandingPage = ({
         {/* Hero Content */}
         <div className="relative z-10 max-w-6xl mx-auto px-6 py-14 sm:py-20 flex flex-col items-center text-center">
           {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold mb-6 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-semibold mb-6 shadow-sm flex-wrap justify-center">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>ROBINHOOD CHAIN • GAMEWEEK {activeGameweek?.gameweek || 4} ACTIVE</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-purple-300 font-bold">GME EQUITY YIELD BACKED</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white max-w-4xl leading-[1.08]">
@@ -208,8 +210,12 @@ export const LandingPage = ({
             </span>
           </h1>
 
-          <p className="mt-6 text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
-            Stake <span className="text-white font-mono font-bold">100,000 $FPLS</span>, build your ultimate 11-player squad under the strict <span className="text-emerald-400 font-mono font-bold">£80.0M</span> salary cap, and compete for the <span className="text-amber-300 font-bold">Top 3 Podium Payout (60% / 20% / 10%)</span> with deflationary <span className="text-rose-400 font-bold">10% burn</span>.
+          <div className="mt-4 px-4 py-1.5 rounded-xl bg-purple-950/60 border border-purple-500/40 text-purple-300 font-mono text-xs sm:text-sm font-bold tracking-wide">
+            "Play fantasy football, win real Wall Street equity."
+          </div>
+
+          <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
+            Stake <span className="text-white font-mono font-bold">100,000 $FPLS</span>, build your 11-player squad under the strict <span className="text-emerald-400 font-mono font-bold">£80.0M</span> salary cap, and compete for the <span className="text-amber-300 font-bold">Top 3 Podium Payout (60% / 20% / 10%)</span> plus <span className="text-purple-300 font-bold">Tokenized GameStop ($GME) Stock Yield</span> with deflationary <span className="text-rose-400 font-bold">10% burn</span>.
           </p>
 
           {/* Primary Action Buttons */}
@@ -232,7 +238,7 @@ export const LandingPage = ({
           </div>
 
           {/* Key Metrics Bar */}
-          <div className="mt-14 w-full grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
+          <div className="mt-14 w-full grid grid-cols-2 md:grid-cols-5 gap-3 text-left">
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-md">
               <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Salary Cap</div>
               <div className="text-xl md:text-2xl font-bold font-mono text-emerald-400 mt-0.5">£80.0M</div>
@@ -251,7 +257,13 @@ export const LandingPage = ({
               <div className="text-[10px] text-slate-500 mt-1">60% • 20% • 10% Pool</div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-md">
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-purple-800/50 bg-purple-950/20 backdrop-blur-md">
+              <div className="text-[11px] font-mono text-purple-400 uppercase tracking-wider">Stock Yield</div>
+              <div className="text-xl md:text-2xl font-bold font-mono text-purple-300 mt-0.5">GME Equity</div>
+              <div className="text-[10px] text-slate-400 mt-1">3% Tax Auto-Swapped</div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-md col-span-2 md:col-span-1">
               <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">Deflationary Burn</div>
               <div className="text-xl md:text-2xl font-bold font-mono text-rose-400 mt-0.5">10% Burn 🔥</div>
               <div className="text-[10px] text-slate-500 mt-1">Sent to 0x...dEaD</div>
@@ -461,13 +473,13 @@ export const LandingPage = ({
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 space-y-3 shadow-subtle">
-            <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+          <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-purple-300/60 dark:border-purple-800/60 space-y-3 shadow-subtle">
+            <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold font-mono">
               03
             </div>
-            <h3 className="font-bold text-base text-slate-900 dark:text-white">Podium Prize Payouts</h3>
+            <h3 className="font-bold text-base text-slate-900 dark:text-white">Podium & GME Stock Yield</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              The top 3 highest scoring managers share 90% of the prize pool (60% 1st, 20% 2nd, 10% 3rd). 10% is burned permanently.
+              Top 3 managers win 90% of the prize pool in both $FPLS and Tokenized GameStop ($GME) Stock Yield (60% 1st, 20% 2nd, 10% 3rd) in 1 on-chain claim. 10% burned permanently.
             </p>
           </div>
         </div>

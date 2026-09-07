@@ -345,143 +345,48 @@ export const LandingPage = ({
               </h1>
             </motion.div>
 
-            {/* Editorial Subtitle */}
+            {/* Crisp Editorial Subtitle */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <p className="text-base sm:text-lg text-forest-text dark:text-slate-300 leading-relaxed font-normal mb-8 max-w-2xl">
-                Stake <span className="font-mono font-bold text-neutral-900 dark:text-white">100,000 $FPLS</span>, assemble your 11-player Premier League squad within the strict <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">£80.0M</span> salary cap, and compete for the <strong className="text-amber-600 dark:text-amber-400">Top 3 Podium Pool (60% / 20% / 10%)</strong> with <strong className="text-purple-600 dark:text-purple-400">GameStop ($GME) Stock Equity Yield</strong> and permanent <strong className="text-rose-500">10% burn</strong>.
+              <p className="text-sm sm:text-base text-forest-text dark:text-slate-300 leading-relaxed font-normal mb-6 max-w-xl">
+                Build your 11-player squad under the strict <strong className="text-emerald-600 dark:text-emerald-400 font-mono">£80.0M</strong> salary cap. Compete for the weekly podium pool and earn real <strong className="text-purple-600 dark:text-purple-400">GameStop ($GME)</strong> stock equity dividends.
               </p>
             </motion.div>
 
-            {/* Interactive Feature Pills */}
-            <div className="space-y-4 max-w-2xl">
-              <div>
-                <h3 className="text-sm font-mono font-bold uppercase tracking-wider text-forest-muted dark:text-slate-400 mb-1">
-                  Tactical & Financial Protocol
-                </h3>
-                <p className="text-xs text-forest-text dark:text-slate-400 mb-3">
-                  Click to inspect platform rules and benefits:
-                </p>
-              </div>
-
-              {/* Multi-Select Pills List */}
-              <div className="flex flex-wrap gap-2.5">
-                {[
-                  "£80.0M Salary Cap",
-                  "Podium Pool (60/20/10)",
-                  "3% GME Stock Dividends",
-                  "10% Deflationary Burn"
-                ].map((pill) => {
-                  const isActive = selectedPills.includes(pill);
-                  return (
-                    <motion.button
-                      key={pill}
-                      onClick={() => togglePill(pill)}
-                      whileTap={{ scale: 0.96 }}
-                      className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 cursor-pointer select-none ${
-                        isActive
-                          ? 'bg-forest text-white shadow-sm'
-                          : 'bg-[#FAFBF9] dark:bg-slate-800 text-neutral-700 dark:text-slate-300 border border-[#EAECE9] dark:border-slate-700 hover:bg-[#F1F3F1]'
-                      }`}
-                    >
-                      {isActive && (
-                        <motion.span
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                        >
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        </motion.span>
-                      )}
-                      <span>{pill}</span>
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {/* Contingent Feedback Banner */}
-              <div className="pt-2">
-                <AnimatePresence mode="wait">
-                  {selectedPills.length === 0 ? (
-                    <motion.p
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 0.5 }}
-                      exit={{ opacity: 0 }}
-                      className="italic text-xs text-neutral-500"
-                    >
-                      Please select one or more platform pillars above.
-                    </motion.p>
-                  ) : (
-                    <motion.div
-                      key="active"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                      className="bg-[#FAFBF9] dark:bg-slate-800/80 border border-[#EAECE9] dark:border-slate-700 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs"
-                    >
-                      <div className="text-xs text-forest dark:text-slate-200 font-medium">
-                        Active Focus: <strong className="font-bold text-neutral-900 dark:text-white">{selectedPills.join(" • ")}</strong>
-                      </div>
-                      <button
-                        onClick={() => setCurrentView('team')}
-                        className="inline-flex items-center gap-1.5 text-forest dark:text-emerald-400 hover:text-forest-light uppercase text-xs font-bold tracking-wider transition-colors cursor-pointer shrink-0"
-                      >
-                        <span>Build Your Squad</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Main Action CTAs */}
-              <div className="pt-4 flex flex-col sm:flex-row items-center gap-3">
-                <button
-                  onClick={() => setCurrentView('team')}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-forest hover:bg-forest-light text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all transform hover:-translate-y-0.5 cursor-pointer"
-                >
-                  <span>Build 11-Man Squad</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-
-                <a
-                  href={PONS_CONFIG.dividendsClaimUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <span>Claim GME on Pons</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-
-                <button
-                  onClick={() => setCurrentView('rules')}
-                  className="w-full sm:w-auto px-5 py-3 rounded-xl bg-neutral-100 hover:bg-neutral-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-neutral-800 dark:text-slate-200 font-medium text-xs sm:text-sm transition-all cursor-pointer"
-                >
-                  <span>Scoring & Rules</span>
-                </button>
-              </div>
+            {/* Quick Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setCurrentView('team')}
+                className="btn-primary px-6 py-2.5 text-xs sm:text-sm font-bold shadow-md flex items-center gap-2 cursor-pointer"
+              >
+                <span>Draft Your Squad</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setCurrentView('leaderboard')}
+                className="btn-secondary px-5 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer"
+              >
+                <Trophy className="w-4 h-4 text-amber-500" />
+                <span>View Standings</span>
+              </button>
             </div>
-
           </div>
 
-          {/* Right Column: FEATURED VECTOR JERSEY SHOWCASE DECK */}
-          <div className="lg:col-span-5 xl:col-span-4 flex flex-col items-center justify-center">
+          {/* Right Column: Featured Vector Kit Showcase Card */}
+          <div className="lg:col-span-5 xl:col-span-4 flex justify-center w-full">
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="w-full max-w-sm rounded-3xl p-6 bg-[#FAFBF9] dark:bg-slate-800/90 border border-[#EAECE9] dark:border-slate-700 shadow-md relative overflow-hidden"
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="w-full max-w-sm rounded-3xl bg-[#FAFBF9] dark:bg-slate-800/90 border border-[#EAECE9] dark:border-slate-700 p-5 shadow-sm"
             >
-              {/* Header Tag */}
-              <div className="flex items-center justify-between mb-4">
+              {/* Header with Title & Live Badge */}
+              <div className="flex items-center justify-between pb-3 border-b border-[#EAECE9] dark:border-slate-700">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-forest dark:bg-emerald-400 animate-pulse" />
                   <span className="text-xs font-mono font-bold uppercase tracking-wider text-forest dark:text-slate-200">
                     Vector Jersey Kit Deck
                   </span>
@@ -574,77 +479,78 @@ export const LandingPage = ({
         </div>
       </section>
 
-      {/* 2. HOLDER BENEFIT • PONS LAUNCHPAD & GME STOCK YIELD BANNER */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-950 border border-purple-500/40 p-6 sm:p-8 text-white shadow-lg">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono font-bold">
-              <span>💎 TOKEN HOLDER BENEFIT • PONS LAUNCHPAD</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Hold $FPLS, Earn Real Wall Street Equity
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Every trade on Pons Family incurs a <strong>3% trading tax</strong> that is automatically swapped into tokenized GameStop (<span className="text-purple-300 font-mono font-bold">$GME</span>) stock equity. 
-              <strong> 100% of this tax is distributed directly to $FPLS token holders</strong>. You don't have to win matches to earn — simply hold $FPLS in your wallet and claim your stock dividends anytime directly on Pons!
-            </p>
+      {/* 2. CONSOLIDATED LIVE PROTOCOL & HOLDER STOCK DIVIDENDS STRIP */}
+      <section className="w-full space-y-4">
+        {/* 4 Core Protocol Metric Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
+            <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Salary Cap</div>
+            <div className="text-xl md:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">£80.0M</div>
+            <div className="text-[11px] text-forest-text dark:text-slate-400 mt-1">11 Real PL Players</div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
+            <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Entry Stake</div>
+            <div className="text-xl md:text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-0.5">100K</div>
+            <div className="text-[11px] text-forest-text dark:text-slate-400 mt-1">$FPLS • 10% Burned</div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
+            <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Podium Split</div>
+            <div className="text-xl md:text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5">60/20/10</div>
+            <div className="text-[11px] text-forest-text dark:text-slate-400 mt-1">Top 3 Managers Win</div>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
+            <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Holder Yield</div>
+            <div className="text-xl md:text-2xl font-bold font-mono text-purple-600 dark:text-purple-400 mt-0.5">3% Tax</div>
+            <div className="text-[11px] text-forest-text dark:text-slate-400 mt-1">Tokenized $GME Stock</div>
+          </div>
+        </div>
+
+        {/* Sleek Pons Launchpad Stock Dividend Card */}
+        <div className="rounded-2xl bg-gradient-to-r from-purple-950/80 via-indigo-950/60 to-slate-950 border border-purple-500/40 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-white shadow-md">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-400/40 flex items-center justify-center text-purple-200 font-mono font-black text-sm shrink-0">
+              💎
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs uppercase tracking-wider font-bold text-purple-300 font-mono">
+                  Holder Equity Yield • Pons Launchpad
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
+                  Robinhood Chain
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Every trade on Pons incurs a 3% tax automatically converted to GameStop ($GME) equity for $FPLS holders.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0 justify-end">
             <a
               href={PONS_CONFIG.dividendsClaimUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer whitespace-nowrap"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer whitespace-nowrap"
             >
               <span>Claim Dividends on Pons</span>
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
             <a
               href={PONS_CONFIG.tokenUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap"
+              className="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
             >
-              <span>Trade $FPLS on Pons</span>
-              <ExternalLink className="w-4 h-4 text-slate-400" />
+              <span>Trade $FPLS</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
             </a>
           </div>
         </div>
       </section>
-
-      {/* 3. KEY METRICS BAR */}
-      <div className="w-full grid grid-cols-2 md:grid-cols-5 gap-3 text-left">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Salary Cap</div>
-          <div className="text-xl md:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">£80.0M</div>
-          <div className="text-[10px] text-forest-text dark:text-slate-500 mt-1">11 Real PL Players</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Entry Stake</div>
-          <div className="text-xl md:text-2xl font-bold font-mono text-neutral-900 dark:text-white mt-0.5">100K</div>
-          <div className="text-[10px] text-forest-text dark:text-slate-500 mt-1">$FPLS per Gameweek</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Podium Pool</div>
-          <div className="text-xl md:text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5">90%</div>
-          <div className="text-[10px] text-forest-text dark:text-slate-500 mt-1">60% 1st / 20% 2nd / 10% 3rd</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Trading Tax</div>
-          <div className="text-xl md:text-2xl font-bold font-mono text-purple-600 dark:text-purple-400 mt-0.5">3%</div>
-          <div className="text-[10px] text-forest-text dark:text-slate-500 mt-1">Holder GME Dividends</div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 shadow-xs col-span-2 md:col-span-1">
-          <div className="text-[11px] font-mono text-forest-muted dark:text-slate-400 uppercase tracking-wider">Burn Rate</div>
-          <div className="text-xl md:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-0.5">10%</div>
-          <div className="text-[10px] text-forest-text dark:text-slate-500 mt-1">Deflationary Burn</div>
-        </div>
-      </div>
 
       {/* 4. STAR PERFORMERS OF THE GAMEWEEK (4-4-2 TACTICAL FORMATION WITH VECTOR JERSEYS) */}
       <section className="space-y-6">

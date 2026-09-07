@@ -263,8 +263,8 @@ const LoadingWave = ({
 const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
   const navItems = [
     { id: 'overview', label: 'Overview', icon: Home },
-    { id: 'team', label: 'Team Builder', icon: TeamIcon },
-    { id: 'leaderboard', label: 'Leaderboard & Rewards', icon: Trophy },
+    { id: 'team', label: 'Squad Builder', icon: TeamIcon },
+    { id: 'leaderboard', label: 'Standings & Rewards', icon: Trophy },
     { id: 'fixtures', label: 'Fixtures & Live', icon: Calendar },
     { id: 'profile', label: 'Manager Profile', icon: User },
     { id: 'rules', label: 'How It Works', icon: Info },
@@ -272,7 +272,7 @@ const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
   ];
 
   return (
-    <nav className="flex items-center gap-1.5 md:gap-2 px-4 py-2.5 overflow-x-auto w-full justify-start md:justify-center border-b border-[#EAECE9] dark:border-slate-800 bg-[#FAFBF9]/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30">
+    <nav className="hidden md:flex items-center gap-2 px-4 py-2.5 w-full justify-center border-b border-[#EAECE9] dark:border-slate-800 bg-[#FAFBF9]/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-30">
       {navItems.map(item => {
         const Icon = item.icon;
         const isActive = currentView === item.id;
@@ -291,6 +291,78 @@ const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
           </button>
         );
       })}
+    </nav>
+  );
+};
+
+const MobileBottomNav = ({ currentView, setCurrentView, selectedTeamCount = 0, authenticated = false }) => {
+  const mobileNavItems = [
+    { id: 'overview', label: 'Home', icon: Home },
+    { id: 'team', label: 'Squad', icon: TeamIcon, badge: selectedTeamCount > 0 ? `${selectedTeamCount}/11` : null },
+    { id: 'leaderboard', label: 'Rankings', icon: Trophy },
+    { id: 'fixtures', label: 'Matches', icon: Calendar },
+    { id: 'profile', label: 'Profile', icon: User, dot: authenticated },
+  ];
+
+  return (
+    <nav 
+      aria-label="Mobile Navigation Dock"
+      className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-[#EAECE9] dark:border-slate-800/80 px-2 py-1 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] select-none pb-[calc(env(safe-area-inset-bottom,0px)+6px)]"
+    >
+      <div className="grid grid-cols-5 items-center justify-items-center max-w-md mx-auto">
+        {mobileNavItems.map(item => {
+          const Icon = item.icon;
+          const isActive = currentView === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setCurrentView(item.id)}
+              className="relative flex flex-col items-center justify-center w-full py-1.5 px-1 rounded-xl transition-all duration-150 cursor-pointer active:scale-95"
+            >
+              {/* Active Indicator Top Glow Pill */}
+              {isActive && (
+                <motion.div
+                  layoutId="mobileActiveTab"
+                  className="absolute -top-1 w-8 h-1 bg-forest dark:bg-emerald-400 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+
+              <div className="relative">
+                <Icon
+                  className={`w-5 h-5 transition-transform duration-150 ${
+                    isActive
+                      ? 'text-forest dark:text-emerald-400 scale-110'
+                      : 'text-neutral-500 dark:text-slate-400'
+                  }`}
+                />
+
+                {/* Squad Count Badge */}
+                {item.badge && (
+                  <span className="absolute -top-1.5 -right-3.5 px-1 py-0.2 rounded-full text-[8px] font-mono font-bold bg-forest text-white dark:bg-emerald-400 dark:text-slate-950 shadow-xs">
+                    {item.badge}
+                  </span>
+                )}
+
+                {/* Wallet Connected Dot */}
+                {item.dot && (
+                  <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                )}
+              </div>
+
+              <span
+                className={`text-[10px] font-medium tracking-tight mt-1 transition-colors ${
+                  isActive
+                    ? 'font-bold text-forest dark:text-emerald-400'
+                    : 'text-neutral-500 dark:text-slate-400'
+                }`}
+              >
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </nav>
   );
 };
@@ -2977,40 +3049,48 @@ Current app data:
       )}
 
       {/* Modern Top Header */}
-      <header className="flex justify-between items-center px-4 md:px-8 py-3.5 border-b border-[#EAECE9] dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
+      <header className="flex justify-between items-center px-3.5 sm:px-6 md:px-8 py-2.5 sm:py-3.5 border-b border-[#EAECE9] dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
         {/* Brand & Subtitle */}
         <div 
           onClick={() => setCurrentView('overview')}
-          className="flex items-center gap-3 cursor-pointer select-none group"
+          className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none group"
           title="Go to Overview"
         >
-          <div className="w-9 h-9 rounded-xl bg-forest text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-            <Trophy className="w-5 h-5 text-emerald-400" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-forest text-white flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform shrink-0">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base md:text-lg tracking-tight text-neutral-900 dark:text-white group-hover:text-forest transition-colors">
+              <span className="font-extrabold text-base sm:text-lg tracking-tight text-neutral-900 dark:text-white group-hover:text-forest transition-colors">
                 FPL<span className="text-forest dark:text-emerald-400">.STOCK</span>
               </span>
               <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-[#FAFBF9] dark:bg-slate-800 border border-[#EAECE9] dark:border-slate-700 text-[10px] font-semibold text-neutral-700 dark:text-slate-300">
                 Robinhood Chain
               </span>
             </div>
-            <p className="text-[10px] text-forest-muted dark:text-slate-400 font-mono tracking-wider uppercase">
+            <p className="hidden sm:block text-[10px] text-forest-muted dark:text-slate-400 font-mono tracking-wider uppercase">
               Powered by $FPLS
             </p>
           </div>
         </div>
 
         {/* Status Pill & Wallet Controls */}
-        <div className="flex items-center gap-2 md:gap-4">
-          {/* Live Gameweek Pill */}
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
+          {/* Live Gameweek Pill (Desktop) */}
           {activeGameweek && (
             <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">GW {activeGameweek.gameweek}</span>
               <span className="text-slate-400 text-[10px]">•</span>
               <span className="text-slate-500 dark:text-slate-400 capitalize">{activeGameweek.status}</span>
+            </div>
+          )}
+
+          {/* Live Gameweek Pill (Mobile) */}
+          {activeGameweek && (
+            <div className="flex lg:hidden items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span>GW{activeGameweek.gameweek}</span>
             </div>
           )}
 
@@ -3021,6 +3101,15 @@ Current app data:
               {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
             </span>
           </div>
+
+          {/* Mobile How It Works / Rules Quick Link */}
+          <button 
+            onClick={() => setCurrentView('rules')}
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer md:hidden"
+            title="How It Works & Rules"
+          >
+            <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          </button>
 
           {/* Theme Toggle */}
           <button 
@@ -3042,24 +3131,33 @@ Current app data:
               </div>
               <button 
                 onClick={logout} 
-                className="btn-secondary text-xs font-mono py-2"
+                className="btn-secondary text-xs font-mono py-1.5 sm:py-2 px-2.5 sm:px-3"
                 title="Click to disconnect"
               >
-                <span>{userWallet.slice(0, 6)}...{userWallet.slice(-4)}</span>
-                <LogOut className="w-3.5 h-3.5 text-slate-400" />
+                <span>{userWallet.slice(0, 4)}...{userWallet.slice(-3)}</span>
+                <LogOut className="w-3 h-3 text-slate-400 shrink-0" />
               </button>
             </div>
           ) : (
-            <button onClick={login} className="btn-primary py-2 text-xs">
+            <button onClick={login} className="btn-primary py-1.5 sm:py-2 px-3 sm:px-4 text-xs">
               <LogIn className="w-3.5 h-3.5" />
-              <span>Connect Wallet</span>
+              <span className="hidden sm:inline">Connect Wallet</span>
+              <span className="sm:hidden">Connect</span>
             </button>
           )}
         </div>
       </header>
 
-      {/* Primary Navigation Tabs */}
+      {/* Desktop Primary Navigation Tabs */}
       <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
+
+      {/* Mobile Native-Style Bottom Navigation Dock */}
+      <MobileBottomNav 
+        currentView={currentView} 
+        setCurrentView={setCurrentView} 
+        selectedTeamCount={selectedTeam.length} 
+        authenticated={authenticated} 
+      />
 
       {/* Global Winner Claim Banner */}
       {claimableWinnings.length > 0 && (() => {
@@ -3099,8 +3197,8 @@ Current app data:
         );
       })()}
 
-      {/* Main Content Areas */}
-      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col">
+      {/* Main Content Areas (with mobile bottom dock spacing) */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-3.5 sm:px-6 md:px-8 py-5 md:py-8 pb-28 md:pb-12 flex flex-col">
         {/* VIEW 0: OVERVIEW / LANDING */}
         {currentView === 'overview' && (
           <LandingPage 
@@ -3118,44 +3216,40 @@ Current app data:
         {currentView === 'team' && (
           <div className="w-full flex flex-col items-center space-y-6">
             {/* Submission Status Alert Banner */}
-            <div className={`w-full max-w-4xl card-modern p-4 border flex flex-col sm:flex-row items-center justify-between gap-3 ${
+            <div className={`w-full max-w-4xl card-modern p-3.5 sm:p-4 border flex items-center justify-between gap-3 ${
               isSubmissionOpen
                 ? 'bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
                 : 'bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200'
             }`}>
-              <div className="flex items-center gap-3 text-left">
-                <div className={`w-3.5 h-3.5 rounded-full flex-shrink-0 ${isSubmissionOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></div>
-                <div>
-                  <div className="font-bold text-sm flex items-center gap-2">
-                    <span>{isSubmissionOpen ? '🟢 SQUAD SUBMISSIONS OPEN' : '🔒 SQUAD SUBMISSIONS CLOSED'}</span>
-                    <span className="text-xs font-mono font-normal opacity-80">
-                      • Gameweek {activeGwNumber}
+              <div className="flex items-center gap-2.5 text-left min-w-0">
+                <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${isSubmissionOpen ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                <div className="min-w-0">
+                  <div className="font-bold text-xs sm:text-sm flex items-center gap-1.5 truncate">
+                    <span>{isSubmissionOpen ? 'Squad Submissions Open' : 'Squad Submissions Locked'}</span>
+                    <span className="text-[11px] font-mono font-normal opacity-80">
+                      • GW {activeGwNumber}
                     </span>
                   </div>
-                  <div className="text-xs opacity-80 mt-0.5">
+                  <div className="text-[11px] sm:text-xs opacity-80 mt-0.5 truncate">
                     {isSubmissionOpen ? (
                       <span>
-                        Deadline: {activeGwDeadline ? activeGwDeadline.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '1 hour before kickoff'} (Strict 1hr cutoff before first game)
+                        Deadline: {activeGwDeadline ? activeGwDeadline.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '1hr before kickoff'}
                       </span>
                     ) : (
                       <span>
-                        Locked for active matches. Reopens for Gameweek {activeGwNumber + 1} when current gameweek finishes{estimatedReopenTime ? ` (estimated: ${estimatedReopenTime.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}.
+                        Locked for live matches. Reopens for GW {activeGwNumber + 1}.
                       </span>
                     )}
                   </div>
                 </div>
               </div>
 
-              <div className="text-right whitespace-nowrap">
-                {isSubmissionOpen ? (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm font-mono">
-                    OPEN
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-slate-950 shadow-sm font-mono">
-                    LOCKED
-                  </span>
-                )}
+              <div className="shrink-0">
+                <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold shadow-xs font-mono ${
+                  isSubmissionOpen ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-slate-950'
+                }`}>
+                  {isSubmissionOpen ? 'OPEN' : 'LOCKED'}
+                </span>
               </div>
             </div>
 
@@ -3374,49 +3468,34 @@ Current app data:
             </div>
 
             {/* Pons Family Holder Stock Dividend Hub Banner */}
-            <div className="card-modern p-5 bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 border-2 border-purple-500/40 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-lg">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-black font-mono text-sm shadow-md shadow-purple-500/20 shrink-0">
+            <div className="card-modern p-3.5 bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 border border-purple-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-black font-mono text-xs shadow-sm shrink-0">
                   GME
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs uppercase tracking-wider font-bold text-purple-300">
-                      Holder Stock Dividends • Pons Family Platform
+                      Holder Stock Dividends
                     </span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold font-mono">
-                      100% of 3% Tax → $FPLS Holders
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold font-mono">
-                      Robinhood Chain
+                      3% Tax → $GME
                     </span>
                   </div>
-                  <p className="text-xs font-semibold text-slate-200 mt-1">
-                    "Hold $FPLS, earn real Wall Street equity."
-                    <span className="font-normal text-slate-300 ml-1">
-                      Every trade on Pons Family swaps a 3% tax directly into tokenized GameStop ($GME) equity distributed to $FPLS holders.
-                    </span>
+                  <p className="text-[11px] text-slate-300 mt-0.5">
+                    Hold $FPLS to earn tokenized GameStop equity dividends on every trade on Pons.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-end">
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
                 <a
                   href={PONS_CONFIG.dividendsClaimUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap"
+                  className="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer whitespace-nowrap"
                 >
-                  <span>Claim GME Dividends on Pons</span>
+                  <span>Claim GME on Pons</span>
                   <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-                <a
-                  href={PONS_CONFIG.tokenUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
-                >
-                  <span>Trade on Pons</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                 </a>
               </div>
             </div>

@@ -8,6 +8,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { PONS_CONFIG } from '../config/contracts';
+import { VectorKit } from './VectorKit';
 
 // Fallback star lineup if players data is loading
 const FALLBACK_STAR_11 = [

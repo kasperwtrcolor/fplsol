@@ -2,31 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.animate-blink { 
+  animation: blink 1s step-end infinite; 
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-shimmer {
+  animation: shimmer 1.8s infinite;
+}
+
 @layer base {
   body {
-    @apply font-sans text-slate-900 bg-[#F8FAFC] transition-colors duration-200 antialiased;
-    background-image: radial-gradient(#E2E8F0 1.2px, transparent 1.2px);
+    @apply font-sans text-neutral-900 bg-[#FAFBF9] dark:bg-[#0A0E17] dark:text-slate-100 transition-colors duration-200 antialiased selection:bg-[#EAECE9] selection:text-[#1C2E1E];
+    background-image: radial-gradient(#E5E7EB 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
   .dark body {
-    @apply bg-[#090D16] text-slate-100;
-    background-image: radial-gradient(#1E293B 1.2px, transparent 1.2px);
+    background-image: radial-gradient(#1E293B 1px, transparent 1px);
     background-size: 24px 24px;
   }
 }
 
 @layer components {
   .card-modern {
-    @apply bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-card transition-all duration-200;
+    @apply bg-white dark:bg-slate-900 border border-[#EAECE9] dark:border-slate-800 rounded-2xl shadow-xs transition-all duration-200;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-emerald-glow transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 bg-forest hover:bg-forest-light active:scale-[0.98] text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-xs transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-[0.98] text-slate-800 dark:text-slate-200 font-medium text-sm px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 bg-[#FAFBF9] hover:bg-[#F1F3F1] dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-[0.98] text-neutral-800 dark:text-slate-200 font-medium text-sm px-4 py-2 rounded-xl border border-[#EAECE9] dark:border-slate-700 transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-pill {

@@ -327,9 +327,9 @@ export const ManagerAchievements = ({
   const shareText = `I've unlocked ${unlockedCount}/${totalCount} Manager Achievements as a ${managerRank.title} on Fantasy Premier League Stock! ⚽️📈\n\nWins: ${metrics.wins} | Best Haul: ${metrics.maxPoints} pts\n\nCompete on Robinhood Chain: https://fpl.stocks\n#FPL #FPLStock #RobinhoodChain #PremierLeague`;
 
   return (
-    <div className="card-modern p-6 space-y-6">
+    <div className="card-modern p-6 space-y-6 border border-[#EAECE9] dark:border-slate-800">
       {/* Header with Rank & Overall Progress */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EAECE9] dark:border-slate-800">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">
@@ -352,9 +352,9 @@ export const ManagerAchievements = ({
               {unlockedCount} / {totalCount} ({progressPercent}%)
             </span>
           </div>
-          <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700/60">
+          <div className="h-2.5 w-full bg-[#EAECE9] dark:bg-slate-800 rounded-full overflow-hidden border border-[#EAECE9] dark:border-slate-700/60">
             <div 
-              className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500 shadow-emerald-glow"
+              className="h-full bg-gradient-to-r from-[#1C2E1E] to-[#2D4830] dark:from-emerald-500 dark:to-teal-400 rounded-full transition-all duration-500 shadow-forest-glow"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -374,10 +374,10 @@ export const ManagerAchievements = ({
           <button
             key={cat.id}
             onClick={() => setFilter(cat.id)}
-            className={`px-3 py-1 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer ${
               filter === cat.id
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
-                : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#1C2E1E] text-white shadow-forest-glow dark:bg-white dark:text-[#1C2E1E]'
+                : 'bg-white/80 dark:bg-slate-800/80 border border-[#EAECE9] dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
           >
             {cat.label}

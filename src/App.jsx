@@ -9,6 +9,7 @@ import * as firebaseService from './firebaseService';
 import { VectorKit } from './components/VectorKit';
 import { TeamShield } from './components/TeamShield';
 import { LandingPage } from './components/LandingPage';
+import { ManagerAchievements } from './components/ManagerAchievements';
 
 export const isFixtureFinished = (fixture) => {
   if (!fixture) return false;
@@ -3801,34 +3802,15 @@ Current app data:
               </div>
             </div>
 
-            {/* Achievements */}
-            <div className="card-modern p-6 space-y-4">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">Manager Achievements</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className={`p-4 rounded-xl border ${userEntries.length > 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'}`}>
-                  <div className="font-bold text-xs text-slate-800 dark:text-slate-200">First Entry</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Submit your first squad to enter</div>
-                </div>
-                <div className={`p-4 rounded-xl border ${(userStats?.wins || 0) > 0 ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'}`}>
-                  <div className="font-bold text-xs text-slate-800 dark:text-slate-200">Gameweek Champion</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Finish #1 and win the prize pool</div>
-                </div>
-                <div className={`p-4 rounded-xl border ${userEntries.length >= 5 ? 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-300 dark:border-indigo-800' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60'}`}>
-                  <div className="font-bold text-xs text-slate-800 dark:text-slate-200">Veteran Tactician</div>
-                  <div className="text-[10px] text-slate-500 mt-0.5">Enter 5 different gameweeks</div>
-                </div>
-              </div>
-
-              {/* Share to X */}
-              <a 
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just entered Fantasy Premier League Stock on Robinhood Chain! ⚽️📈\n\nTotal Wins: ${userStats?.wins || 0}\n\nJoin and build your squad: https://fpl.stocks\n#FPL #FPLStocks #RobinhoodChain`)}`}
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="btn-primary w-full mt-4"
-              >
-                Share Stats on 𝕏
-              </a>
-            </div>
+            {/* Manager Achievements */}
+            <ManagerAchievements 
+              userWallet={userWallet}
+              userStats={userStats}
+              userEntries={userEntries}
+              fplsBalanceRaw={fplsBalanceRaw}
+              userInviteCode={userInviteCode}
+              claimableWinnings={claimableWinnings}
+            />
           </div>
         )}
 

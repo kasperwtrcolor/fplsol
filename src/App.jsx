@@ -2974,112 +2974,90 @@ Current app data:
         </div>
       )}
 
-      {/* Standard Header & Nav Tabs (Shown on non-overview views) */}
-      {currentView !== 'overview' && (
-        <>
-          <header className="flex justify-between items-center px-4 md:px-8 py-3.5 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
-            {/* Brand & Subtitle */}
-            <div 
-              onClick={() => setCurrentView('overview')}
-              className="flex items-center gap-3 cursor-pointer select-none group"
-              title="Go to Overview"
-            >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-emerald-glow group-hover:scale-105 transition-transform">
-                <Trophy className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-base md:text-lg tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
-                    FPL<span className="text-emerald-600 dark:text-emerald-400">.STOCK</span>
-                  </span>
-                  <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-                    Robinhood Chain
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider uppercase">
-                  Powered by $FPLS
-                </p>
-              </div>
+      {/* Modern Top Header */}
+      <header className="flex justify-between items-center px-4 md:px-8 py-3.5 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+        {/* Brand & Subtitle */}
+        <div 
+          onClick={() => setCurrentView('overview')}
+          className="flex items-center gap-3 cursor-pointer select-none group"
+          title="Go to Overview"
+        >
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-emerald-glow group-hover:scale-105 transition-transform">
+            <Trophy className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold text-base md:text-lg tracking-tight text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
+                FPL<span className="text-emerald-600 dark:text-emerald-400">.STOCK</span>
+              </span>
+              <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                Robinhood Chain
+              </span>
             </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider uppercase">
+              Powered by $FPLS
+            </p>
+          </div>
+        </div>
 
-            {/* Status Pill & Wallet Controls */}
-            <div className="flex items-center gap-2 md:gap-4">
-              {/* Live Gameweek Pill */}
-              {activeGameweek && (
-                <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">GW {activeGameweek.gameweek}</span>
-                  <span className="text-slate-400 text-[10px]">•</span>
-                  <span className="text-slate-500 dark:text-slate-400 capitalize">{activeGameweek.status}</span>
-                </div>
-              )}
+        {/* Status Pill & Wallet Controls */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Live Gameweek Pill */}
+          {activeGameweek && (
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200">GW {activeGameweek.gameweek}</span>
+              <span className="text-slate-400 text-[10px]">•</span>
+              <span className="text-slate-500 dark:text-slate-400 capitalize">{activeGameweek.status}</span>
+            </div>
+          )}
 
-              {/* Prize Pool Ticker */}
-              <div className="hidden sm:flex flex-col items-end px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-right">
-                <span className="text-[9px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Podium Pool</span>
-                <span className="text-xs md:text-sm font-mono font-bold text-emerald-900 dark:text-emerald-200">
-                  {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
+          {/* Prize Pool Ticker */}
+          <div className="hidden sm:flex flex-col items-end px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-right">
+            <span className="text-[9px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Podium Pool</span>
+            <span className="text-xs md:text-sm font-mono font-bold text-emerald-900 dark:text-emerald-200">
+              {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
+            </span>
+          </div>
+
+          {/* Theme Toggle */}
+          <button 
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            title="Toggle theme"
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          </button>
+
+          {/* Web3 Connect */}
+          {authenticated ? (
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex flex-col items-end px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-right font-mono">
+                <span className="text-[9px] text-slate-500 uppercase">Balance</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  {fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toLocaleString(undefined, {maximumFractionDigits: 0}) : '0'} $FPLS
                 </span>
               </div>
-
-              {/* Theme Toggle */}
               <button 
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
-                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-                title="Toggle theme"
+                onClick={logout} 
+                className="btn-secondary text-xs font-mono py-2"
+                title="Click to disconnect"
               >
-                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                <span>{userWallet.slice(0, 6)}...{userWallet.slice(-4)}</span>
+                <LogOut className="w-3.5 h-3.5 text-slate-400" />
               </button>
-
-              {/* Web3 Connect */}
-              {authenticated ? (
-                <div className="flex items-center gap-2">
-                  <div className="hidden md:flex flex-col items-end px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-right font-mono">
-                    <span className="text-[9px] text-slate-500 uppercase">Balance</span>
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">
-                      {fplsBalanceRaw ? (Number(fplsBalanceRaw) / 1e18).toLocaleString(undefined, {maximumFractionDigits: 0}) : '0'} $FPLS
-                    </span>
-                  </div>
-                  <button 
-                    onClick={logout} 
-                    className="btn-secondary text-xs font-mono py-2"
-                    title="Click to disconnect"
-                  >
-                    <span>{userWallet.slice(0, 6)}...{userWallet.slice(-4)}</span>
-                    <LogOut className="w-3.5 h-3.5 text-slate-400" />
-                  </button>
-                </div>
-              ) : (
-                <button onClick={login} className="btn-primary py-2 text-xs">
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Connect Wallet</span>
-                </button>
-              )}
             </div>
-          </header>
+          ) : (
+            <button onClick={login} className="btn-primary py-2 text-xs">
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Connect Wallet</span>
+            </button>
+          )}
+        </div>
+      </header>
 
-          {/* Primary Navigation Tabs */}
-          <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
-        </>
-      )}
-
-      {/* VIEW 0: OVERVIEW / LANDING (Edge-to-Edge Hero) */}
-      {currentView === 'overview' && (
-        <LandingPage 
-          setCurrentView={setCurrentView}
-          activeGameweek={activeGameweek}
-          players={players}
-          fplTeams={fplTeams}
-          onSelectPlayer={(player) => {
-            addPlayerToTeam(player);
-          }}
-          authenticated={authenticated}
-          userWallet={userWallet}
-          fplsBalanceRaw={fplsBalanceRaw}
-          login={login}
-          logout={logout}
-        />
-      )}
+      {/* Primary Navigation Tabs */}
+      <LimelightNav currentView={currentView} setCurrentView={setCurrentView} isAdmin={isAdmin} />
 
       {/* Global Winner Claim Banner */}
       {claimableWinnings.length > 0 && (() => {
@@ -3119,9 +3097,20 @@ Current app data:
         );
       })()}
 
-      {/* Main Content Areas (for other views) */}
-      {currentView !== 'overview' && (
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col">
+      {/* Main Content Areas */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 md:py-8 flex flex-col">
+        {/* VIEW 0: OVERVIEW / LANDING */}
+        {currentView === 'overview' && (
+          <LandingPage 
+            setCurrentView={setCurrentView}
+            activeGameweek={activeGameweek}
+            players={players}
+            fplTeams={fplTeams}
+            onSelectPlayer={(player) => {
+              addPlayerToTeam(player);
+            }}
+          />
+        )}
 
         {/* VIEW 1: TEAM BUILDER */}
         {currentView === 'team' && (
@@ -4063,7 +4052,6 @@ Current app data:
           </div>
         )}
       </main>
-      )}
 
       {/* Modern Player Selection Drawer / Modal */}
       {showRosterModal && (

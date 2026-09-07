@@ -53,7 +53,7 @@ const FALLBACK_STAR_11 = [
   { id: 350, web_name: "Haaland", second_name: "Haaland", element_type: 4, team: 15, team_code: 43, squad_number: 9, now_cost: 152, event_points: 17, total_points: 35, isCaptain: true },
   { id: 377, web_name: "Isak", second_name: "Isak", element_type: 4, team: 17, team_code: 4, squad_number: 14, now_cost: 85, event_points: 12, total_points: 24 },
   { id: 19,  web_name: "Saka", second_name: "Saka", element_type: 3, team: 1, team_code: 3, squad_number: 7, now_cost: 101, event_points: 13, total_points: 28 },
-  { id: 453, web_name: "Son", second_name: "Son", element_type: 3, team: 19, team_code: 6, squad_number: 7, now_cost: 100, event_points: 16, total_points: 32 },
+  { id: 399, web_name: "Fernandes", second_name: "Fernandes", element_type: 3, team: 16, team_code: 1, squad_number: 8, now_cost: 85, event_points: 15, total_points: 30 },
   { id: 211, web_name: "Palmer", second_name: "Palmer", element_type: 3, team: 6, team_code: 8, squad_number: 20, now_cost: 106, event_points: 14, total_points: 29 },
   { id: 355, web_name: "De Bruyne", second_name: "De Bruyne", element_type: 3, team: 15, team_code: 43, squad_number: 17, now_cost: 95, event_points: 11, total_points: 22 },
   { id: 18,  web_name: "Saliba", second_name: "Saliba", element_type: 2, team: 1, team_code: 3, squad_number: 2, now_cost: 60, event_points: 9, total_points: 18 },
@@ -153,7 +153,7 @@ export const LandingPage = ({
     { id: 350, name: "Erling Haaland", team: "MCI", club: "Man City", num: 9, price: "£15.2M", pts: 17, captain: true, role: "Forward" },
     { id: 19,  name: "Bukayo Saka", team: "ARS", club: "Arsenal", num: 7, price: "£10.1M", pts: 13, captain: false, role: "Midfielder" },
     { id: 211, name: "Cole Palmer", team: "CHE", club: "Chelsea", num: 20, price: "£10.6M", pts: 14, captain: false, role: "Midfielder" },
-    { id: 453, name: "Son Heung-min", team: "TOT", club: "Spurs", num: 7, price: "£10.0M", pts: 16, captain: false, role: "Midfielder" },
+    { id: 399, name: "Bruno Fernandes", team: "MUN", club: "Man Utd", num: 8, price: "£8.5M", pts: 15, captain: false, role: "Midfielder" },
     { id: 18,  name: "William Saliba", team: "ARS", club: "Arsenal", num: 2, price: "£6.0M", pts: 9, captain: false, role: "Defender" },
   ], []);
 

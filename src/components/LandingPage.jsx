@@ -48,19 +48,23 @@ export const useTypewriter = (text, speed = 36, startDelay = 500) => {
   return { displayed, done };
 };
 
-// Fallback star lineup if live FPL players data is loading
+// Fallback star lineup if live FPL players data is loading (Ordered for 4-4-2: 1 GK, 4 DEF, 4 MID, 2 FWD)
 const FALLBACK_STAR_11 = [
-  { id: 350, web_name: "Haaland", second_name: "Haaland", element_type: 4, team: 15, team_code: 43, squad_number: 9, now_cost: 152, event_points: 17, total_points: 35, isCaptain: true },
-  { id: 377, web_name: "Isak", second_name: "Isak", element_type: 4, team: 17, team_code: 4, squad_number: 14, now_cost: 85, event_points: 12, total_points: 24 },
-  { id: 19,  web_name: "Saka", second_name: "Saka", element_type: 3, team: 1, team_code: 3, squad_number: 7, now_cost: 101, event_points: 13, total_points: 28 },
-  { id: 399, web_name: "Fernandes", second_name: "Fernandes", element_type: 3, team: 16, team_code: 1, squad_number: 8, now_cost: 85, event_points: 15, total_points: 30 },
-  { id: 211, web_name: "Palmer", second_name: "Palmer", element_type: 3, team: 6, team_code: 8, squad_number: 20, now_cost: 106, event_points: 14, total_points: 29 },
-  { id: 355, web_name: "De Bruyne", second_name: "De Bruyne", element_type: 3, team: 15, team_code: 43, squad_number: 17, now_cost: 95, event_points: 11, total_points: 22 },
-  { id: 18,  web_name: "Saliba", second_name: "Saliba", element_type: 2, team: 1, team_code: 3, squad_number: 2, now_cost: 60, event_points: 9, total_points: 18 },
-  { id: 311, web_name: "Alexander-Arnold", second_name: "Trent", element_type: 2, team: 14, team_code: 14, squad_number: 66, now_cost: 71, event_points: 10, total_points: 20 },
-  { id: 356, web_name: "Gvardiol", second_name: "Gvardiol", element_type: 2, team: 15, team_code: 43, squad_number: 24, now_cost: 60, event_points: 8, total_points: 16 },
-  { id: 450, web_name: "Porro", second_name: "Porro", element_type: 2, team: 19, team_code: 6, squad_number: 23, now_cost: 55, event_points: 9, total_points: 17 },
-  { id: 1,   web_name: "Raya", second_name: "Raya", element_type: 1, team: 1, team_code: 3, squad_number: 22, now_cost: 55, event_points: 11, total_points: 21 },
+  // 1 Goalkeeper
+  { id: 1,   web_name: "Raya", second_name: "Raya", element_type: 1, team: 1, team_code: 3, squad_number: 22, now_cost: 60, event_points: 3, total_points: 15 },
+  // 4 Defenders
+  { id: 6,   web_name: "Saliba", second_name: "Saliba", element_type: 2, team: 1, team_code: 3, squad_number: 2, now_cost: 60, event_points: 6, total_points: 18 },
+  { id: 8,   web_name: "Calafiori", second_name: "Calafiori", element_type: 2, team: 1, team_code: 3, squad_number: 33, now_cost: 57, event_points: 2, total_points: 22 },
+  { id: 391, web_name: "Gvardiol", second_name: "Gvardiol", element_type: 2, team: 15, team_code: 43, squad_number: 24, now_cost: 56, event_points: 8, total_points: 22 },
+  { id: 279, web_name: "Ajayi", second_name: "Ajayi", element_type: 2, team: 11, team_code: 88, squad_number: 6, now_cost: 41, event_points: 5, total_points: 25 },
+  // 4 Midfielders
+  { id: 12,  web_name: "Saka", second_name: "Saka", element_type: 3, team: 1, team_code: 3, squad_number: 7, now_cost: 95, event_points: 2, total_points: 22 },
+  { id: 154, web_name: "Palmer", second_name: "Palmer", element_type: 3, team: 6, team_code: 8, squad_number: 20, now_cost: 96, event_points: 1, total_points: 21 },
+  { id: 426, web_name: "B.Fernandes", second_name: "Fernandes", element_type: 3, team: 16, team_code: 1, squad_number: 8, now_cost: 120, event_points: 2, total_points: 27 },
+  { id: 367, web_name: "Gakpo", second_name: "Gakpo", element_type: 3, team: 14, team_code: 14, squad_number: 18, now_cost: 72, event_points: 11, total_points: 28 },
+  // 2 Forwards
+  { id: 411, web_name: "Haaland", second_name: "Haaland", element_type: 4, team: 15, team_code: 43, squad_number: 9, now_cost: 155, event_points: 9, total_points: 24, isCaptain: true },
+  { id: 379, web_name: "Isak", second_name: "Isak", element_type: 4, team: 14, team_code: 14, squad_number: 9, now_cost: 90, event_points: 13, total_points: 23 },
 ];
 
 // Fixed 4-4-2 pitch coordinates
@@ -147,15 +151,69 @@ export const LandingPage = ({
     );
   };
 
-  // Interactive Featured Vector Kit Showcase Deck
+  // Interactive Featured Vector Kit Showcase Deck (Dynamically synced to live FPL season data)
   const [selectedStarIdx, setSelectedStarIdx] = useState(0);
-  const featuredStars = useMemo(() => [
-    { id: 350, name: "Erling Haaland", team: "MCI", club: "Man City", num: 9, price: "£15.2M", pts: 17, captain: true, role: "Forward" },
-    { id: 19,  name: "Bukayo Saka", team: "ARS", club: "Arsenal", num: 7, price: "£10.1M", pts: 13, captain: false, role: "Midfielder" },
-    { id: 211, name: "Cole Palmer", team: "CHE", club: "Chelsea", num: 20, price: "£10.6M", pts: 14, captain: false, role: "Midfielder" },
-    { id: 399, name: "Bruno Fernandes", team: "MUN", club: "Man Utd", num: 8, price: "£8.5M", pts: 15, captain: false, role: "Midfielder" },
-    { id: 18,  name: "William Saliba", team: "ARS", club: "Arsenal", num: 2, price: "£6.0M", pts: 9, captain: false, role: "Defender" },
-  ], []);
+  const featuredStars = useMemo(() => {
+    // Current season premier star blueprints with verified live IDs and official numbers
+    const STAR_BLUEPRINTS = [
+      { id: 411, name: "Erling Haaland", web_name: "Haaland", team: "MCI", club: "Man City", num: 9, defaultCost: 155, pts: 24, captain: true, role: "Forward", element_type: 4, teamId: 15, teamCode: 43 },
+      { id: 12,  name: "Bukayo Saka", web_name: "Saka", team: "ARS", club: "Arsenal", num: 7, defaultCost: 95, pts: 22, captain: false, role: "Midfielder", element_type: 3, teamId: 1, teamCode: 3 },
+      { id: 154, name: "Cole Palmer", web_name: "Palmer", team: "CHE", club: "Chelsea", num: 20, defaultCost: 96, pts: 21, captain: false, role: "Midfielder", element_type: 3, teamId: 6, teamCode: 8 },
+      { id: 426, name: "Bruno Fernandes", web_name: "B.Fernandes", team: "MUN", club: "Man Utd", num: 8, defaultCost: 120, pts: 27, captain: false, role: "Midfielder", element_type: 3, teamId: 16, teamCode: 1 },
+      { id: 6,   name: "William Saliba", web_name: "Saliba", team: "ARS", club: "Arsenal", num: 2, defaultCost: 60, pts: 18, captain: false, role: "Defender", element_type: 2, teamId: 1, teamCode: 3 },
+    ];
+
+    return STAR_BLUEPRINTS.map(star => {
+      // Find matching player in live bootstrap-static players array
+      const livePlayer = (players && players.length > 0)
+        ? players.find(p => p.id === star.id || (p.web_name === star.web_name && p.team === star.teamId))
+        : null;
+
+      const nowCost = livePlayer?.now_cost || star.defaultCost;
+      const formattedPrice = `£${(nowCost / 10).toFixed(1)}M`;
+      const points = livePlayer?.total_points || star.pts;
+      const teamObj = fplTeams?.[livePlayer?.team || star.teamId];
+      const teamShort = teamObj?.short_name || star.team;
+      const clubName = teamObj?.name || star.club;
+      const teamCode = livePlayer?.team_code || star.teamCode;
+      const squadNum = livePlayer?.squad_number || star.num;
+
+      // Fully qualified live FPL player object for seamless squad drafting
+      const playerObj = livePlayer ? {
+        ...livePlayer,
+        squad_number: squadNum,
+      } : {
+        id: star.id,
+        web_name: star.web_name,
+        second_name: star.name.split(' ').slice(1).join(' ') || star.web_name,
+        element_type: star.element_type,
+        now_cost: nowCost,
+        team: star.teamId,
+        team_code: teamCode,
+        squad_number: squadNum,
+        event_points: star.pts,
+        total_points: star.pts,
+      };
+
+      return {
+        id: livePlayer?.id || star.id,
+        name: star.name,
+        web_name: livePlayer?.web_name || star.web_name,
+        team: teamShort,
+        club: clubName,
+        num: squadNum,
+        price: formattedPrice,
+        cost: nowCost,
+        pts: points,
+        captain: star.captain,
+        role: star.role,
+        element_type: livePlayer?.element_type || star.element_type,
+        teamId: livePlayer?.team || star.teamId,
+        teamCode: teamCode,
+        playerObj
+      };
+    });
+  }, [players, fplTeams]);
 
   const activeStar = featuredStars[selectedStarIdx] || featuredStars[0];
 
@@ -199,10 +257,17 @@ export const LandingPage = ({
       ];
     }
 
-    const gks = players.filter(p => p.element_type === 1).sort((a, b) => (b.event_points || 0) - (a.event_points || 0));
-    const defs = players.filter(p => p.element_type === 2).sort((a, b) => (b.event_points || 0) - (a.event_points || 0));
-    const mids = players.filter(p => p.element_type === 3).sort((a, b) => (b.event_points || 0) - (a.event_points || 0));
-    const fwds = players.filter(p => p.element_type === 4).sort((a, b) => (b.event_points || 0) - (a.event_points || 0));
+    // Sort by gameweek event points, breaking ties with season total points
+    const sortByForm = (a, b) => {
+      const formA = ((a.event_points || 0) * 100) + (a.total_points || 0);
+      const formB = ((b.event_points || 0) * 100) + (b.total_points || 0);
+      return formB - formA;
+    };
+
+    const gks = players.filter(p => p.element_type === 1).sort(sortByForm);
+    const defs = players.filter(p => p.element_type === 2).sort(sortByForm);
+    const mids = players.filter(p => p.element_type === 3).sort(sortByForm);
+    const fwds = players.filter(p => p.element_type === 4).sort(sortByForm);
 
     const selectedGk = gks.slice(0, 1);
     const selectedDefs = defs.slice(0, 4);
@@ -442,13 +507,7 @@ export const LandingPage = ({
                   className="transform hover:scale-105 transition-transform cursor-pointer"
                 >
                   <VectorKit
-                    player={{
-                      id: activeStar.id,
-                      squad_number: activeStar.num,
-                      web_name: activeStar.name.split(' ')[1] || activeStar.name,
-                      second_name: activeStar.name.split(' ')[1] || activeStar.name,
-                      team_code: activeStar.team === 'MCI' ? 43 : activeStar.team === 'ARS' ? 3 : activeStar.team === 'CHE' ? 8 : 14
-                    }}
+                    player={activeStar.playerObj}
                     shortName={activeStar.team}
                     className="w-24 h-28 sm:w-28 sm:h-32 drop-shadow-lg"
                   />
@@ -499,16 +558,7 @@ export const LandingPage = ({
                 <button
                   onClick={() => {
                     if (onSelectPlayer) {
-                      onSelectPlayer({
-                        id: activeStar.id,
-                        web_name: activeStar.name.split(' ')[1] || activeStar.name,
-                        second_name: activeStar.name.split(' ')[1] || activeStar.name,
-                        element_type: activeStar.role === 'Forward' ? 4 : activeStar.role === 'Midfielder' ? 3 : 2,
-                        now_cost: parseFloat(activeStar.price.replace('£', '').replace('M', '')) * 10,
-                        team: activeStar.team === 'MCI' ? 15 : activeStar.team === 'ARS' ? 1 : activeStar.team === 'CHE' ? 6 : 14,
-                        team_code: activeStar.team === 'MCI' ? 43 : activeStar.team === 'ARS' ? 3 : activeStar.team === 'CHE' ? 8 : 14,
-                        squad_number: activeStar.num,
-                      });
+                      onSelectPlayer(activeStar.playerObj);
                     }
                     setCurrentView('team');
                   }}

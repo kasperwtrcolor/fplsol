@@ -7,7 +7,7 @@ import {
   RefreshCw, 
   ArrowRight
 } from 'lucide-react';
-import { VectorKit } from './VectorKit';
+import { PONS_CONFIG } from '../config/contracts';
 
 // Fallback star lineup if players data is loading
 const FALLBACK_STAR_11 = [
@@ -228,6 +228,16 @@ export const LandingPage = ({
               <ArrowRight className="w-5 h-5" />
             </button>
 
+            <a
+              href={PONS_CONFIG.dividendsClaimUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 border border-purple-400/40 text-white font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-900/40 cursor-pointer transform hover:-translate-y-0.5"
+            >
+              <span>Claim GME Dividends on Pons</span>
+              <ExternalLink className="w-4 h-4 text-purple-200" />
+            </a>
+
             <button
               onClick={() => setCurrentView('rules')}
               className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700 text-slate-200 font-semibold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -258,9 +268,9 @@ export const LandingPage = ({
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-purple-800/50 bg-purple-950/20 backdrop-blur-md">
-              <div className="text-[11px] font-mono text-purple-400 uppercase tracking-wider">Stock Yield</div>
-              <div className="text-xl md:text-2xl font-bold font-mono text-purple-300 mt-0.5">GME Equity</div>
-              <div className="text-[10px] text-slate-400 mt-1">3% Tax Auto-Swapped</div>
+              <div className="text-[11px] font-mono text-purple-400 uppercase tracking-wider">Holder Dividends</div>
+              <div className="text-xl md:text-2xl font-bold font-mono text-purple-300 mt-0.5">3% Tax → GME</div>
+              <div className="text-[10px] text-slate-400 mt-1">Claimed on Pons Family</div>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-md col-span-2 md:col-span-1">
@@ -268,6 +278,45 @@ export const LandingPage = ({
               <div className="text-xl md:text-2xl font-bold font-mono text-rose-400 mt-0.5">10% Burn 🔥</div>
               <div className="text-[10px] text-slate-500 mt-1">Sent to 0x...dEaD</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PONS FAMILY HOLDER DIVIDENDS CALLOUT BANNER */}
+      <section className="card-modern p-6 sm:p-8 bg-gradient-to-r from-purple-950/80 via-slate-900 to-indigo-950/80 border-2 border-purple-500/40 shadow-xl">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-mono font-bold">
+              <span>💎 TOKEN HOLDER BENEFIT • PONS LAUNCHPAD</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              Hold $FPLS, Earn Real Wall Street Equity
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Every trade on Pons Family incurs a <strong>3% trading tax</strong> that is automatically swapped into tokenized GameStop (<span className="text-purple-300 font-mono font-bold">$GME</span>) stock equity. 
+              <strong> 100% of this tax is distributed directly to $FPLS token holders</strong>. You don't have to win matches to earn — simply hold $FPLS in your wallet and claim your stock dividends anytime directly on Pons!
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+            <a
+              href={PONS_CONFIG.dividendsClaimUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-6 py-3 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer whitespace-nowrap"
+            >
+              <span>Claim Dividends on Pons</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
+            <a
+              href={PONS_CONFIG.tokenUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer whitespace-nowrap"
+            >
+              <span>Trade $FPLS on Pons</span>
+              <ExternalLink className="w-4 h-4 text-slate-400" />
+            </a>
           </div>
         </div>
       </section>

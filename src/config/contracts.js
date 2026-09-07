@@ -24,6 +24,19 @@ export const GME_TOKEN_CONFIG = {
   taxSwapRate: '3%'
 };
 
+// Pons Family Launchpad & Dividend Claim Config
+export const PONS_CONFIG = {
+  platformName: 'Pons Family',
+  platformUrl: 'https://ponsfamily.com',
+  // Update tokenUrl with your exact token link once launched on ponsfamily.com:
+  tokenUrl: 'https://ponsfamily.com/launchpad', 
+  dividendsClaimUrl: 'https://ponsfamily.com', 
+  pairedAsset: 'GME',
+  pairedAssetName: 'GameStop Corp. Class A Tokenized Equity',
+  tradingTax: '3%',
+  dividendDistribution: '100% of 3% trading tax distributed directly to $FPLS token holders'
+};
+
 export const ERC20_ABI = [
   {
     "constant": true,

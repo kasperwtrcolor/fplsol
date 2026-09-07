@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS, TREASURY_ADDRESS, RWA_GME_ADDRESS, ERC20_ABI } from './config/contracts';
+import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS, TREASURY_ADDRESS, RWA_GME_ADDRESS, ERC20_ABI, PONS_CONFIG } from './config/contracts';
 import { injected } from 'wagmi/connectors';
-import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut } from 'lucide-react';
+import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import * as firebaseService from './firebaseService';
@@ -290,6 +290,18 @@ const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
           </button>
         );
       })}
+
+      {/* External Link to Pons Dividends */}
+      <a
+        href={PONS_CONFIG.dividendsClaimUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold transition-all duration-150 whitespace-nowrap bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 cursor-pointer ml-1"
+        title="Claim your 3% trading tax GME stock dividends on Pons Family"
+      >
+        <span>Claim Dividends on Pons</span>
+        <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+      </a>
     </nav>
   );
 };
@@ -3019,6 +3031,18 @@ Current app data:
             </span>
           </div>
 
+          {/* Pons Dividends Button */}
+          <a
+            href={PONS_CONFIG.dividendsClaimUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-mono font-bold transition-all cursor-pointer"
+            title="Claim your 3% trading tax GME stock dividends on Pons Family"
+          >
+            <span>Claim Dividends</span>
+            <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+          </a>
+
           {/* Theme Toggle */}
           <button 
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} 
@@ -3344,39 +3368,51 @@ Current app data:
               </div>
             </div>
 
-            {/* Wall Street Equity Stock Yield Pool Banner */}
-            <div className="card-modern p-4 bg-gradient-to-r from-emerald-500/10 via-purple-500/10 to-amber-500/10 border border-purple-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Pons Family Holder Stock Dividend Hub Banner */}
+            <div className="card-modern p-5 bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 border-2 border-purple-500/40 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-lg">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-black font-mono text-sm shadow-md shadow-purple-500/20">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 flex items-center justify-center text-white font-black font-mono text-sm shadow-md shadow-purple-500/20 shrink-0">
                   GME
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
-                      Wall Street Equity Stock Yield Pool
+                    <span className="text-xs uppercase tracking-wider font-bold text-purple-300">
+                      Holder Stock Dividends • Pons Family Platform
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold font-mono">
-                      3% Tax Auto-Swapped to GME
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold font-mono">
+                      100% of 3% Tax → $FPLS Holders
                     </span>
-                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-bold font-mono">
-                      Robinhood Chain RWA
+                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-bold font-mono">
+                      Robinhood Chain
                     </span>
                   </div>
-                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1">
-                    "Play fantasy football, win real Wall Street equity."
-                    <span className="font-normal text-slate-600 dark:text-slate-400 ml-1">
-                      Trading taxes continuously swap into tokenized GameStop ($GME) equity. Podium winners take home real stocks alongside $FPLS.
+                  <p className="text-xs font-semibold text-slate-200 mt-1">
+                    "Hold $FPLS, earn real Wall Street equity."
+                    <span className="font-normal text-slate-300 ml-1">
+                      Every trade on Pons Family swaps a 3% tax directly into tokenized GameStop ($GME) equity distributed to $FPLS holders.
                     </span>
                   </p>
                 </div>
               </div>
-              <div className="text-right flex items-center gap-4 sm:border-l sm:border-slate-200 dark:sm:border-slate-700/80 sm:pl-5 w-full sm:w-auto justify-between sm:justify-end">
-                <div>
-                  <div className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">Total GME Stock Yield</div>
-                  <div className="text-xl font-mono font-black text-purple-600 dark:text-purple-400">
-                    {(leaderboard.length * 0.05).toFixed(2)} <span className="text-xs">GME Shares</span>
-                  </div>
-                </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-end">
+                <a
+                  href={PONS_CONFIG.dividendsClaimUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap"
+                >
+                  <span>Claim GME Dividends on Pons</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href={PONS_CONFIG.tokenUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
+                >
+                  <span>Trade on Pons</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                </a>
               </div>
             </div>
 
@@ -3386,9 +3422,6 @@ Current app data:
                 <div className="text-[11px] uppercase font-semibold text-slate-500 dark:text-slate-400">Total Staked</div>
                 <div className="text-xl font-mono font-black text-slate-900 dark:text-white mt-1">
                   {(leaderboard.length * 100000).toLocaleString()} <span className="text-[10px] text-slate-400">$FPLS</span>
-                </div>
-                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
-                  +{(leaderboard.length * 0.05).toFixed(2)} GME Shares
                 </div>
                 <div className="text-[10px] text-slate-400 mt-0.5">{leaderboard.length} Entries</div>
               </div>
@@ -3401,9 +3434,6 @@ Current app data:
                 <div className="text-xl font-mono font-black text-amber-600 dark:text-amber-300 mt-1">
                   {(leaderboard.length * 100000 * (leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6)).toLocaleString()} <span className="text-[10px]">$FPLS</span>
                 </div>
-                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
-                  +{((leaderboard.length * 0.05) * (leaderboard.length === 1 ? 0.9 : leaderboard.length === 2 ? 0.7 : 0.6)).toFixed(3)} GME
-                </div>
                 <div className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">Gold Champion</div>
               </div>
 
@@ -3415,9 +3445,6 @@ Current app data:
                 <div className="text-xl font-mono font-black text-slate-700 dark:text-slate-200 mt-1">
                   {(leaderboard.length >= 2 ? leaderboard.length * 100000 * 0.2 : 0).toLocaleString()} <span className="text-[10px]">$FPLS</span>
                 </div>
-                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
-                  +{leaderboard.length >= 2 ? ((leaderboard.length * 0.05) * 0.2).toFixed(3) : '0.000'} GME
-                </div>
                 <div className="text-[10px] text-slate-500 mt-0.5">Silver Runner-Up</div>
               </div>
 
@@ -3428,9 +3455,6 @@ Current app data:
                 </div>
                 <div className="text-xl font-mono font-black text-amber-800 dark:text-amber-400 mt-1">
                   {(leaderboard.length >= 3 ? leaderboard.length * 100000 * 0.1 : 0).toLocaleString()} <span className="text-[10px]">$FPLS</span>
-                </div>
-                <div className="text-[10px] text-purple-600 dark:text-purple-400 font-bold font-mono mt-0.5">
-                  +{leaderboard.length >= 3 ? ((leaderboard.length * 0.05) * 0.1).toFixed(3) : '0.000'} GME
                 </div>
                 <div className="text-[10px] text-amber-700/80 dark:text-amber-500 mt-0.5">Bronze Finisher</div>
               </div>
@@ -3875,28 +3899,41 @@ Current app data:
               </div>
             </div>
 
-            {/* Wall Street Equity Stock Yield Pool Card */}
-            <div className="card-modern p-6 bg-gradient-to-r from-purple-500/10 via-emerald-500/10 to-amber-500/10 border-2 border-purple-500/30 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md">
-                  📈
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                      Dividend-Yielding Gameplay: The GME Stock Yield Pool
-                    </h3>
-                    <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-mono font-bold">
-                      Robinhood Chain RWA
-                    </span>
+            {/* Wall Street Equity Holder Dividends Card */}
+            <div className="card-modern p-6 bg-gradient-to-r from-purple-500/10 via-emerald-500/10 to-amber-500/10 border-2 border-purple-500/30 space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md">
+                    📈
                   </div>
-                  <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold mt-0.5">
-                    "Play fantasy football, win real Wall Street equity."
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                        Holder Stock Dividends: Earn GME on Pons Family
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-mono font-bold">
+                        Pons Launchpad
+                      </span>
+                    </div>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold mt-0.5">
+                      "Hold $FPLS, earn real Wall Street equity."
+                    </p>
+                  </div>
                 </div>
+
+                <a
+                  href={PONS_CONFIG.dividendsClaimUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap"
+                >
+                  <span>Claim GME on Pons</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
+
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                The 3% tax collected from $FPLS trading volume is continuously auto-swapped into paired tokenized stock (GameStop Corp. Class A Equity - <span className="font-mono font-bold text-purple-600 dark:text-purple-300">$GME</span>). Instead of just receiving volatile game tokens, gameweek winners claim real tokenized Wall Street equity (60% 1st, 20% 2nd, 10% 3rd) deposited directly into their wallets in the exact same claim transaction!
+                The $FPLS token launch on <strong>Pons Family</strong> pairs the token with tokenized equity (GameStop Corp. Class A Equity - <span className="font-mono font-bold text-purple-600 dark:text-purple-300">$GME</span>). The <strong>3% trading tax collected on every swap</strong> is 100% converted into tokenized $GME stock and streamed directly to all $FPLS token holders. You do not need to enter gameweek competitions to earn — simply hold $FPLS in your wallet and claim your continuous equity dividends on the Pons platform!
               </p>
             </div>
 

@@ -290,18 +290,6 @@ const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
           </button>
         );
       })}
-
-      {/* External Link to Pons Dividends */}
-      <a
-        href={PONS_CONFIG.dividendsClaimUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs md:text-sm font-semibold transition-all duration-150 whitespace-nowrap bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 cursor-pointer ml-1"
-        title="Claim your 3% trading tax GME stock dividends on Pons Family"
-      >
-        <span>Claim Dividends on Pons</span>
-        <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
-      </a>
     </nav>
   );
 };
@@ -3030,18 +3018,6 @@ Current app data:
               {((activeGameweek?.prizePool || entriesCount * 100000) * 0.9).toLocaleString()} $FPLS
             </span>
           </div>
-
-          {/* Pons Dividends Button */}
-          <a
-            href={PONS_CONFIG.dividendsClaimUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-mono font-bold transition-all cursor-pointer"
-            title="Claim your 3% trading tax GME stock dividends on Pons Family"
-          >
-            <span>Claim Dividends</span>
-            <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
-          </a>
 
           {/* Theme Toggle */}
           <button 

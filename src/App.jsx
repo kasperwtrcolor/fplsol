@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { FPLS_ABI, FPLGAME_ABI, FPLS_ADDRESS, FPLGAME_ADDRESS, TREASURY_ADDRESS, RWA_GME_ADDRESS, ERC20_ABI, PONS_CONFIG } from './config/contracts';
 import { injected } from 'wagmi/connectors';
-import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut, ExternalLink } from 'lucide-react';
+import { Users, Clock, TrendingUp, Calendar, Trophy, ArrowRight, User, BarChart3, Medal, Target, Home, Target as TeamIcon, Info, Sun, Moon, RotateCcw, Zap, LogIn, LogOut, ExternalLink, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import * as firebaseService from './firebaseService';
@@ -10,6 +10,7 @@ import { VectorKit } from './components/VectorKit';
 import { TeamShield } from './components/TeamShield';
 import { LandingPage } from './components/LandingPage';
 import { ManagerAchievements } from './components/ManagerAchievements';
+import { TechnicalDocs } from './components/TechnicalDocs';
 
 export const isFixtureFinished = (fixture) => {
   if (!fixture) return false;
@@ -267,7 +268,7 @@ const LimelightNav = ({ currentView, setCurrentView, isAdmin }) => {
     { id: 'leaderboard', label: 'Standings & Rewards', icon: Trophy },
     { id: 'fixtures', label: 'Fixtures & Live', icon: Calendar },
     { id: 'profile', label: 'Manager Profile', icon: User },
-    { id: 'rules', label: 'How It Works', icon: Info },
+    { id: 'rules', label: 'Docs', icon: BookOpen },
     ...(isAdmin ? [{ id: 'admin', label: 'Admin', icon: Zap }] : [])
   ];
 
@@ -3102,13 +3103,13 @@ Current app data:
             </span>
           </div>
 
-          {/* Mobile How It Works / Rules Quick Link */}
+          {/* Mobile Technical Docs Quick Link */}
           <button 
             onClick={() => setCurrentView('rules')}
             className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer md:hidden"
-            title="How It Works & Rules"
+            title="Technical Documentation"
           >
-            <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </button>
 
           {/* Theme Toggle */}
@@ -4107,209 +4108,12 @@ Current app data:
           </div>
         )}
 
-        {/* VIEW 5: HOW IT WORKS */}
+        {/* VIEW 5: TECHNICAL DOCUMENTATION */}
         {currentView === 'rules' && (
-          <div className="w-full max-w-5xl mx-auto space-y-8 py-4">
-            <div className="text-center space-y-2">
-              <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">How Fantasy Premier League Stock Works</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
-                Official Premier League performance data meets decentralized on-chain prize pool tokenomics.
-              </p>
-            </div>
+          <TechnicalDocs setCurrentView={setCurrentView} />
+        )}
 
-            {/* 3 Core Pillars */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="card-modern p-6 space-y-3.5 border border-[#EAECE9] dark:border-slate-800">
-                <div className="w-11 h-11 rounded-2xl bg-[#1C2E1E] text-white flex items-center justify-center font-mono font-black text-sm shadow-xs dark:bg-emerald-600">
-                  01
-                </div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Stake to Enter</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Pay the 100,000 $FPLS entry fee to submit your team for the gameweek. 90% enters the Podium Prize Pool (60% to 1st, 20% to 2nd, 10% to 3rd), and 10% is burned permanently on-chain.
-                </p>
-              </div>
-
-              <div className="card-modern p-6 space-y-3.5 border border-[#EAECE9] dark:border-slate-800">
-                <div className="w-11 h-11 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-mono font-black text-sm shadow-xs">
-                  02
-                </div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Manage £80.0M Cap</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Select 11 real Premier League players matching official market valuations. Balance heavy hitters with value picks to build the optimal squad under £80.0M.
-                </p>
-              </div>
-
-              <div className="card-modern p-6 space-y-3.5 border border-[#EAECE9] dark:border-slate-800">
-                <div className="w-11 h-11 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-mono font-black text-sm shadow-xs">
-                  03
-                </div>
-                <h3 className="font-extrabold text-base text-slate-900 dark:text-white">Tactics & 2x Captain</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Choose from 6 dynamic formations and designate your Captain for double points. At the end of the gameweek, the top 3 highest scoring managers claim their respective podium prize shares!
-                </p>
-              </div>
-            </div>
-
-            {/* Wall Street Equity Holder Dividends Card */}
-            <div className="card-modern p-6 md:p-8 bg-gradient-to-r from-purple-950/80 via-slate-900 to-indigo-950/80 border-2 border-purple-500/40 space-y-4 shadow-lg">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-700 text-white flex items-center justify-center font-black font-mono text-sm shadow-md shadow-purple-500/20 shrink-0">
-                    GME
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-extrabold text-base text-white">
-                        Holder Stock Dividends: Earn GME on Pons Family
-                      </h3>
-                      <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
-                        Robinhood Chain
-                      </span>
-                    </div>
-                    <p className="text-xs text-purple-300 font-semibold mt-0.5">
-                      "Hold $FPLS, earn real Wall Street equity."
-                    </p>
-                  </div>
-                </div>
-
-                <a
-                  href={PONS_CONFIG.dividendsClaimUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer whitespace-nowrap"
-                >
-                  <span>Claim GME on Pons</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                The $FPLS token launch on <strong>Pons Family</strong> pairs the token with tokenized equity (GameStop Corp. Class A Equity - <span className="font-mono font-bold text-purple-300">$GME</span>). The <strong>3% trading tax collected on every swap</strong> is 100% converted into tokenized $GME stock and streamed directly to all $FPLS token holders. You do not need to enter gameweek competitions to earn — simply hold $FPLS in your wallet and claim your continuous equity dividends on the Pons platform!
-              </p>
-            </div>
-
-            {/* Strict 1-Hour Submission Deadline Banner */}
-            <div className="card-modern p-6 bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-transparent border border-amber-300 dark:border-amber-800 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-md">
-                  ⏰
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
-                    Strict Submission Deadline: 1 Hour Before First Kick-Off
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Squads must be submitted and confirmed at least 60 minutes before the first fixture starts.
-                  </p>
-                </div>
-              </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                To guarantee fairness and eliminate any unfair advantage from early lineup leaks, squad submissions lock automatically exactly 1 hour prior to the earliest kickoff in the gameweek. Once locked, submissions stay closed while matches are in progress, and automatically re-open for the next gameweek as soon as the current gameweek concludes.
-              </p>
-            </div>
-
-            {/* How Points are Calculated - Points Matrix */}
-            <div className="card-modern p-6 md:p-8 space-y-6 border border-[#EAECE9] dark:border-slate-800">
-              <div className="border-b border-[#EAECE9] dark:border-slate-800 pb-4">
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>📊</span> How Points are Calculated
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Points are synced directly in real-time from official Premier League match events.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Playing Time */}
-                <div className="p-4 rounded-2xl bg-[#FAFBF9] dark:bg-slate-800/50 border border-[#EAECE9] dark:border-slate-700/60 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    ⏱️ Playing Time
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
-                    <li className="flex justify-between"><span>Playing up to 59 mins:</span> <strong className="text-emerald-600">+1 pt</strong></li>
-                    <li className="flex justify-between"><span>Playing 60+ mins:</span> <strong className="text-emerald-600">+2 pts</strong></li>
-                  </ul>
-                </div>
-
-                {/* Goals Scored */}
-                <div className="p-4 rounded-2xl bg-[#FAFBF9] dark:bg-slate-800/50 border border-[#EAECE9] dark:border-slate-700/60 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    ⚽ Goals Scored
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
-                    <li className="flex justify-between"><span>Goalkeeper / Defender:</span> <strong className="text-emerald-600">+6 pts</strong></li>
-                    <li className="flex justify-between"><span>Midfielder:</span> <strong className="text-emerald-600">+5 pts</strong></li>
-                    <li className="flex justify-between"><span>Forward:</span> <strong className="text-emerald-600">+4 pts</strong></li>
-                  </ul>
-                </div>
-
-                {/* Assists */}
-                <div className="p-4 rounded-2xl bg-[#FAFBF9] dark:bg-slate-800/50 border border-[#EAECE9] dark:border-slate-700/60 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    🎯 Assists & Saves
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
-                    <li className="flex justify-between"><span>Goal Assist (Any pos):</span> <strong className="text-emerald-600">+3 pts</strong></li>
-                    <li className="flex justify-between"><span>Penalty Saved (GK):</span> <strong className="text-emerald-600">+5 pts</strong></li>
-                    <li className="flex justify-between"><span>Every 3 Saves (GK):</span> <strong className="text-emerald-600">+1 pt</strong></li>
-                  </ul>
-                </div>
-
-                {/* Clean Sheets */}
-                <div className="p-4 rounded-2xl bg-[#FAFBF9] dark:bg-slate-800/50 border border-[#EAECE9] dark:border-slate-700/60 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    🛡️ Clean Sheets
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
-                    <li className="flex justify-between"><span>GK / Defender (60+ mins):</span> <strong className="text-emerald-600">+4 pts</strong></li>
-                    <li className="flex justify-between"><span>Midfielder (60+ mins):</span> <strong className="text-emerald-600">+1 pt</strong></li>
-                  </ul>
-                </div>
-
-                {/* Deductions */}
-                <div className="p-4 rounded-2xl bg-[#FAFBF9] dark:bg-slate-800/50 border border-[#EAECE9] dark:border-slate-700/60 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider text-rose-500">
-                    ⚠️ Deductions
-                  </div>
-                  <ul className="text-xs space-y-1.5 text-slate-600 dark:text-slate-300 font-mono">
-                    <li className="flex justify-between"><span>Yellow Card:</span> <strong className="text-rose-500">-1 pt</strong></li>
-                    <li className="flex justify-between"><span>Red Card:</span> <strong className="text-rose-500">-3 pts</strong></li>
-                    <li className="flex justify-between"><span>Own Goal:</span> <strong className="text-rose-500">-2 pts</strong></li>
-                    <li className="flex justify-between"><span>Penalty Miss:</span> <strong className="text-rose-500">-2 pts</strong></li>
-                    <li className="flex justify-between"><span>Every 2 Goals Conceded:</span> <strong className="text-rose-500">-1 pt</strong></li>
-                  </ul>
-                </div>
-
-                {/* Captain Multiplier */}
-                <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                    👑 Captain Multiplier
-                  </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Your selected Captain scores <strong>2x Double Points</strong> for the entire gameweek!
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-2 font-mono">
-                    Plus match Bonus Points (BPS: 1 to 3 pts) for top performers.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className="card-modern p-8 text-center space-y-4 border border-[#EAECE9] dark:border-slate-800">
-              <h4 className="font-extrabold text-lg text-slate-900 dark:text-white">Ready to pick your squad?</h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                Assemble your 11 Premier League stars under £80.0M, choose your Captain, and compete for the Podium Prize Pool.
-              </p>
-              <button 
-                onClick={() => setCurrentView('team')} 
-                className="btn-primary text-sm px-8 py-3 shadow-forest-glow"
-              >
-                Go to Team Builder →
-              </button>
-            </div>
-          </div>
-        )}{currentView === 'admin' && isAdmin && (
+        {currentView === 'admin' && isAdmin && (
           <div className="w-full max-w-4xl mx-auto space-y-6">
             <div className="card-modern p-6 space-y-4">
               <h2 className="font-bold text-lg text-slate-900 dark:text-white">Admin Protocol Dashboard</h2>

@@ -11,7 +11,8 @@ import {
   Shield,
   Zap,
   TrendingUp,
-  Coins
+  Coins,
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PONS_CONFIG } from '../config/contracts';
@@ -372,6 +373,13 @@ export const LandingPage = ({
                 <Trophy className="w-4 h-4 text-amber-500" />
                 <span>View Standings</span>
               </button>
+              <button
+                onClick={() => setCurrentView('rules')}
+                className="px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Technical Docs ↗</span>
+              </button>
             </div>
           </div>
 
@@ -549,6 +557,30 @@ export const LandingPage = ({
               <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
             </a>
           </div>
+        </div>
+
+        {/* Technical Deep Dive Callout Banner */}
+        <div className="rounded-2xl bg-[#FAFBF9] dark:bg-slate-800/80 border border-[#EAECE9] dark:border-slate-700 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-forest/10 dark:bg-emerald-500/20 text-forest dark:text-emerald-400 flex items-center justify-center font-bold shrink-0">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-sm text-neutral-900 dark:text-white">
+                Developer & Protocol Specifications
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Explore smart contract ABIs, cryptographic oracle verification, deflationary burn mechanics, and our interactive protocol simulator.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setCurrentView('rules')}
+            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-forest hover:bg-forest-light text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer whitespace-nowrap"
+          >
+            <span>Explore Technical Docs</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
       </section>
 
